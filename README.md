@@ -37,6 +37,7 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 2. **Setup Checklist:** See **[SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)** for step-by-step setup tracking
 3. **Dependencies:** See **[requirements.txt](requirements.txt)** for complete list of all dependencies
 4. **Sepolia Deployment:** See **[SEPOLIA_DEPLOYMENT.md](SEPOLIA_DEPLOYMENT.md)** for complete deployment guide to testnet
+5. **Production Deployment:** See **[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)** for deploying to production with custom domain
 
 ---
 

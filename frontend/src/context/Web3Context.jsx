@@ -95,7 +95,7 @@ export const Web3Provider = ({ children }) => {
     setNetworkId(null);
   }, []);
 
-  // Check for existing connection on mount
+  // Check for existing connection on mount (only once)
   useEffect(() => {
     const checkConnection = async () => {
       if (!isMetaMaskInstalled()) return;
@@ -116,17 +116,18 @@ export const Web3Provider = ({ children }) => {
     };
 
     checkConnection();
-  }, [connectWallet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   // Listen for account changes
   useEffect(() => {
     if (!isMetaMaskInstalled()) return;
 
-    const handleAccountsChanged = (accounts) => {
+    const handleAccountsChanged = async (accounts) => {
       if (accounts.length === 0) {
         disconnectWallet();
       } else if (accounts[0] !== account) {
-        connectWallet();
+        await connectWallet();
       }
     };
 
@@ -141,7 +142,8 @@ export const Web3Provider = ({ children }) => {
       window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
       window.ethereum.removeListener('chainChanged', handleChainChanged);
     };
-  }, [account, connectWallet, disconnectWallet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]); // Only re-run when account changes
 
   const value = {
     account,
