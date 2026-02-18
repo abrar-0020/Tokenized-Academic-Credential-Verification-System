@@ -77,10 +77,11 @@ git push origin main
    - Repository: `Tokenized-Academic-Credential-Verification-System`
 3. **Configure Project:**
    - **Framework Preset:** Vite
-   - **Root Directory:** `./frontend` (IMPORTANT!)
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-   - **Install Command:** `npm install`
+   - **Root Directory:** `frontend` ⚠️ **CRITICAL - Must be set!**
+   - **Build Command:** Leave default (`npm run build`)
+   - **Output Directory:** Leave default (`dist`)
+   - **Install Command:** Leave default (`npm install`)
+   - **Node.js Version:** 18.x (if available in settings)
 
 #### C. Add Environment Variables
 
@@ -295,6 +296,29 @@ Or create a simple admin page in your app.
 ---
 
 ## 🆘 Troubleshooting
+
+### Build Fails on Vercel with "Command exited with 1":
+
+**Most Common Fix:**
+1. **Go to Vercel Dashboard** → Your Project → **Settings** → **General**
+2. **Scroll to "Build & Development Settings"**
+3. **Set Root Directory:** `frontend` (NOT `./frontend`, NOT empty)
+4. **Click "Save"**
+5. **Go to Deployments** → Click "..." on latest deployment → **"Redeploy"**
+
+**Alternative Fix:**
+1. Delete the project from Vercel
+2. Re-import with correct settings
+3. Make sure to set **Root Directory: `frontend`** from the start
+
+### Other Build Issues:
+
+**Check:**
+1. Root directory is set to `frontend` (most important!)
+2. Build command is `npm run build` (or left as default)
+3. Output directory is `dist` (or left as default)
+4. All environment variables are added
+5. Check build logs in Vercel for specific error messages
 
 ### Build Fails on Vercel:
 
