@@ -7,6 +7,22 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 ![React](https://img.shields.io/badge/React-18.2.0-cyan)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+## 🌐 Live Deployment
+
+**🔗 Production Site:** [https://theabrar.in](https://theabrar.in)  
+**📜 Smart Contract:** [0x7B5206a636d9D0819E469fA4dfABF0BE062e0297](https://sepolia.etherscan.io/address/0x7B5206a636d9D0819E469fA4dfABF0BE062e0297)  
+**🌍 Network:** Sepolia Testnet (Chain ID: 11155111)  
+**⚡ Status:** ✅ Live and Production-Ready
+
+### Access the Live Application:
+1. Visit [https://theabrar.in](https://theabrar.in)
+2. Install MetaMask browser extension
+3. Switch to Sepolia test network
+4. Connect your wallet and start using the platform!
+
+**For Students:** Get your academic credentials verified on the blockchain  
+**For Institutions:** Issue tamper-proof, verifiable credentials to students
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)
