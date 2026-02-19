@@ -90,11 +90,52 @@ export const Web3Provider = ({ children }) => {
       const web3Signer = await web3Provider.getSigner();
       const network = await web3Provider.getNetwork();
 
-      // Check network
+      // Check network - if wrong, try to switch automatically
       if (Number(network.chainId) !== NETWORK_ID) {
-        setError(`Please switch to the correct network (Chain ID: ${NETWORK_ID})`);
-        setLoading(false);
-        return;
+        try {
+          // Try to switch to Sepolia
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${NETWORK_ID.toString(16)}` }],
+          });
+          
+          // Reload after switch
+          window.location.reload();
+          return;
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            try {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: `0x${NETWORK_ID.toString(16)}`,
+                    chainName: 'Sepolia Testnet',
+                    nativeCurrency: {
+                      name: 'Sepolia ETH',
+                      symbol: 'ETH',
+                      decimals: 18,
+                    },
+                    rpcUrls: ['https://rpc.sepolia.org'],
+                    blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                  },
+                ],
+              });
+              
+              // Reload after adding network
+              window.location.reload();
+              return;
+            } catch (addError) {
+              setError('Please manually add Sepolia network in MetaMask app: Settings → Networks → Add Network → Sepolia');
+              setLoading(false);
+              return;
+            }
+          }
+          setError(`Please switch to Sepolia network in MetaMask app. Current network is incorrect.`);
+          setLoading(false);
+          return;
+        }
       }
 
       // Initialize contract
