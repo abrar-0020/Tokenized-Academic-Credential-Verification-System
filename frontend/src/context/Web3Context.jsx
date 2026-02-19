@@ -57,13 +57,30 @@ export const Web3Provider = ({ children }) => {
 
   // Connect wallet
   const connectWallet = useCallback(async () => {
-    if (!isMetaMaskInstalled()) {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        setError('MetaMask app not detected. Please install MetaMask mobile app first, then return here and click Connect Wallet.');
-      } else {
-        setError('Please install MetaMask browser extension to use this application');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // On mobile, provider might not be available until after deep link
+    if (isMobile && !isMetaMaskInstalled()) {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Try to open MetaMask via deep link
+        const dappUrl = window.location.href.replace(/https?:\/\//, '');
+        const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+        
+        // Open MetaMask
+        window.location.href = metamaskAppDeepLink;
+        return;
+      } catch (err) {
+        setError('Please install MetaMask app and try again');
+        setLoading(false);
+        return;
       }
+    }
+    
+    if (!isMetaMaskInstalled()) {
+      setError('Please install MetaMask browser extension to use this application');
       return;
     }
 
