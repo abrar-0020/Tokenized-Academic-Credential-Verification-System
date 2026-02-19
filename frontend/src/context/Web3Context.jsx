@@ -59,24 +59,35 @@ export const Web3Provider = ({ children }) => {
   const connectWallet = useCallback(async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    // On mobile, provider might not be available until after deep link
+    // On mobile, try multiple times to detect provider
     if (isMobile && !isMetaMaskInstalled()) {
-      try {
-        setLoading(true);
-        setError(null);
+      setLoading(true);
+      setError(null);
+      
+      // Wait and retry detection (MetaMask might inject provider after app returns)
+      let retries = 0;
+      const maxRetries = 10;
+      
+      const checkProvider = async () => {
+        if (isMetaMaskInstalled()) {
+          // Found it! Now connect
+          setTimeout(() => connectWallet(), 100);
+          return;
+        }
         
-        // Try to open MetaMask via deep link
-        const dappUrl = window.location.href.replace(/https?:\/\//, '');
-        const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-        
-        // Open MetaMask
-        window.location.href = metamaskAppDeepLink;
-        return;
-      } catch (err) {
-        setError('Please install MetaMask app and try again');
-        setLoading(false);
-        return;
-      }
+        retries++;
+        if (retries < maxRetries) {
+          setTimeout(checkProvider, 500);
+        } else {
+          // After retries, open MetaMask via deep link
+          const dappUrl = window.location.href.replace(/https?:\/\//, '');
+          const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+          window.location.href = metamaskAppDeepLink;
+        }
+      };
+      
+      checkProvider();
+      return;
     }
     
     if (!isMetaMaskInstalled()) {
