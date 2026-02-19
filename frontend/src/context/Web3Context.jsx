@@ -60,7 +60,7 @@ export const Web3Provider = ({ children }) => {
     if (!isMetaMaskInstalled()) {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
-        setError('Please open this site in MetaMask app browser. Tap menu (☰) → Browser → Enter URL');
+        setError('MetaMask app not detected. Please install MetaMask mobile app first, then return here and click Connect Wallet.');
       } else {
         setError('Please install MetaMask browser extension to use this application');
       }

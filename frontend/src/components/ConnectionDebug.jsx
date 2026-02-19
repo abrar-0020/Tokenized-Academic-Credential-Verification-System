@@ -36,15 +36,20 @@ const ConnectionDebug = () => {
 
             {isMobile && (
               <div className="mt-4">
-                <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm">
-                  <p className="font-semibold text-yellow-800 mb-2">📱 Mobile Solution:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-yellow-700">
-                    <li>Close this browser</li>
-                    <li>Open <strong>MetaMask app</strong></li>
-                    <li>Tap <strong>menu (☰)</strong> → <strong>Browser</strong></li>
-                    <li>Enter this URL in MetaMask browser</li>
-                    <li>Try connecting again</li>
+                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+                  <p className="font-semibold text-blue-800 mb-2">📱 Mobile Solution:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-blue-700">
+                    <li><strong>Install MetaMask app</strong> from Play Store/App Store</li>
+                    <li><strong>Setup wallet</strong> and add Sepolia network</li>
+                    <li><strong>Return to this page</strong> in Chrome/Safari</li>
+                    <li><strong>Click "Connect Wallet"</strong> button</li>
+                    <li>MetaMask app opens → Approve → Connected! ✅</li>
                   </ol>
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold underline">
+                      Download MetaMask App →
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
