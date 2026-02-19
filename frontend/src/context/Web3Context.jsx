@@ -56,41 +56,26 @@ export const Web3Provider = ({ children }) => {
   };
 
   // Connect wallet
-  const connectWallet = useCallback(async () => {
+  const connectWallet = useCallback(async (skipMobileCheck = false) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    // On mobile, try multiple times to detect provider
-    if (isMobile && !isMetaMaskInstalled()) {
+    // On mobile, if provider not available, open MetaMask app
+    if (isMobile && !skipMobileCheck && !isMetaMaskInstalled()) {
       setLoading(true);
       setError(null);
       
-      // Wait and retry detection (MetaMask might inject provider after app returns)
-      let retries = 0;
-      const maxRetries = 10;
+      // Open MetaMask via deep link immediately
+      const dappUrl = window.location.href.replace(/https?:\/\//, '');
+      const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
       
-      const checkProvider = async () => {
-        if (isMetaMaskInstalled()) {
-          // Found it! Now connect
-          setTimeout(() => connectWallet(), 100);
-          return;
-        }
-        
-        retries++;
-        if (retries < maxRetries) {
-          setTimeout(checkProvider, 500);
-        } else {
-          // After retries, open MetaMask via deep link
-          const dappUrl = window.location.href.replace(/https?:\/\//, '');
-          const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-          window.location.href = metamaskAppDeepLink;
-        }
-      };
+      // Store that we're waiting for connection
+      sessionStorage.setItem('pendingConnection', 'true');
       
-      checkProvider();
+      window.location.href = metamaskAppDeepLink;
       return;
     }
     
-    if (!isMetaMaskInstalled()) {
+    if (!skipMobileCheck && !isMetaMaskInstalled()) {
       setError('Please install MetaMask browser extension to use this application');
       return;
     }
@@ -221,7 +206,7 @@ export const Web3Provider = ({ children }) => {
 
         if (accounts.length > 0) {
           // Auto-connect if previously connected
-          await connectWallet();
+          await connectWallet(true);
         }
       } catch (err) {
         console.error('Error checking connection:', err);
@@ -234,6 +219,41 @@ export const Web3Provider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
+  // Listen for page visibility (mobile fix: detect when user returns from MetaMask app)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      // Check if we're waiting for a connection and page just became visible
+      const pendingConnection = sessionStorage.getItem('pendingConnection');
+      
+      if (document.visibilityState === 'visible' && pendingConnection === 'true' && !account) {
+        // Clear the pending flag
+        sessionStorage.removeItem('pendingConnection');
+        
+        // Wait a bit for provider to be injected
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check if provider is now available
+        if (isMetaMaskInstalled()) {
+          // Provider is available, complete connection
+          await connectWallet(true); // Skip mobile check since we're returning from MetaMask
+        } else {
+          // Provider still not available, clear loading state
+          setLoading(false);
+          setError('Connection cancelled or MetaMask not available');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
+
   // Listen for account changes
   useEffect(() => {
     if (!isMetaMaskInstalled()) return;
@@ -245,7 +265,7 @@ export const Web3Provider = ({ children }) => {
       if (accounts.length === 0) {
         disconnectWallet();
       } else if (accounts[0] !== account) {
-        await connectWallet();
+        await connectWallet(true);
       }
     };
 
