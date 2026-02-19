@@ -23,15 +23,47 @@ export const Web3Provider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Check if MetaMask is installed
+  // Check if MetaMask is installed (with mobile support)
   const isMetaMaskInstalled = () => {
-    return typeof window.ethereum !== 'undefined';
+    const { ethereum } = window;
+    return Boolean(ethereum && (ethereum.isMetaMask || ethereum.providers?.some((p) => p.isMetaMask)));
+  };
+
+  // Get the correct ethereum provider (mobile fix)
+  const getProvider = () => {
+    const { ethereum } = window;
+    
+    // If ethereum exists
+    if (ethereum) {
+      // Check if it's directly MetaMask
+      if (ethereum.isMetaMask) {
+        return ethereum;
+      }
+      
+      // Check if it's in providers array (multiple wallets)
+      if (ethereum.providers) {
+        const metamaskProvider = ethereum.providers.find((p) => p.isMetaMask);
+        if (metamaskProvider) {
+          return metamaskProvider;
+        }
+      }
+      
+      // Return ethereum anyway (might be MetaMask mobile)
+      return ethereum;
+    }
+    
+    return null;
   };
 
   // Connect wallet
   const connectWallet = useCallback(async () => {
     if (!isMetaMaskInstalled()) {
-      setError('Please install MetaMask to use this application');
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        setError('Please open this site in MetaMask app browser. Tap menu (☰) → Browser → Enter URL');
+      } else {
+        setError('Please install MetaMask browser extension to use this application');
+      }
       return;
     }
 
@@ -39,13 +71,22 @@ export const Web3Provider = ({ children }) => {
       setLoading(true);
       setError(null);
 
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('MetaMask provider not found');
+      }
+
       // Request account access
-      const accounts = await window.ethereum.request({
+      const accounts = await provider.request({
         method: 'eth_requestAccounts',
       });
 
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts found. Please unlock MetaMask.');
+      }
+
       // Get provider and signer
-      const web3Provider = new ethers.BrowserProvider(window.ethereum);
+      const web3Provider = new ethers.BrowserProvider(provider);
       const web3Signer = await web3Provider.getSigner();
       const network = await web3Provider.getNetwork();
 
@@ -101,8 +142,11 @@ export const Web3Provider = ({ children }) => {
       if (!isMetaMaskInstalled()) return;
 
       try {
+        const provider = getProvider();
+        if (!provider) return;
+
         // Check if already connected
-        const accounts = await window.ethereum.request({
+        const accounts = await provider.request({
           method: 'eth_accounts',
         });
 
@@ -115,13 +159,18 @@ export const Web3Provider = ({ children }) => {
       }
     };
 
-    checkConnection();
+    // Wait a bit for mobile MetaMask to inject provider
+    const timer = setTimeout(checkConnection, 300);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
   // Listen for account changes
   useEffect(() => {
     if (!isMetaMaskInstalled()) return;
+
+    const provider = getProvider();
+    if (!provider) return;
 
     const handleAccountsChanged = async (accounts) => {
       if (accounts.length === 0) {
@@ -135,12 +184,14 @@ export const Web3Provider = ({ children }) => {
       window.location.reload();
     };
 
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
+    provider.on('accountsChanged', handleAccountsChanged);
+    provider.on('chainChanged', handleChainChanged);
 
     return () => {
-      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
+      if (provider.removeListener) {
+        provider.removeListener('accountsChanged', handleAccountsChanged);
+        provider.removeListener('chainChanged', handleChainChanged);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account]); // Only re-run when account changes
