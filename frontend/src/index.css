@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+  
   body {
     @apply bg-gray-50 text-gray-900;
     -webkit-font-smoothing: antialiased;
@@ -40,6 +50,8 @@
   .input-field {
     @apply w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none;
     min-height: 44px; /* Better mobile touch target */
+    max-width: 100%;
+    word-wrap: break-word;
   }
 
   .badge {

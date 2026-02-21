@@ -4,10 +4,10 @@ const Home = () => {
   const { account, connectWallet, isMetaMaskInstalled } = useWeb3();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-10 sm:py-16 md:py-20">
-        <div className="container mx-auto px-4 sm:px-6">
+      <div className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-10 sm:py-16 md:py-20 w-full">
+        <div className="container mx-auto px-4 sm:px-6 max-w-full">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               Tokenized Academic Credentials
@@ -35,8 +35,8 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <div className="py-8 sm:py-12 md:py-16 bg-white">
-        <div className="container mx-auto px-4 sm:px-6">
+      <div className="py-8 sm:py-12 md:py-16 bg-white w-full">
+        <div className="container mx-auto px-4 sm:px-6 max-w-full">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">How It Works</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -80,8 +80,8 @@ const Home = () => {
       </div>
 
       {/* Benefits Section */}
-      <div className="py-8 sm:py-12 md:py-16 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6">
+      <div className="py-8 sm:py-12 md:py-16 bg-gray-50 w-full">
+        <div className="container mx-auto px-4 sm:px-6 max-w-full">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Blockchain?</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
@@ -133,8 +133,8 @@ const Home = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="py-8 sm:py-12 md:py-16 bg-primary-600 text-white">
-        <div className="container mx-auto px-4 sm:px-6 text-center">
+      <div className="py-8 sm:py-12 md:py-16 bg-primary-600 text-white w-full">
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-full">
           <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Ready to Get Started?</h2>
           <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-primary-100 px-2">
             Connect your wallet and explore the future of academic credentials

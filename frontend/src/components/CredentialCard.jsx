@@ -2,8 +2,8 @@ import { formatDate, ipfsToHttp } from '../utils/helpers';
 
 const CredentialCard = ({ credential, metadata, onRevoke, showActions = false }) => {
   return (
-    <div className="card hover:shadow-xl transition-shadow duration-300">
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+    <div className="card hover:shadow-xl transition-shadow duration-300 w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full">
         {/* Credential Badge */}
         <div className="flex-shrink-0 mx-auto sm:mx-0">
           <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
@@ -20,13 +20,13 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
         </div>
 
         {/* Credential Details */}
-        <div className="flex-grow">
+        <div className="flex-grow min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+            <div className="min-w-0 overflow-hidden">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 break-words">
                 {metadata?.degree || metadata?.name || 'Academic Credential'}
               </h3>
-              <p className="text-sm sm:text-base text-gray-600">{metadata?.institution || 'Institution Not Specified'}</p>
+              <p className="text-sm sm:text-base text-gray-600 break-words">{metadata?.institution || 'Institution Not Specified'}</p>
             </div>
             {credential.revoked ? (
               <span className="badge badge-danger text-xs sm:text-sm">Revoked</span>
