@@ -9,7 +9,8 @@
   }
   
   html {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
     width: 100%;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
@@ -17,7 +18,8 @@
   }
   
   body {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
     width: 100%;
     position: relative;
     @apply bg-gray-50 text-gray-900;
@@ -26,9 +28,17 @@
   }
   
   #root {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
     width: 100%;
     min-height: 100vh;
+  }
+  
+  /* Prevent all divs from overflowing */
+  div {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
   
   /* Better touch targets for mobile */
@@ -49,10 +59,11 @@
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-lg p-4 sm:p-6;
-    overflow-x: hidden;
-    max-width: 100%;
+    @apply bg-white rounded-xl shadow-lg p-3 sm:p-4;
+    overflow-x: hidden !important;
+    max-width: 100% !important;
     word-wrap: break-word;
+    min-width: 0;
   }
 
   .input-field {

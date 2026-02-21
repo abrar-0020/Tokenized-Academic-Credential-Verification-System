@@ -120,10 +120,10 @@ const VerifyCredential = () => {
   };
 
   return (
-    <div className="w-screen max-w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+    <div className="w-full max-w-[100vw] overflow-x-hidden px-3 sm:px-4 py-6 sm:py-8">
       <div className="max-w-3xl mx-auto overflow-x-hidden w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Verify Credential</h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">Verify Credential</h1>
+        <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8 break-words">
           Enter a token ID to verify the authenticity of an academic credential
         </p>
 
