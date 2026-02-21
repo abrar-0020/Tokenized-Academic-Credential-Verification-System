@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 
 const ConnectionDebug = () => {
+  // Disabled - not showing connection errors popup
+  return null;
+  
+  /* Original code commented out
   const { error } = useWeb3();
   const [showDebug, setShowDebug] = useState(false);
 
