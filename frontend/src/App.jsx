@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Web3Provider } from './context/Web3Context';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import InstallPWA from './components/InstallPWA';
 import ConnectionDebug from './components/ConnectionDebug';
 import Home from './pages/Home';
 import IssueCredential from './pages/IssueCredential';
@@ -24,7 +23,6 @@ function App() {
             </Routes>
           </main>
           <Footer />
-          <InstallPWA />
           <ConnectionDebug />
         </div>
       </Router>
