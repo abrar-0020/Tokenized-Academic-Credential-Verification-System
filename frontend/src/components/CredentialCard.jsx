@@ -1,6 +1,162 @@
+﻿import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import jsPDF from 'jspdf';
 import { formatDate, ipfsToHttp } from '../utils/helpers';
 
+// Module-level ENS cache + mainnet provider
+const ensCache = new Map();
+let mainnetProvider = null;
+const getMainnetProvider = () => {
+  if (!mainnetProvider) {
+    try {
+      mainnetProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
+    } catch {}
+  }
+  return mainnetProvider;
+};
+
+const resolveENS = async (address) => {
+  if (!address) return null;
+  if (ensCache.has(address)) return ensCache.get(address);
+  try {
+    const provider = getMainnetProvider();
+    if (!provider) return null;
+    const name = await Promise.race([
+      provider.lookupAddress(address),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
+    ]);
+    ensCache.set(address, name || null);
+    return name || null;
+  } catch {
+    ensCache.set(address, null);
+    return null;
+  }
+};
+
 const CredentialCard = ({ credential, metadata, onRevoke, showActions = false }) => {
+  const [ensName, setEnsName] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  useEffect(() => {
+    if (credential?.student) {
+      resolveENS(credential.student).then(setEnsName);
+    }
+  }, [credential?.student]);
+
+  const studentDisplay = ensName
+    ? ensName
+    : credential?.student
+      ? `${credential.student.substring(0, 8)}...${credential.student.substring(credential.student.length - 6)}`
+      : 'Not Specified';
+
+  const downloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+
+      // Header bar
+      doc.setFillColor(2, 132, 199); // sky-600
+      doc.rect(0, 0, pageW, 28, 'F');
+
+      // Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('TokCred â€” Academic Credential', pageW / 2, 12, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Blockchain-Verified Certificate', pageW / 2, 20, { align: 'center' });
+
+      // Status badge
+      const isRevoked = credential?.revoked;
+      doc.setFillColor(isRevoked ? 239 : 16, isRevoked ? 68 : 185, isRevoked ? 68 : 129);
+      doc.roundedRect(14, 34, 40, 8, 2, 2, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(isRevoked ? 'REVOKED' : 'VALID', 34, 39.5, { align: 'center' });
+
+      // Token ID
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Token ID: #${credential?.tokenId?.toString() || 'N/A'}`, pageW - 14, 39, { align: 'right' });
+
+      // Divider
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 46, pageW - 14, 46);
+
+      // Credential name
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      const credName = metadata?.degree || metadata?.name || 'Academic Credential';
+      doc.text(credName, pageW / 2, 58, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105);
+      doc.text(metadata?.institution || 'Institution Not Specified', pageW / 2, 67, { align: 'center' });
+
+      // Details grid
+      const fields = [
+        ['Student Name', metadata?.studentName || 'Not Specified'],
+        ['Student Wallet', ensName || (credential?.student ? `${credential.student.substring(0, 16)}...` : 'N/A')],
+        ['Grade / GPA', metadata?.grade || 'Not Specified'],
+        ['Issue Date', metadata?.issueDate || formatDate(credential?.issueTimestamp)],
+        ['Description', metadata?.description || 'â€”'],
+      ];
+
+      let y = 82;
+      fields.forEach(([label, value]) => {
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(14, y, pageW - 28, 12, 1.5, 1.5, 'F');
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(100, 116, 139);
+        doc.text(label.toUpperCase(), 19, y + 5);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        const val = doc.splitTextToSize(String(value), pageW - 60);
+        doc.text(val[0] || '', 19, y + 9.5);
+        y += 16;
+      });
+
+      // Verification URL
+      y += 4;
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, y, pageW - 14, y);
+      y += 8;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Verify online (no wallet needed):', 14, y);
+      doc.setTextColor(2, 132, 199);
+      const verifyUrl = `${window.location.origin}/public-verify?tokenId=${credential?.tokenId?.toString()}`;
+      doc.text(verifyUrl, 14, y + 5);
+
+      // Footer
+      const footerY = doc.internal.pageSize.getHeight() - 12;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(0, footerY - 4, pageW, 16, 'F');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        `Generated by TokCred on ${new Date().toLocaleDateString()}  |  Blockchain-verified credential`,
+        pageW / 2,
+        footerY + 2,
+        { align: 'center' }
+      );
+
+      doc.save(`tokcred-credential-${credential?.tokenId?.toString() || 'export'}.pdf`);
+    } catch (err) {
+      console.error('PDF generation failed', err);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 w-full overflow-hidden transition-shadow" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full">
@@ -14,7 +170,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
                 className="w-full h-full object-cover rounded-2xl"
               />
             ) : (
-              <span className="text-white text-4xl">🎓</span>
+              <span className="text-white text-4xl">ðŸŽ“</span>
             )}
           </div>
         </div>
@@ -29,13 +185,13 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
               <p className="text-sm text-slate-500 break-words">{metadata?.institution || 'Institution Not Specified'}</p>
             </div>
             {credential.revoked ? (
-              <span className="badge badge-danger text-xs sm:text-sm">Revoked</span>
+              <span className="badge badge-danger">Revoked</span>
             ) : (
-              <span className="badge badge-success text-xs sm:text-sm">Valid</span>
+              <span className="badge badge-success">Valid</span>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3">
+          <div className="grid grid-cols-2 gap-2.5 mt-3">
             <div className="bg-slate-50 rounded-xl p-2.5">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Student</p>
               <p className="text-sm font-semibold text-slate-800 break-words mt-0.5">{metadata?.studentName || 'Not Specified'}</p>
@@ -56,33 +212,67 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
             </div>
           </div>
 
+          {/* ENS Address row */}
+          <div className="mt-2.5 bg-slate-50 rounded-xl p-2.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Wallet Address</p>
+            <p className="text-xs font-mono text-slate-700 mt-0.5 break-all">
+              {ensName ? (
+                <span>
+                  <span className="text-primary-600 font-semibold">{ensName}</span>
+                  <span className="text-slate-400 ml-1">({`${credential.student.substring(0, 8)}...${credential.student.substring(credential.student.length - 6)}`})</span>
+                </span>
+              ) : (
+                studentDisplay
+              )}
+            </p>
+          </div>
+
           {metadata?.description && (
-            <div className="mt-3">
+            <div className="mt-2.5">
               <p className="text-xs text-slate-500 leading-relaxed">{metadata.description}</p>
             </div>
           )}
 
-          {/* Actions */}
-          {showActions && !credential.revoked && (
-            <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 border-t border-slate-100">
-              <a
-                href={ipfsToHttp(credential.metadataURI)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-primary-600 hover:text-primary-700"
-              >
-                View Metadata ↗
-              </a>
-              {onRevoke && (
-                <button
-                  onClick={() => onRevoke(credential.tokenId)}
-                  className="text-xs font-semibold text-red-500 hover:text-red-700"
+          {/* Action bar */}
+          <div className="mt-3 flex flex-wrap gap-2 sm:gap-3 pt-3 border-t border-slate-100 items-center">
+            {/* PDF Download â€” always shown */}
+            <button
+              onClick={downloadPDF}
+              disabled={pdfLoading}
+              className="text-xs font-semibold text-slate-600 hover:text-primary-600 border border-slate-200 hover:border-primary-300 px-2.5 py-1 rounded-lg transition-all bg-white"
+            >
+              {pdfLoading ? 'Generating...' : 'â¬‡ Download PDF'}
+            </button>
+
+            {/* Public verify link */}
+            <a
+              href={`/public-verify?tokenId=${credential.tokenId.toString()}`}
+              className="text-xs font-semibold text-slate-600 hover:text-primary-600 border border-slate-200 hover:border-primary-300 px-2.5 py-1 rounded-lg transition-all bg-white"
+            >
+              ðŸ”— Public Link
+            </a>
+
+            {showActions && !credential.revoked && (
+              <>
+                <a
+                  href={ipfsToHttp(credential.metadataURI)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700"
                 >
-                  Revoke Credential
-                </button>
-              )}
-            </div>
-          )}
+                  View Metadata â†—
+                </a>
+                {onRevoke && (
+                  <button
+                    onClick={() => onRevoke(credential.tokenId)}
+                    className="text-xs font-semibold text-red-500 hover:text-red-700"
+                  >
+                    Revoke
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

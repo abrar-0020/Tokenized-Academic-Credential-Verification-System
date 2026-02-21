@@ -1,7 +1,9 @@
 ﻿import { useWeb3 } from '../context/Web3Context';
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   const { account, isIssuer, isAdmin, connectWallet, disconnectWallet, loading } = useWeb3();
+  const { isDark, toggleTheme } = useTheme();
 
   const formatAddress = (address) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
@@ -40,10 +42,21 @@ const Navbar = () => {
             <a href="/verify" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
               Verify
             </a>
+            <a href="/public-verify" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+              Public Verify
+            </a>
           </div>
 
           {/* Wallet Section */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggleTheme}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-300 transition-all bg-white text-base"
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
             {account ? (
               <div className="flex items-center gap-2">
                 {/* Role Badges - Desktop only */}
@@ -89,6 +102,8 @@ const Navbar = () => {
               <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
             )}
             <a href="/verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Verify</a>
+            <a href="/public-verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Public</a>
+            <button onClick={toggleTheme} className="text-base leading-none" title="Toggle theme">{isDark ? '☀️' : '🌙'}</button>
           </div>
 
           {/* Wallet row */}
