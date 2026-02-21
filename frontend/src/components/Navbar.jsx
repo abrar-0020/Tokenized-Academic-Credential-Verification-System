@@ -78,18 +78,22 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Navigation Row */}
-        <div className="md:hidden pb-2.5 flex flex-wrap gap-x-3 gap-y-1 items-center" style={{ overflowX: 'hidden', width: '100%' }}>
-          <a href="/" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Home</a>
-          {account && (
-            <a href="/dashboard" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Dashboard</a>
-          )}
-          {isIssuer && (
-            <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
-          )}
-          <a href="/verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Verify</a>
+        <div className="md:hidden pb-2.5 flex flex-col gap-1.5" style={{ overflowX: 'hidden', width: '100%' }}>
+          {/* Nav links */}
+          <div className="flex items-center gap-4">
+            <a href="/" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Home</a>
+            {account && (
+              <a href="/dashboard" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Dashboard</a>
+            )}
+            {isIssuer && (
+              <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
+            )}
+            <a href="/verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Verify</a>
+          </div>
 
+          {/* Wallet row */}
           {account && (
-            <>
+            <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0"></div>
                 <span className="text-xs font-mono text-slate-600">{formatAddress(account)}</span>
@@ -102,7 +106,7 @@ const Navbar = () => {
               >
                 Disconnect
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
