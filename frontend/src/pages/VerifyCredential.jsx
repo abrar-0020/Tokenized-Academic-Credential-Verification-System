@@ -121,7 +121,7 @@ const VerifyCredential = () => {
 
   return (
     <div className="w-screen max-w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto overflow-x-hidden w-full">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Verify Credential</h1>
         <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
           Enter a token ID to verify the authenticity of an academic credential
@@ -145,7 +145,7 @@ const VerifyCredential = () => {
             <button
               type="submit"
               disabled={loading || !contract}
-              className="btn-primary px-6 sm:px-8 text-sm sm:text-base whitespace-nowrap"
+              className="btn-primary px-4 sm:px-6 md:px-8 text-sm sm:text-base whitespace-nowrap max-w-full"
             >
               {loading ? 'Verifying...' : 'Verify'}
             </button>
@@ -181,7 +181,7 @@ const VerifyCredential = () => {
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="btn-secondary text-xs sm:text-sm whitespace-nowrap"
+                  className="btn-secondary text-xs sm:text-sm whitespace-nowrap max-w-full"
                   title="Copy verification link"
                 >
                   {copied ? '✓ Copied' : '📋 Share'}
