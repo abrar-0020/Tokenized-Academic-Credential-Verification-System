@@ -15,7 +15,7 @@ const Navbar = () => {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0 no-underline">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-base sm:text-lg"></span>
+              <span className="text-white text-base sm:text-lg">🎓</span>
             </div>
             <div className="hidden sm:block">
               <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">AcadChain</span>

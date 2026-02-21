@@ -7,7 +7,7 @@
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm"></span>
+                <span className="text-white text-sm">🎓</span>
               </div>
               <span className="font-bold text-white">AcadChain</span>
             </div>
@@ -31,10 +31,10 @@
           <div>
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Technology</h3>
             <ul className="space-y-2 text-xs sm:text-sm text-slate-400">
-              <li className="flex items-center gap-2"><span className="text-emerald-500"></span> Ethereum Blockchain</li>
-              <li className="flex items-center gap-2"><span className="text-emerald-500"></span> ERC-721 Standard</li>
-              <li className="flex items-center gap-2"><span className="text-emerald-500"></span> IPFS Storage</li>
-              <li className="flex items-center gap-2"><span className="text-emerald-500"></span> Smart Contracts</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-500">&#10003;</span> Ethereum Blockchain</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-500">&#10003;</span> ERC-721 Standard</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-500">&#10003;</span> IPFS Storage</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-500">&#10003;</span> Smart Contracts</li>
             </ul>
           </div>
         </div>
