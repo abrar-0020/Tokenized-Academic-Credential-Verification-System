@@ -91,7 +91,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden pb-3 flex flex-wrap gap-2 overflow-x-hidden w-full">
+        <div className="md:hidden pb-3 flex flex-wrap gap-2 overflow-x-hidden w-full items-center">
           <a href="/" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
             Home
           </a>
@@ -108,9 +108,10 @@ const Navbar = () => {
           <a href="/verify" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
             Verify
           </a>
-          {/* Mobile Role Badges */}
+          
+          {/* Mobile Role Badges & Disconnect */}
           {account && (
-            <div className="flex gap-2">
+            <>
               {isAdmin && (
                 <span className="badge badge-danger text-xs whitespace-nowrap">
                   Admin
@@ -121,7 +122,14 @@ const Navbar = () => {
                   Issuer
                 </span>
               )}
-            </div>
+              {/* Disconnect Button - Mobile only */}
+              <button
+                onClick={disconnectWallet}
+                className="text-xs text-white bg-red-600 hover:bg-red-700 font-medium px-3 py-1 rounded whitespace-nowrap"
+              >
+                Disconnect
+              </button>
+            </>
           )}
         </div>
       </div>
