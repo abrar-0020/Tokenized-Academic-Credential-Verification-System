@@ -68,6 +68,14 @@ const Navbar = () => {
                     {formatAddress(account)}
                   </span>
                 </div>
+
+                {/* Disconnect Button - Desktop/Tablet only */}
+                <button
+                  onClick={disconnectWallet}
+                  className="hidden md:block text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 whitespace-nowrap flex-shrink-0"
+                >
+                  Disconnect
+                </button>
               </div>
             ) : (
               <button
