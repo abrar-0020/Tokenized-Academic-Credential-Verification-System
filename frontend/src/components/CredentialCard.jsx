@@ -1,53 +1,13 @@
-﻿import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+﻿import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate, ipfsToHttp } from '../utils/helpers';
 
-// Module-level ENS cache + mainnet provider
-const ensCache = new Map();
-let mainnetProvider = null;
-const getMainnetProvider = () => {
-  if (!mainnetProvider) {
-    try {
-      mainnetProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
-    } catch {}
-  }
-  return mainnetProvider;
-};
-
-const resolveENS = async (address) => {
-  if (!address) return null;
-  if (ensCache.has(address)) return ensCache.get(address);
-  try {
-    const provider = getMainnetProvider();
-    if (!provider) return null;
-    const name = await Promise.race([
-      provider.lookupAddress(address),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
-    ]);
-    ensCache.set(address, name || null);
-    return name || null;
-  } catch {
-    ensCache.set(address, null);
-    return null;
-  }
-};
-
 const CredentialCard = ({ credential, metadata, onRevoke, showActions = false }) => {
-  const [ensName, setEnsName] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  useEffect(() => {
-    if (credential?.student) {
-      resolveENS(credential.student).then(setEnsName);
-    }
-  }, [credential?.student]);
-
-  const studentDisplay = ensName
-    ? ensName
-    : credential?.student
-      ? `${credential.student.substring(0, 8)}...${credential.student.substring(credential.student.length - 6)}`
-      : 'Not Specified';
+  const studentDisplay = credential?.student
+    ? `${credential.student.substring(0, 8)}...${credential.student.substring(credential.student.length - 6)}`
+    : 'Not Specified';
 
   const downloadPDF = async () => {
     setPdfLoading(true);
@@ -102,7 +62,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
       // Details grid
       const fields = [
         ['Student Name', metadata?.studentName || 'Not Specified'],
-        ['Student Wallet', ensName || (credential?.student ? `${credential.student.substring(0, 16)}...` : 'N/A')],
+        ['Student Wallet', credential?.student ? `${credential.student.substring(0, 20)}...` : 'N/A'],
         ['Grade / GPA', metadata?.grade || 'Not Specified'],
         ['Issue Date', metadata?.issueDate || formatDate(credential?.issueTimestamp)],
         ['Description', metadata?.description || '-'],
@@ -212,19 +172,10 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
             </div>
           </div>
 
-          {/* ENS Address row */}
+          {/* Address row */}
           <div className="mt-2.5 bg-slate-50 rounded-xl p-2.5">
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Wallet Address</p>
-            <p className="text-xs font-mono text-slate-700 mt-0.5 break-all">
-              {ensName ? (
-                <span>
-                  <span className="text-primary-600 font-semibold">{ensName}</span>
-                  <span className="text-slate-400 ml-1">({`${credential.student.substring(0, 8)}...${credential.student.substring(credential.student.length - 6)}`})</span>
-                </span>
-              ) : (
-                studentDisplay
-              )}
-            </p>
+            <p className="text-xs font-mono text-slate-700 mt-0.5 break-all">{studentDisplay}</p>
           </div>
 
           {metadata?.description && (
