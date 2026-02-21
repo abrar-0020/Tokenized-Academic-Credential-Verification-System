@@ -50,6 +50,9 @@
 
   .card {
     @apply bg-white rounded-xl shadow-lg p-4 sm:p-6;
+    overflow-x: hidden;
+    max-width: 100%;
+    word-wrap: break-word;
   }
 
   .input-field {
