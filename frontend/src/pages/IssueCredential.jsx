@@ -171,7 +171,7 @@ const IssueCredential = () => {
 
   if (!account) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
         <Alert type="warning" message="Please connect your wallet to continue" />
       </div>
     );
@@ -179,7 +179,7 @@ const IssueCredential = () => {
 
   if (!isIssuer) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
         <Alert
           type="error"
           message="Access Denied: You don't have permission to issue credentials. Only authorized issuers can access this page."
@@ -189,20 +189,20 @@ const IssueCredential = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Issue Academic Credential</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Issue Academic Credential</h1>
+        <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
           Create a new verifiable credential for a student
         </p>
 
         {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
         {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
 
-        <form onSubmit={handleSubmit} className="card space-y-6">
+        <form onSubmit={handleSubmit} className="card space-y-4 sm:space-y-6">
           {/* Student Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Student Wallet Address *
             </label>
             <input
@@ -211,17 +211,17 @@ const IssueCredential = () => {
               value={formData.studentAddress}
               onChange={handleChange}
               placeholder="0x..."
-              className="input-field font-mono"
+              className="input-field font-mono text-xs sm:text-sm"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
               The Ethereum address where the credential will be issued
             </p>
           </div>
 
           {/* Student Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Student Name *
             </label>
             <input
@@ -230,14 +230,14 @@ const IssueCredential = () => {
               value={formData.studentName}
               onChange={handleChange}
               placeholder="John Doe"
-              className="input-field"
+              className="input-field text-sm sm:text-base"
               required
             />
           </div>
 
           {/* Institution */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Institution *
             </label>
             <input
@@ -246,14 +246,14 @@ const IssueCredential = () => {
               value={formData.institution}
               onChange={handleChange}
               placeholder="Massachusetts Institute of Technology"
-              className="input-field"
+              className="input-field text-sm sm:text-base"
               required
             />
           </div>
 
           {/* Degree */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Degree / Certificate *
             </label>
             <input
@@ -262,14 +262,14 @@ const IssueCredential = () => {
               value={formData.degree}
               onChange={handleChange}
               placeholder="Bachelor of Science in Computer Science"
-              className="input-field"
+              className="input-field text-sm sm:text-base"
               required
             />
           </div>
 
           {/* Grade */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Grade / GPA
             </label>
             <input
@@ -278,13 +278,13 @@ const IssueCredential = () => {
               value={formData.grade}
               onChange={handleChange}
               placeholder="A (3.9/4.0 GPA)"
-              className="input-field"
+              className="input-field text-sm sm:text-base"
             />
           </div>
 
           {/* Issue Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Issue Date *
             </label>
             <input
@@ -292,14 +292,14 @@ const IssueCredential = () => {
               name="issueDate"
               value={formData.issueDate}
               onChange={handleChange}
-              className="input-field"
+              className="input-field text-sm sm:text-base"
               required
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
             <textarea
@@ -308,16 +308,16 @@ const IssueCredential = () => {
               onChange={handleChange}
               placeholder="Additional details about the credential..."
               rows="3"
-              className="input-field"
+              className="input-field text-sm sm:text-base"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1"
+              className="btn-primary flex-1 text-sm sm:text-base"
             >
               {loading ? 'Issuing Credential...' : 'Issue Credential'}
             </button>
@@ -332,7 +332,7 @@ const IssueCredential = () => {
                 issueDate: new Date().toISOString().split('T')[0],
                 description: '',
               })}
-              className="btn-secondary"
+              className="btn-secondary text-sm sm:text-base"
             >
               Clear
             </button>
@@ -340,7 +340,7 @@ const IssueCredential = () => {
         </form>
 
         {loading && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <Loading message="Processing transaction... Please wait and do not close this page." />
           </div>
         )}
