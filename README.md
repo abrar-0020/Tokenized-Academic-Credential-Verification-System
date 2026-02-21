@@ -1,4 +1,4 @@
-# 🎓 Tokenized Academic Credential Verification System
+﻿# 🎓 Tokenized Academic Credential Verification System
 
 A production-ready, secure, and decentralized blockchain-based system for issuing, managing, and verifying academic credentials using Soulbound NFTs (non-transferable tokens).
 
@@ -9,13 +9,13 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ## 🌐 Live Deployment
 
-**🔗 Production Site:** [https://theabrar.in](https://theabrar.in)  
+**🔗 Production Site:** [https://tokcred.vercel.app](https://tokcred.vercel.app)  
 **📜 Smart Contract:** [0x7B5206a636d9D0819E469fA4dfABF0BE062e0297](https://sepolia.etherscan.io/address/0x7B5206a636d9D0819E469fA4dfABF0BE062e0297)  
 **🌍 Network:** Sepolia Testnet (Chain ID: 11155111)  
 **⚡ Status:** ✅ Live and Production-Ready
 
 ### Access the Live Application:
-1. Visit [https://theabrar.in](https://theabrar.in)
+1. Visit [https://tokcred.vercel.app](https://tokcred.vercel.app)
 2. Install MetaMask browser extension
 3. Switch to Sepolia test network
 4. Connect your wallet and start using the platform!
@@ -649,20 +649,6 @@ If you encounter issues:
 2. Review transaction on block explorer
 3. Verify contract deployment
 4. Check environment variables
-
-## 📸 Screenshots
-
-### Home Page
-[Placeholder - Add screenshot of home page]
-
-### Issue Credential
-[Placeholder - Add screenshot of issue page]
-
-### Student Dashboard
-[Placeholder - Add screenshot of dashboard]
-
-### Verify Credential
-[Placeholder - Add screenshot of verification]
 
 ## 🤝 Contributing
 
