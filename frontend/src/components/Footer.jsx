@@ -9,7 +9,7 @@
               <div className="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm">🎓</span>
               </div>
-              <span className="font-bold text-white">AcadChain</span>
+              <span className="font-bold text-white">TokCred</span>
             </div>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
               Secure blockchain-based academic credential verification system using
@@ -40,7 +40,7 @@
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} AcadChain. Built with Solidity & React.</p>
+          <p>&copy; {new Date().getFullYear()} TokCred. Built with Solidity & React.</p>
         </div>
       </div>
     </footer>

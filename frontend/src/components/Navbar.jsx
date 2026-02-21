@@ -18,7 +18,7 @@ const Navbar = () => {
               <span className="text-white text-base sm:text-lg">🎓</span>
             </div>
             <div className="hidden sm:block">
-              <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">AcadChain</span>
+              <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">TokCred</span>
             </div>
           </a>
 

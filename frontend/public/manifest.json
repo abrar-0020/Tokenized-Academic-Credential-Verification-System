@@ -1,7 +1,7 @@
 {
-  "name": "Academic Credentials Verification",
-  "short_name": "AcademicCreds",
-  "description": "Secure blockchain-based academic credential verification system",
+  "name": "TokCred",
+  "short_name": "TokCred",
+  "description": "TokCred - Secure blockchain-based academic credential verification system",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
