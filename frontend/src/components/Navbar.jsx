@@ -91,33 +91,33 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden pb-3 flex flex-wrap gap-3 sm:gap-4">
-          <a href="/" className="text-gray-700 hover:text-primary-600 text-xs sm:text-sm font-medium">
+        <div className="md:hidden pb-3 flex flex-wrap gap-2 overflow-x-hidden w-full">
+          <a href="/" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
             Home
           </a>
           {isIssuer && (
-            <a href="/issue" className="text-gray-700 hover:text-primary-600 text-xs sm:text-sm font-medium">
+            <a href="/issue" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
               Issue
             </a>
           )}
           {account && (
-            <a href="/dashboard" className="text-gray-700 hover:text-primary-600 text-xs sm:text-sm font-medium">
+            <a href="/dashboard" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
               Dashboard
             </a>
           )}
-          <a href="/verify" className="text-gray-700 hover:text-primary-600 text-xs sm:text-sm font-medium">
+          <a href="/verify" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap">
             Verify
           </a>
           {/* Mobile Role Badges */}
           {account && (
             <div className="flex gap-2">
               {isAdmin && (
-                <span className="badge badge-danger text-xs">
+                <span className="badge badge-danger text-xs whitespace-nowrap">
                   Admin
                 </span>
               )}
               {isIssuer && (
-                <span className="badge badge-info text-xs">
+                <span className="badge badge-info text-xs whitespace-nowrap">
                   Issuer
                 </span>
               )}

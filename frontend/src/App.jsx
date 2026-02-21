@@ -12,9 +12,9 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="flex flex-col min-h-screen overflow-x-hidden w-full">
+        <div className="flex flex-col min-h-screen overflow-x-hidden w-screen max-w-full">
           <Navbar />
-          <main className="flex-grow w-full overflow-x-hidden">
+          <main className="flex-grow w-full overflow-x-hidden max-w-full">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/issue" element={<IssueCredential />} />
