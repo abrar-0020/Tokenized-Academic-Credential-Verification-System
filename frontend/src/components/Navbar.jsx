@@ -8,7 +8,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-lg w-full overflow-x-hidden">
+    <nav className="bg-white shadow-lg w-full" style={{ overflowX: 'hidden', position: 'relative' }}>
       <div className="w-full px-3 sm:px-4 overflow-x-hidden">
         <div className="flex justify-between items-center py-3 sm:py-4 gap-1 sm:gap-2 overflow-x-hidden">
           {/* Logo */}
