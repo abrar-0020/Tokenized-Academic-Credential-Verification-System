@@ -17,7 +17,11 @@ const Navbar = () => {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0 no-underline">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-base sm:text-lg">🎓</span>
+              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3L2 8l10 5 10-5-10-5z" fill="white"/>
+                <path d="M2 8v6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M6 10.5v4c0 1.657 2.686 3 6 3s6-1.343 6-3v-4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </div>
             <div className="hidden sm:block">
               <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">TokCred</span>
