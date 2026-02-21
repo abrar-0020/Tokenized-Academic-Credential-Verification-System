@@ -120,16 +120,16 @@ const VerifyCredential = () => {
   };
 
   return (
-    <div className="w-full overflow-x-hidden px-3 sm:px-4 py-6 sm:py-8">
+    <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Verify Credential</h1>
-        <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">Verify Credential</h1>
+        <p className="text-sm text-slate-500 mb-7">
           Enter a token ID to verify the authenticity of an academic credential
         </p>
 
         {/* Verification Form */}
-        <form onSubmit={handleVerify} className="card mb-6 sm:mb-8">
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleVerify} className="card mb-7">
+          <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
             Token ID
           </label>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -151,7 +151,7 @@ const VerifyCredential = () => {
             </button>
           </div>
           {!contract && (
-            <p className="text-xs sm:text-sm text-orange-600 mt-2">
+            <p className="text-xs text-amber-600 font-medium mt-2">
               Connect your wallet to verify credentials
             </p>
           )}
@@ -167,13 +167,13 @@ const VerifyCredential = () => {
         {credential && (
           <div>
             {/* Verification Status */}
-            <div className={`card mb-4 sm:mb-6 ${credential.revoked ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}`}>
+            <div className={`card mb-5 ${credential.revoked ? 'border-l-4 border-red-400' : 'border-l-4 border-emerald-400'}`}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold mb-2">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
                     {credential.revoked ? '⚠️ Credential Revoked' : '✓ Credential Valid'}
                   </h3>
-                  <p className="text-sm sm:text-base text-gray-600">
+                  <p className="text-sm text-slate-500">
                     {credential.revoked
                       ? 'This credential has been revoked and is no longer valid.'
                       : 'This credential is authentic and has been verified on the blockchain.'}
@@ -193,21 +193,21 @@ const VerifyCredential = () => {
             <CredentialCard credential={credential} metadata={metadata} />
 
             {/* Blockchain Details */}
-            <div className="card mt-4 sm:mt-6">
-              <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Blockchain Details</h3>
-              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+            <div className="card mt-5">
+              <h3 className="text-base font-bold text-slate-800 mb-3">Blockchain Details</h3>
+              <div className="space-y-2.5 text-xs sm:text-sm">
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                  <span className="text-gray-600">Token ID:</span>
+                  <span className="text-slate-500 font-medium">Token ID:</span>
                   <span className="font-mono font-medium">#{credential.tokenId.toString()}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                  <span className="text-gray-600">Student Address:</span>
+                  <span className="text-slate-500 font-medium">Student Address:</span>
                   <span className="font-mono font-medium text-xs sm:text-sm break-all">
                     {credential.student.substring(0, 10)}...{credential.student.substring(credential.student.length - 8)}
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                  <span className="text-gray-600">Status:</span>
+                  <span className="text-slate-500 font-medium">Status:</span>
                   {credential.revoked ? (
                     <span className="badge badge-danger text-xs">Revoked</span>
                   ) : (
@@ -215,7 +215,7 @@ const VerifyCredential = () => {
                   )}
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-0">
-                  <span className="text-gray-600">Metadata URI:</span>
+                  <span className="text-slate-500 font-medium">Metadata URI:</span>
                   <a
                     href={ipfsToHttp(credential.metadataURI)}
                     target="_blank"
@@ -229,25 +229,25 @@ const VerifyCredential = () => {
             </div>
 
             {/* What This Means */}
-            <div className="card mt-4 sm:mt-6 bg-blue-50 border border-blue-200">
-              <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-blue-900">
+            <div className="card mt-5 bg-sky-50 border border-sky-200">
+              <h3 className="text-base font-bold mb-2 sm:mb-3 text-sky-900">
                 What does this mean?
               </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-blue-800">
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
+              <ul className="space-y-1.5 text-xs sm:text-sm text-sky-800">
+                <li className="flex items-start gap-2">
+                  <span className="text-sky-500 flex-shrink-0 mt-0.5">✓</span>
                   <span>This credential has been permanently recorded on the Ethereum blockchain</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-sky-500 flex-shrink-0 mt-0.5">✓</span>
                   <span>It cannot be altered, forged, or tampered with</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-sky-500 flex-shrink-0 mt-0.5">✓</span>
                   <span>The credential is non-transferable (Soulbound) and tied to the student's wallet</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-sky-500 flex-shrink-0 mt-0.5">✓</span>
                   <span>Anyone can verify its authenticity using this token ID</span>
                 </li>
               </ul>
@@ -257,23 +257,23 @@ const VerifyCredential = () => {
 
         {/* Help Section */}
         {!credential && !loading && (
-          <div className="card bg-gray-50">
-            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">How to Verify</h3>
-            <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
-              <li className="flex items-start">
-                <span className="font-bold mr-2 text-primary-600 flex-shrink-0">1.</span>
+          <div className="card bg-slate-50 border border-slate-200">
+            <h3 className="text-base font-bold text-slate-800 mb-3">How to Verify</h3>
+            <ol className="space-y-2 text-xs sm:text-sm text-slate-600">
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-primary-600 flex-shrink-0">1.</span>
                 <span>Obtain the token ID from the credential holder or institution</span>
               </li>
-              <li className="flex items-start">
-                <span className="font-bold mr-2 text-primary-600 flex-shrink-0">2.</span>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-primary-600 flex-shrink-0">2.</span>
                 <span>Enter the token ID in the form above</span>
               </li>
-              <li className="flex items-start">
-                <span className="font-bold mr-2 text-primary-600 flex-shrink-0">3.</span>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-primary-600 flex-shrink-0">3.</span>
                 <span>Click "Verify" to check the credential on the blockchain</span>
               </li>
-              <li className="flex items-start">
-                <span className="font-bold mr-2 text-primary-600 flex-shrink-0">4.</span>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-primary-600 flex-shrink-0">4.</span>
                 <span>Review the credential details and verification status</span>
               </li>
             </ol>

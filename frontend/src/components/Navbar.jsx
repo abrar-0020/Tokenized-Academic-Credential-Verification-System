@@ -1,4 +1,4 @@
-import { useWeb3 } from '../context/Web3Context';
+﻿import { useWeb3 } from '../context/Web3Context';
 
 const Navbar = () => {
   const { account, isIssuer, isAdmin, connectWallet, disconnectWallet, loading } = useWeb3();
@@ -8,71 +8,58 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-lg w-full" style={{ overflowX: 'hidden', position: 'relative' }}>
-      <div className="w-full px-3 sm:px-4 overflow-x-hidden">
-        <div className="flex justify-between items-center py-3 sm:py-4 gap-1 sm:gap-2 overflow-x-hidden">
+    <nav style={{ overflowX: 'hidden', position: 'relative' }} className="bg-white border-b border-slate-200 w-full sticky top-0 z-50">
+      <div className="w-full px-4 sm:px-6" style={{ overflowX: 'hidden' }}>
+        {/* Main Row */}
+        <div className="flex justify-between items-center h-14 sm:h-16 gap-2" style={{ overflowX: 'hidden' }}>
           {/* Logo */}
-          <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink overflow-hidden">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-base sm:text-xl">🎓</span>
+          <a href="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0 no-underline">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-base sm:text-lg"></span>
             </div>
-            <div className="min-w-0 flex-shrink overflow-hidden">
-              <h1 className="text-xs sm:text-base md:text-xl font-bold text-gray-800 truncate max-w-[120px] sm:max-w-none">
-                Academic Credentials
-              </h1>
-              <p className="text-[9px] sm:text-xs text-gray-500 truncate">Blockchain Verification</p>
+            <div className="hidden sm:block">
+              <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">AcadChain</span>
             </div>
-          </div>
+          </a>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <a href="/" className="text-gray-700 hover:text-primary-600 font-medium transition">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1">
+            <a href="/" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
               Home
             </a>
-            {isIssuer && (
-              <a href="/issue" className="text-gray-700 hover:text-primary-600 font-medium transition">
-                Issue Credential
-              </a>
-            )}
             {account && (
-              <a href="/dashboard" className="text-gray-700 hover:text-primary-600 font-medium transition">
+              <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
                 Dashboard
               </a>
             )}
-            <a href="/verify" className="text-gray-700 hover:text-primary-600 font-medium transition">
+            {isIssuer && (
+              <a href="/issue" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                Issue
+              </a>
+            )}
+            <a href="/verify" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
               Verify
             </a>
           </div>
 
-          {/* Wallet Connection */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 overflow-hidden">
+          {/* Wallet Section */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             {account ? (
-              <div className="flex items-center gap-1 sm:gap-2 min-w-0 overflow-hidden">
-                {/* Role Badges */}
-                <div className="hidden sm:flex space-x-2 flex-shrink-0">
-                  {isAdmin && (
-                    <span className="badge badge-danger text-xs whitespace-nowrap">
-                      Admin
-                    </span>
-                  )}
-                  {isIssuer && (
-                    <span className="badge badge-info text-xs whitespace-nowrap">
-                      Issuer
-                    </span>
-                  )}
+              <div className="flex items-center gap-2">
+                {/* Role Badges - Desktop only */}
+                <div className="hidden sm:flex items-center gap-1.5">
+                  {isAdmin && <span className="badge badge-danger">Admin</span>}
+                  {isIssuer && <span className="badge badge-info">Issuer</span>}
                 </div>
-
-                {/* Account Address - Hide on mobile when connected */}
-                <div className="hidden sm:block bg-gray-100 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg overflow-hidden">
-                  <span className="text-xs sm:text-sm font-mono text-gray-700 truncate block">
-                    {formatAddress(account)}
-                  </span>
+                {/* Address Chip */}
+                <div className="hidden sm:flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs font-mono text-slate-700 font-medium">{formatAddress(account)}</span>
                 </div>
-
-                {/* Disconnect Button - Desktop/Tablet only */}
+                {/* Disconnect - Desktop */}
                 <button
                   onClick={disconnectWallet}
-                  className="hidden md:block text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 whitespace-nowrap flex-shrink-0"
+                  className="hidden md:block text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 px-3 py-1.5 rounded-xl transition-all bg-white"
                 >
                   Disconnect
                 </button>
@@ -81,52 +68,37 @@ const Navbar = () => {
               <button
                 onClick={connectWallet}
                 disabled={loading}
-                className="btn-primary text-xs sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap"
+                className="btn-primary text-sm px-4 py-2"
+                style={{ minHeight: '36px' }}
               >
-                {loading ? 'Connecting...' : 'Connect'}
+                {loading ? 'Connecting...' : 'Connect Wallet'}
               </button>
             )}
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden pb-3 flex flex-wrap gap-2 overflow-x-hidden w-full items-center max-w-full">
-          <a href="/" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
-            Home
-          </a>
-          {isIssuer && (
-            <a href="/issue" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
-              Issue
-            </a>
-          )}
+        {/* Mobile Navigation Row */}
+        <div className="md:hidden pb-2.5 flex flex-wrap gap-x-3 gap-y-1 items-center" style={{ overflowX: 'hidden', width: '100%' }}>
+          <a href="/" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Home</a>
           {account && (
-            <a href="/dashboard" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
-              Dashboard
-            </a>
+            <a href="/dashboard" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Dashboard</a>
           )}
-          <a href="/verify" className="text-gray-700 hover:text-primary-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
-            Verify
-          </a>
-          
-          {/* Mobile - Show Address and Disconnect Side by Side */}
+          {isIssuer && (
+            <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
+          )}
+          <a href="/verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Verify</a>
+
           {account && (
             <>
-              <div className="bg-gray-100 px-2 py-1 rounded text-xs font-mono text-gray-700 whitespace-nowrap flex-shrink-0">
-                {formatAddress(account)}
+              <div className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                <span className="text-xs font-mono text-slate-600">{formatAddress(account)}</span>
               </div>
-              {isAdmin && (
-                <span className="badge badge-danger text-xs whitespace-nowrap flex-shrink-0">
-                  Admin
-                </span>
-              )}
-              {isIssuer && (
-                <span className="badge badge-info text-xs whitespace-nowrap flex-shrink-0">
-                  Issuer
-                </span>
-              )}
+              {isAdmin && <span className="badge badge-danger">Admin</span>}
+              {isIssuer && <span className="badge badge-info">Issuer</span>}
               <button
                 onClick={disconnectWallet}
-                className="text-xs text-white bg-red-600 hover:bg-red-700 font-medium px-2 py-1 rounded whitespace-nowrap flex-shrink-0"
+                className="text-xs font-semibold text-red-600 whitespace-nowrap"
               >
                 Disconnect
               </button>

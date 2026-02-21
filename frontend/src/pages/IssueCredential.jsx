@@ -171,7 +171,7 @@ const IssueCredential = () => {
 
   if (!account) {
     return (
-      <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+      <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 py-10">
         <Alert type="warning" message="Please connect your wallet to continue" />
       </div>
     );
@@ -179,7 +179,7 @@ const IssueCredential = () => {
 
   if (!isIssuer) {
     return (
-      <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+      <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 py-10">
         <Alert
           type="error"
           message="Access Denied: You don't have permission to issue credentials. Only authorized issuers can access this page."
@@ -189,20 +189,20 @@ const IssueCredential = () => {
   }
 
   return (
-    <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+    <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-14">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Issue Academic Credential</h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">Issue Academic Credential</h1>
+        <p className="text-sm text-slate-500 mb-7">
           Create a new verifiable credential for a student
         </p>
 
         {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
         {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
 
-        <form onSubmit={handleSubmit} className="card space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="card space-y-5">
           {/* Student Address */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Student Wallet Address *
             </label>
             <input
@@ -214,14 +214,14 @@ const IssueCredential = () => {
               className="input-field font-mono text-xs sm:text-sm"
               required
             />
-            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1.5">
               The Ethereum address where the credential will be issued
             </p>
           </div>
 
           {/* Student Name */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Student Name *
             </label>
             <input
@@ -237,7 +237,7 @@ const IssueCredential = () => {
 
           {/* Institution */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Institution *
             </label>
             <input
@@ -253,7 +253,7 @@ const IssueCredential = () => {
 
           {/* Degree */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Degree / Certificate *
             </label>
             <input
@@ -269,7 +269,7 @@ const IssueCredential = () => {
 
           {/* Grade */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Grade / GPA
             </label>
             <input
@@ -284,7 +284,7 @@ const IssueCredential = () => {
 
           {/* Issue Date */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Issue Date *
             </label>
             <input
@@ -299,7 +299,7 @@ const IssueCredential = () => {
 
           {/* Description */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
               Description
             </label>
             <textarea

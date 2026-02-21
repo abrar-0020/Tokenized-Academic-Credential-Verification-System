@@ -137,7 +137,7 @@ const Dashboard = () => {
 
   if (!account) {
     return (
-      <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-12">
+      <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 py-12">
         <Alert type="warning" message="Please connect your wallet to view your credentials" />
       </div>
     );
@@ -149,12 +149,12 @@ const Dashboard = () => {
     : allCredentials.length === 0;
 
   return (
-    <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+    <div style={{ position: 'relative', overflowX: 'hidden' }} className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-14">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
           {isIssuer && viewMode === 'all' ? 'All Issued Credentials' : 'My Credentials'}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-slate-500">
           {isIssuer && viewMode === 'all' 
             ? 'View and manage all credentials issued by your institution'
             : 'View and manage your academic credentials'
@@ -167,20 +167,20 @@ const Dashboard = () => {
         <div className="mb-6 flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setViewMode('owned')}
-            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base ${
+            className={`px-4 py-2 rounded-xl font-semibold transition text-sm ${
               viewMode === 'owned'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             My Credentials ({credentials.length})
           </button>
           <button
             onClick={() => setViewMode('all')}
-            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base ${
+            className={`px-4 py-2 rounded-xl font-semibold transition text-sm ${
               viewMode === 'all'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             All Issued ({allCredentials.length})
@@ -196,8 +196,8 @@ const Dashboard = () => {
       ) : showEmptyState ? (
         <div className="card text-center py-12 sm:py-16">
           <div className="text-5xl sm:text-6xl mb-4">📜</div>
-          <h3 className="text-lg sm:text-xl font-bold mb-2">No Credentials Found</h3>
-          <p className="text-sm sm:text-base text-gray-600 mb-6 px-4">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">No Credentials Found</h3>
+          <p className="text-sm sm:text-base text-slate-500 mb-6 px-4">
             {viewMode === 'all'
               ? 'No credentials have been issued yet. Go to the Issue Credential page to create one.'
               : 'You don\'t have any credentials yet. Contact your institution to get verified credentials.'
@@ -227,24 +227,24 @@ const Dashboard = () => {
       {!loading && displayCredentials.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12">
           <div className="card text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-primary-600 mb-2">
+            <div className="text-2xl sm:text-3xl font-extrabold text-primary-600 mb-1">
               {displayCredentials.length}
             </div>
-            <div className="text-sm sm:text-base text-gray-600">
+            <div className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wide">
               {viewMode === 'all' ? 'Total Issued' : 'Total Credentials'}
             </div>
           </div>
           <div className="card text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-2">
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 mb-1">
               {displayCredentials.filter((c) => !c.revoked).length}
             </div>
-            <div className="text-sm sm:text-base text-gray-600">Valid</div>
+            <div className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wide">Valid</div>
           </div>
           <div className="card text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-red-600 mb-2">
+            <div className="text-2xl sm:text-3xl font-extrabold text-red-600 mb-1">
               {displayCredentials.filter((c) => c.revoked).length}
             </div>
-            <div className="text-sm sm:text-base text-gray-600">Revoked</div>
+            <div className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wide">Revoked</div>
           </div>
         </div>
       )}

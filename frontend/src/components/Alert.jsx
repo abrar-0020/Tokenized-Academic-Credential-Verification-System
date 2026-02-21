@@ -1,9 +1,9 @@
 const Alert = ({ type = 'info', message, onClose }) => {
   const types = {
-    success: 'bg-green-50 border-green-500 text-green-800',
-    error: 'bg-red-50 border-red-500 text-red-800',
-    warning: 'bg-yellow-50 border-yellow-500 text-yellow-800',
-    info: 'bg-blue-50 border-blue-500 text-blue-800',
+    success: 'bg-emerald-50 border-emerald-400 text-emerald-800',
+    error: 'bg-red-50 border-red-400 text-red-800',
+    warning: 'bg-amber-50 border-amber-400 text-amber-800',
+    info: 'bg-sky-50 border-sky-400 text-sky-800',
   };
 
   const icons = {
@@ -14,16 +14,16 @@ const Alert = ({ type = 'info', message, onClose }) => {
   };
 
   return (
-    <div className={`border-l-4 p-4 ${types[type]} rounded-lg mb-4`}>
+    <div className={`border-l-4 p-4 ${types[type]} rounded-xl mb-4`} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
       <div className="flex items-start justify-between">
-        <div className="flex items-start">
-          <span className="text-xl mr-3">{icons[type]}</span>
-          <p className="text-sm font-medium">{message}</p>
+        <div className="flex items-start gap-2.5">
+          <span className="text-base font-bold mt-0.5">{icons[type]}</span>
+          <p className="text-sm font-medium leading-relaxed">{message}</p>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 ml-4"
+            className="text-slate-400 hover:text-slate-600 ml-4 flex-shrink-0 font-bold"
           >
             ✕
           </button>
@@ -34,3 +34,4 @@ const Alert = ({ type = 'info', message, onClose }) => {
 };
 
 export default Alert;
+

@@ -2,19 +2,19 @@ import { formatDate, ipfsToHttp } from '../utils/helpers';
 
 const CredentialCard = ({ credential, metadata, onRevoke, showActions = false }) => {
   return (
-    <div className="card hover:shadow-xl transition-shadow duration-300 w-full overflow-hidden">
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full">
+    <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 w-full overflow-hidden transition-shadow" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full">
         {/* Credential Badge */}
         <div className="flex-shrink-0 mx-auto sm:mx-0">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-sky-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-md">
             {metadata?.image ? (
               <img
                 src={ipfsToHttp(metadata.image)}
                 alt="Credential"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-2xl"
               />
             ) : (
-              <span className="text-white text-4xl sm:text-5xl">🎓</span>
+              <span className="text-white text-4xl">🎓</span>
             )}
           </div>
         </div>
@@ -23,10 +23,10 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
         <div className="flex-grow min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
             <div className="min-w-0 overflow-hidden">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 break-words">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 break-words">
                 {metadata?.degree || metadata?.name || 'Academic Credential'}
               </h3>
-              <p className="text-sm sm:text-base text-gray-600 break-words">{metadata?.institution || 'Institution Not Specified'}</p>
+              <p className="text-sm text-slate-500 break-words">{metadata?.institution || 'Institution Not Specified'}</p>
             </div>
             {credential.revoked ? (
               <span className="badge badge-danger text-xs sm:text-sm">Revoked</span>
@@ -35,50 +35,50 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
-            <div>
-              <p className="text-xs sm:text-sm text-gray-500">Student</p>
-              <p className="text-sm sm:text-base font-medium text-gray-800 break-words">{metadata?.studentName || 'Not Specified'}</p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3">
+            <div className="bg-slate-50 rounded-xl p-2.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Student</p>
+              <p className="text-sm font-semibold text-slate-800 break-words mt-0.5">{metadata?.studentName || 'Not Specified'}</p>
             </div>
-            <div>
-              <p className="text-xs sm:text-sm text-gray-500">Grade</p>
-              <p className="text-sm sm:text-base font-medium text-gray-800">{metadata?.grade || 'Not Specified'}</p>
+            <div className="bg-slate-50 rounded-xl p-2.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Grade</p>
+              <p className="text-sm font-semibold text-slate-800 mt-0.5">{metadata?.grade || 'Not Specified'}</p>
             </div>
-            <div>
-              <p className="text-xs sm:text-sm text-gray-500">Issue Date</p>
-              <p className="text-sm sm:text-base font-medium text-gray-800">
+            <div className="bg-slate-50 rounded-xl p-2.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Issue Date</p>
+              <p className="text-sm font-semibold text-slate-800 mt-0.5">
                 {metadata?.issueDate || formatDate(credential.issueTimestamp)}
               </p>
             </div>
-            <div>
-              <p className="text-xs sm:text-sm text-gray-500">Token ID</p>
-              <p className="text-sm sm:text-base font-medium text-gray-800">#{credential.tokenId.toString()}</p>
+            <div className="bg-slate-50 rounded-xl p-2.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Token ID</p>
+              <p className="text-sm font-semibold text-slate-800 mt-0.5">#{credential.tokenId.toString()}</p>
             </div>
           </div>
 
           {metadata?.description && (
-            <div className="mt-3 sm:mt-4">
-              <p className="text-xs sm:text-sm text-gray-600">{metadata.description}</p>
+            <div className="mt-3">
+              <p className="text-xs text-slate-500 leading-relaxed">{metadata.description}</p>
             </div>
           )}
 
           {/* Actions */}
           {showActions && !credential.revoked && (
-            <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 border-t border-slate-100">
               <a
                 href={ipfsToHttp(credential.metadataURI)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs sm:text-sm text-primary-600 hover:text-primary-700 font-medium text-center sm:text-left"
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700"
               >
-                View Metadata
+                View Metadata ↗
               </a>
               {onRevoke && (
                 <button
                   onClick={() => onRevoke(credential.tokenId)}
-                  className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-medium"
+                  className="text-xs font-semibold text-red-500 hover:text-red-700"
                 >
-                  Revoke
+                  Revoke Credential
                 </button>
               )}
             </div>

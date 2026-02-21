@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,26 +8,27 @@
   * {
     box-sizing: border-box;
   }
-  
+
   html, body {
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
     position: relative;
     -webkit-text-size-adjust: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
   }
-  
+
   html {
     height: 100%;
   }
-  
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-slate-50 text-slate-900;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100%;
   }
-  
+
   #root {
     overflow-x: hidden;
     width: 100%;
@@ -33,12 +36,11 @@
     min-height: 100vh;
     position: relative;
   }
-  
+
   img, video, iframe, table {
     max-width: 100%;
   }
-  
-  /* Better touch targets for mobile */
+
   button, a {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
@@ -46,43 +48,61 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
-    min-height: 44px; /* iOS recommended touch target size */
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md;
+    min-height: 44px;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-white hover:bg-slate-50 text-slate-700 font-semibold py-2.5 px-5 rounded-xl border border-slate-200 transition-all duration-200 shadow-sm hover:shadow-md;
+    min-height: 44px;
+  }
+
+  .btn-danger {
+    @apply bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2.5 px-5 rounded-xl border border-red-200 transition-all duration-200;
     min-height: 44px;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-lg p-3 sm:p-4;
+    @apply bg-white rounded-2xl border border-slate-100 p-4 sm:p-5;
     overflow-x: hidden !important;
     max-width: 100% !important;
     word-wrap: break-word;
     min-width: 0;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  }
+
+  .card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.08);
   }
 
   .input-field {
-    @apply w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none;
-    min-height: 44px; /* Better mobile touch target */
+    @apply w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none bg-white text-slate-900 placeholder-slate-400 transition-all;
+    min-height: 44px;
     max-width: 100%;
     word-wrap: break-word;
   }
 
   .badge {
-    @apply inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
   }
 
   .badge-success {
-    @apply bg-green-100 text-green-800;
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200;
   }
 
   .badge-danger {
-    @apply bg-red-100 text-red-800;
+    @apply bg-red-50 text-red-700 border border-red-200;
   }
 
   .badge-info {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-sky-50 text-sky-700 border border-sky-200;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-sm sm:text-base text-slate-500 mt-1;
   }
 }
