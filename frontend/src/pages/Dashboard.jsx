@@ -137,7 +137,7 @@ const Dashboard = () => {
 
   if (!account) {
     return (
-      <div className="w-screen max-w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-12">
+      <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-12">
         <Alert type="warning" message="Please connect your wallet to view your credentials" />
       </div>
     );
@@ -149,7 +149,7 @@ const Dashboard = () => {
     : allCredentials.length === 0;
 
   return (
-    <div className="w-screen max-w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+    <div className="w-full overflow-x-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">
           {isIssuer && viewMode === 'all' ? 'All Issued Credentials' : 'My Credentials'}

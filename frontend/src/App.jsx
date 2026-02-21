@@ -12,7 +12,7 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="flex flex-col min-h-screen overflow-x-hidden w-full">
+        <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
           <Navbar />
           <main className="flex-grow w-full overflow-x-hidden">
             <Routes>
