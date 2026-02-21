@@ -7,7 +7,7 @@
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm">🎓</span>
+                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L2 8l10 5 10-5-10-5z" fill="white"/><path d="M6 10.5v4c0 1.657 2.686 3 6 3s6-1.343 6-3v-4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
               </div>
               <span className="font-bold text-white">TokCred</span>
             </div>

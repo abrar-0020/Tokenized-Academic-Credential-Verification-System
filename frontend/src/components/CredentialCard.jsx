@@ -63,7 +63,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('TokCred â€” Academic Credential', pageW / 2, 12, { align: 'center' });
+      doc.text('TokCred - Academic Credential', pageW / 2, 12, { align: 'center' });
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('Blockchain-Verified Certificate', pageW / 2, 20, { align: 'center' });
@@ -105,7 +105,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
         ['Student Wallet', ensName || (credential?.student ? `${credential.student.substring(0, 16)}...` : 'N/A')],
         ['Grade / GPA', metadata?.grade || 'Not Specified'],
         ['Issue Date', metadata?.issueDate || formatDate(credential?.issueTimestamp)],
-        ['Description', metadata?.description || 'â€”'],
+        ['Description', metadata?.description || '-'],
       ];
 
       let y = 82;
@@ -170,7 +170,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
                 className="w-full h-full object-cover rounded-2xl"
               />
             ) : (
-              <span className="text-white text-4xl">ðŸŽ“</span>
+              <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L2 8l10 5 10-5-10-5z" fill="white"/><path d="M2 8v6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><path d="M6 10.5v4c0 1.657 2.686 3 6 3s6-1.343 6-3v-4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
             )}
           </div>
         </div>
@@ -235,13 +235,13 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
 
           {/* Action bar */}
           <div className="mt-3 flex flex-wrap gap-2 sm:gap-3 pt-3 border-t border-slate-100 items-center">
-            {/* PDF Download â€” always shown */}
+            {/* PDF Download - always shown */}
             <button
               onClick={downloadPDF}
               disabled={pdfLoading}
               className="text-xs font-semibold text-slate-600 hover:text-primary-600 border border-slate-200 hover:border-primary-300 px-2.5 py-1 rounded-lg transition-all bg-white"
             >
-              {pdfLoading ? 'Generating...' : 'â¬‡ Download PDF'}
+              {pdfLoading ? 'Generating...' : 'Download PDF'}
             </button>
 
             {/* Public verify link */}
@@ -249,7 +249,7 @@ const CredentialCard = ({ credential, metadata, onRevoke, showActions = false })
               href={`/public-verify?tokenId=${credential.tokenId.toString()}`}
               className="text-xs font-semibold text-slate-600 hover:text-primary-600 border border-slate-200 hover:border-primary-300 px-2.5 py-1 rounded-lg transition-all bg-white"
             >
-              ðŸ”— Public Link
+              Public Link
             </a>
 
             {showActions && !credential.revoked && (
