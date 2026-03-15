@@ -1,4 +1,5 @@
-﻿import { useWeb3 } from '../context/Web3Context';
+import { useWeb3 } from '../context/Web3Context';
+import { FeatureStepsDemo } from '../components/ui/feature-demo';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -42,30 +43,7 @@ const Home = () => {
       </section>
 
       {/*  How It Works  */}
-      <section style={{ overflowX: 'hidden' }} className="bg-white py-12 sm:py-16">
-        <div className="px-5 sm:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">How It Works</h2>
-            <p className="text-slate-500 text-sm mt-2">Three simple steps to lifelong credential security</p>
-          </div>
-          <div className="flex flex-col gap-4 max-w-sm mx-auto sm:max-w-none sm:flex-row sm:gap-5 md:max-w-4xl">
-            {[
-              { icon: '🏛️', step: '01', title: 'Institution Issues', desc: 'Authorized institutions issue non-transferable digital credentials as Soulbound NFTs to students.', color: 'bg-sky-50', accent: 'text-sky-600' },
-              { icon: '👤', step: '02', title: 'Student Owns', desc: 'Students permanently own their credentials. Credentials cannot be transferred, ensuring authenticity.', color: 'bg-emerald-50', accent: 'text-emerald-600' },
-              { icon: '✅', step: '03', title: 'Anyone Verifies', desc: 'Employers and third parties can instantly verify credentials on-chain without intermediaries.', color: 'bg-amber-50', accent: 'text-amber-600' },
-            ].map((item) => (
-              <div key={item.step} className="flex-1 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
-                <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center mb-4`}>
-                  <span className="text-2xl">{item.icon}</span>
-                </div>
-                <div className={`text-xs font-bold ${item.accent} mb-1`}>STEP {item.step}</div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeatureStepsDemo />
 
       {/*  Why Blockchain  */}
       <section style={{ overflowX: 'hidden' }} className="bg-slate-50 py-12 sm:py-16">

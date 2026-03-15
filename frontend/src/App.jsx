@@ -9,6 +9,7 @@ import IssueCredential from './pages/IssueCredential';
 import Dashboard from './pages/Dashboard';
 import VerifyCredential from './pages/VerifyCredential';
 import PublicVerify from './pages/PublicVerify';
+import { SkeletonDemo } from '@/components/ui/demo';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/verify" element={<VerifyCredential />} />
               <Route path="/public-verify" element={<PublicVerify />} />
+              <Route path="/skeleton" element={<SkeletonDemo />} />
             </Routes>
           </main>
           <Footer />
