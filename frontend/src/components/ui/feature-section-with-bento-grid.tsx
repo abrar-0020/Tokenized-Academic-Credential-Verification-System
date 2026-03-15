@@ -108,9 +108,9 @@ export const SkeletonOne = () => {
       <div className="w-full p-5 mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full rounded-xl outline outline-1 outline-gray-200">
         <div className="flex flex-1 w-full h-full flex-col space-y-2">
           <img
-            src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop"
+            src="https://media.licdn.com/dms/image/D4D12AQG9Yf2S0Y_wQw/article-cover_image-shrink_720_1280/0/1689230553755?e=2147483647&v=beta&t=xH1VnI_7K3eA05P9i1XQz2tXJtO1541m7GnP9M38XN4"
             alt="Blockchain Security"
-            className="h-full w-full aspect-square object-cover object-left-top rounded-sm"
+            className="h-full w-full object-cover object-center rounded-sm"
           />
         </div>
       </div>
