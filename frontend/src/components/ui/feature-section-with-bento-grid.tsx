@@ -128,9 +128,9 @@ export const SkeletonThree = () => {
         <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
           <Lock className="h-16 w-16 absolute z-10 inset-0 text-sky-500 m-auto" />
           <img
-            src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2664&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1622630998477-20b41cd74c15?q=80&w=2070&auto=format&fit=crop"
             alt="Soulbound Tokens"
-            className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
+            className="h-full w-full object-cover object-center rounded-xl blur-none group-hover/image:blur-md transition-all duration-300 shadow-sm"
           />
         </div>
       </div>
