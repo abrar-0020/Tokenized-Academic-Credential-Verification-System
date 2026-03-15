@@ -105,12 +105,12 @@ const FeatureDescription = ({ children }: { children?: React.ReactNode }) => {
 export const SkeletonOne = () => {
   return (
     <div className="relative flex py-8 px-2 gap-10 h-full">
-      <div className="w-full p-4 mx-auto bg-white dark:bg-neutral-900 shadow-xl group h-full rounded-lg outline outline-1 outline-slate-200">
-        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative overflow-hidden rounded-md">
+      <div className="w-full p-5 mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full rounded-xl outline outline-1 outline-gray-200">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2">
           <img
             src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop"
             alt="Blockchain Security"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="h-full w-full aspect-square object-cover object-left-top rounded-sm"
           />
         </div>
       </div>
@@ -123,18 +123,14 @@ export const SkeletonOne = () => {
 
 export const SkeletonThree = () => {
   return (
-    <div className="relative flex gap-10 h-full group/image mt-6">
+    <div className="relative flex gap-10 h-full group/image mt-8">
       <div className="w-full mx-auto bg-transparent dark:bg-transparent group h-full">
-        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative overflow-hidden rounded-lg">
-          <div className="absolute z-10 inset-0 flex items-center justify-center pointer-events-none">
-             <div className="bg-sky-500/80 p-4 rounded-full backdrop-blur-md shadow-lg">
-                <Lock className="h-8 w-8 text-white" />
-             </div>
-          </div>
+        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
+          <Lock className="h-16 w-16 absolute z-10 inset-0 text-sky-500 m-auto" />
           <img
             src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2664&auto=format&fit=crop"
             alt="Soulbound Tokens"
-            className="absolute inset-0 h-full w-full object-cover object-center blur-[2px] group-hover/image:blur-md transition-all duration-200"
+            className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
           />
         </div>
       </div>
