@@ -105,12 +105,12 @@ const FeatureDescription = ({ children }: { children?: React.ReactNode }) => {
 export const SkeletonOne = () => {
   return (
     <div className="relative flex py-8 px-2 gap-10 h-full">
-      <div className="w-full p-5 mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full rounded-xl outline outline-1 outline-gray-200">
+      <div className="w-full p-5 mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full">
         <div className="flex flex-1 w-full h-full flex-col space-y-2">
           <img
             src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
             alt="Blockchain Security"
-            className="h-full w-full object-cover object-center rounded-sm"
+            className="h-full w-full aspect-square object-cover object-left-top rounded-sm"
           />
         </div>
       </div>
@@ -123,14 +123,14 @@ export const SkeletonOne = () => {
 
 export const SkeletonThree = () => {
   return (
-    <div className="relative flex gap-10 h-full group/image mt-8">
+    <div className="relative flex gap-10 h-full group/image">
       <div className="w-full mx-auto bg-transparent dark:bg-transparent group h-full">
         <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
-          <Lock className="h-16 w-16 absolute z-10 inset-0 text-sky-500 m-auto" />
+          <Lock className="h-20 w-20 absolute z-10 inset-0 text-sky-500 m-auto" />
           <img
             src="https://images.unsplash.com/photo-1622630998477-20b41cd74c15?q=80&w=2070&auto=format&fit=crop"
             alt="Soulbound Tokens"
-            className="h-full w-full object-cover object-center rounded-xl blur-none group-hover/image:blur-md transition-all duration-300 shadow-sm"
+            className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
           />
         </div>
       </div>
