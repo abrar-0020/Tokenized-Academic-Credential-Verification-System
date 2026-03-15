@@ -108,7 +108,7 @@ export const SkeletonOne = () => {
       <div className="w-full p-4 mx-auto bg-white dark:bg-neutral-900 shadow-xl group h-full rounded-lg outline outline-1 outline-slate-200">
         <div className="flex flex-1 w-full h-full flex-col space-y-2 relative overflow-hidden rounded-md">
           <img
-            src="https://images.unsplash.com/photo-1639762681485-074b7f4ec651?q=80&w=2070&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop"
             alt="Blockchain Security"
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
@@ -132,7 +132,7 @@ export const SkeletonThree = () => {
              </div>
           </div>
           <img
-            src="https://images.unsplash.com/photo-1614064641913-a53ec1107d39?q=80&w=2062&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2664&auto=format&fit=crop"
             alt="Soulbound Tokens"
             className="absolute inset-0 h-full w-full object-cover object-center blur-[2px] group-hover/image:blur-md transition-all duration-200"
           />
