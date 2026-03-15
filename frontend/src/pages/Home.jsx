@@ -1,5 +1,6 @@
 import { useWeb3 } from '../context/Web3Context';
 import { FeatureStepsDemo } from '../components/ui/feature-demo';
+import HeroSection from '../components/ui/a-modern-hero-section';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -8,39 +9,7 @@ const Home = () => {
     <div style={{ position: 'relative', overflowX: 'hidden', width: '100%' }}>
 
       {/*  Hero  */}
-      <section
-        style={{ overflowX: 'hidden', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0c4a6e 100%)' }}
-        className="text-white"
-      >
-        <div className="px-5 sm:px-8 py-16 sm:py-20 max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-sky-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
-            Powered by Blockchain Technology
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-4">
-            Tokenized Academic
-            <span className="block text-sky-400">Credentials</span>
-          </h1>
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-md mx-auto">
-            Secure, verifiable, and permanent academic credentials on the blockchain. No forgeries. No middlemen.
-          </p>
-          {!account ? (
-            <button
-              onClick={connectWallet}
-              className="bg-sky-500 hover:bg-sky-400 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-sky-500/30 transition-all text-sm"
-            >
-              Connect Wallet
-            </button>
-          ) : (
-            <a
-              href="/dashboard"
-              className="inline-block bg-sky-500 hover:bg-sky-400 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-sky-500/30 transition-all text-sm"
-            >
-              Go to Dashboard →
-            </a>
-          )}
-        </div>
-      </section>
+      <HeroSection account={account} onConnect={connectWallet} />
 
       {/*  How It Works  */}
       <FeatureStepsDemo />
