@@ -12,6 +12,7 @@
     "@web3modal/ethers": "^5.1.11",
     "axios": "^1.6.5",
     "clsx": "^2.1.1",
+    "cobe": "^0.6.5",
     "ethers": "^6.10.0",
     "framer-motion": "^12.36.0",
     "jspdf": "^4.2.0",

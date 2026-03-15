@@ -1,6 +1,7 @@
 import { useWeb3 } from '../context/Web3Context';
 import { FeatureStepsDemo } from '../components/ui/feature-demo';
 import HeroSection from '../components/ui/a-modern-hero-section';
+import { FeaturesSectionWithBentoGridDemo } from '../components/ui/bento-grid-demo';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -15,34 +16,7 @@ const Home = () => {
       <FeatureStepsDemo />
 
       {/*  Why Blockchain  */}
-      <section style={{ overflowX: 'hidden' }} className="bg-slate-50 py-12 sm:py-16">
-        <div className="px-5 sm:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Why Blockchain?</h2>
-            <p className="text-slate-500 text-sm mt-2">Built for trust, designed for the future</p>
-          </div>
-          <div className="flex flex-col gap-3 max-w-sm mx-auto sm:max-w-2xl sm:grid sm:grid-cols-2 sm:gap-4 md:max-w-3xl">
-            {[
-              { icon: '🔒', title: 'Immutable and Secure', desc: 'Once issued, credentials cannot be altered or forged. Blockchain ensures permanent records.', tag: 'Security' },
-              { icon: '⚡', title: 'Instant Verification', desc: 'Verify credentials in seconds. No waiting, no paperwork, no middlemen.', tag: 'Speed' },
-              { icon: '🌍', title: 'Global Accessibility', desc: 'Access your credentials from anywhere in the world. Truly portable and borderless.', tag: 'Access' },
-              { icon: '🔗', title: 'Soulbound Tokens', desc: 'Non-transferable credentials tied to your identity. Cannot be sold or transferred.', tag: 'Identity' },
-            ].map((item) => (
-              <div key={item.title} className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex gap-4 items-start" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)', minWidth: 0 }}>
-                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">{item.icon}</span>
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
-                  </div>
-                  <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturesSectionWithBentoGridDemo />
 
       {/*  CTA  */}
       {!account && (
