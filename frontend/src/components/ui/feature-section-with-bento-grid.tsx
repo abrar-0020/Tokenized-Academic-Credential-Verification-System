@@ -105,12 +105,12 @@ const FeatureDescription = ({ children }: { children?: React.ReactNode }) => {
 export const SkeletonOne = () => {
   return (
     <div className="relative flex py-8 px-2 gap-10 h-full">
-      <div className="w-full p-5 mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full rounded-lg outline outline-1 outline-gray-100">
-        <div className="flex flex-1 w-full h-full flex-col space-y-2">
+      <div className="w-full p-4 mx-auto bg-white dark:bg-neutral-900 shadow-xl group h-full rounded-lg outline outline-1 outline-slate-200">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative overflow-hidden rounded-md">
           <img
             src="https://images.unsplash.com/photo-1639762681485-074b7f4ec651?q=80&w=2070&auto=format&fit=crop"
             alt="Blockchain Security"
-            className="h-full w-full aspect-square object-cover object-center rounded-sm"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
         </div>
       </div>
@@ -123,18 +123,18 @@ export const SkeletonOne = () => {
 
 export const SkeletonThree = () => {
   return (
-    <div className="relative flex gap-10 h-full group/image mt-8">
+    <div className="relative flex gap-10 h-full group/image mt-6">
       <div className="w-full mx-auto bg-transparent dark:bg-transparent group h-full">
-        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative overflow-hidden rounded-lg">
           <div className="absolute z-10 inset-0 flex items-center justify-center pointer-events-none">
-             <div className="bg-sky-500/20 p-4 rounded-full backdrop-blur-md">
-                <Lock className="h-12 w-12 text-sky-600" />
+             <div className="bg-sky-500/80 p-4 rounded-full backdrop-blur-md shadow-lg">
+                <Lock className="h-8 w-8 text-white" />
              </div>
           </div>
           <img
             src="https://images.unsplash.com/photo-1614064641913-a53ec1107d39?q=80&w=2062&auto=format&fit=crop"
             alt="Soulbound Tokens"
-            className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
+            className="absolute inset-0 h-full w-full object-cover object-center blur-[2px] group-hover/image:blur-md transition-all duration-200"
           />
         </div>
       </div>
@@ -164,8 +164,8 @@ export const SkeletonTwo = () => {
     },
   };
   return (
-    <div className="relative flex flex-col items-start p-8 gap-10 h-full overflow-hidden mt-4">
-      <div className="flex flex-row -ml-20">
+    <div className="relative flex flex-col items-start p-4 md:p-8 gap-4 h-full overflow-hidden mt-2">
+      <div className="flex flex-row -ml-8 md:-ml-20">
         {images.map((image, idx) => (
           <motion.div
             variants={imageVariants}
@@ -175,12 +175,12 @@ export const SkeletonTwo = () => {
             }}
             whileHover="whileHover"
             whileTap="whileTap"
-            className="rounded-xl -mr-4 mt-4 p-1 bg-white border border-slate-100 flex-shrink-0 overflow-hidden shadow-sm"
+            className="rounded-xl -mr-4 md:-mr-4 mt-2 md:mt-4 p-1 bg-white border border-slate-200 flex-shrink-0 overflow-hidden shadow-sm"
           >
             <img
               src={image}
               alt="Verification images"
-              className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
+              className="rounded-lg h-16 w-16 md:h-24 md:w-24 object-cover flex-shrink-0"
             />
           </motion.div>
         ))}
@@ -195,20 +195,20 @@ export const SkeletonTwo = () => {
             variants={imageVariants}
             whileHover="whileHover"
             whileTap="whileTap"
-            className="rounded-xl -mr-4 mt-4 p-1 bg-white border border-slate-100 flex-shrink-0 overflow-hidden shadow-sm"
+            className="rounded-xl -mr-4 md:-mr-4 mt-2 md:mt-4 p-1 bg-white border border-slate-200 flex-shrink-0 overflow-hidden shadow-sm"
           >
             <img
               src={image}
               alt="Verification images"
-              className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
+              className="rounded-lg h-16 w-16 md:h-24 md:w-24 object-cover flex-shrink-0"
             />
           </motion.div>
         ))}
       </div>
 
-      <div className="absolute left-0 z-[100] inset-y-0 w-20 bg-gradient-to-r from-white to-transparent h-full pointer-events-none" />
-      <div className="absolute right-0 z-[100] inset-y-0 w-20 bg-gradient-to-l from-white to-transparent h-full pointer-events-none" />
-      <div className="absolute bottom-0 z-[100] inset-x-0 h-20 bg-gradient-to-t from-white to-transparent w-full pointer-events-none" />
+      <div className="absolute left-0 z-[100] inset-y-0 w-10 md:w-20 bg-gradient-to-r from-white to-transparent h-full pointer-events-none" />
+      <div className="absolute right-0 z-[100] inset-y-0 w-10 md:w-20 bg-gradient-to-l from-white to-transparent h-full pointer-events-none" />
+      <div className="absolute bottom-0 z-[100] inset-x-0 h-10 md:h-20 bg-gradient-to-t from-white to-transparent w-full pointer-events-none" />
     </div>
   );
 };
