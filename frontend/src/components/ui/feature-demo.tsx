@@ -5,7 +5,7 @@ const features = [
     step: 'Step 1', 
     title: 'Institution Issues',
     content: 'Authorized institutions issue non-transferable digital credentials as Soulbound NFTs to students.', 
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop' 
+    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop' 
   },
   { 
     step: 'Step 2',
