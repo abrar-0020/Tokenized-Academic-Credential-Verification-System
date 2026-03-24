@@ -1,4 +1,4 @@
-﻿# 🎓 Tokenized Academic Credential Verification System
+﻿#  Tokenized Academic Credential Verification System
 
 A production-ready, secure, and decentralized blockchain-based system for issuing, managing, and verifying academic credentials using Soulbound NFTs (non-transferable tokens).
 
@@ -7,12 +7,12 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 ![React](https://img.shields.io/badge/React-18.2.0-cyan)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## 🌐 Live Deployment
+##  Live Deployment
 
-**🔗 Production Site:** [https://tokcred.vercel.app](https://tokcred.vercel.app)  
-**📜 Smart Contract:** [0x7B5206a636d9D0819E469fA4dfABF0BE062e0297](https://sepolia.etherscan.io/address/0x7B5206a636d9D0819E469fA4dfABF0BE062e0297)  
-**🌍 Network:** Sepolia Testnet (Chain ID: 11155111)  
-**⚡ Status:** ✅ Live and Production-Ready
+** Production Site:** [https://tokcred.vercel.app](https://tokcred.vercel.app)  
+** Smart Contract:** [0x7B5206a636d9D0819E469fA4dfABF0BE062e0297](https://sepolia.etherscan.io/address/0x7B5206a636d9D0819E469fA4dfABF0BE062e0297)  
+** Network:** Sepolia Testnet (Chain ID: 11155111)  
+** Status:** ✅ Live and Production-Ready
 
 ### Access the Live Application:
 1. Visit [https://tokcred.vercel.app](https://tokcred.vercel.app)
@@ -45,9 +45,9 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
-**👉 New to this project? Start here:**
+** New to this project? Start here:**
 
 1. **Installation:** See **[INSTALL.md](INSTALL.md)** for one-command installation (like `pip install -r requirements.txt`)
 2. **Setup Checklist:** See **[SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)** for step-by-step setup tracking
@@ -57,11 +57,11 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ---
 
-## 📦 How to Download All Dependencies at Once
+##  How to Download All Dependencies at Once
 
 Users can install **all dependencies** (backend + frontend) with a single command, just like `pip install -r requirements.txt` in Python projects.
 
-### Method 1: Installation Scripts (Easiest) ⭐
+### Method 1: Installation Scripts (Easiest) 
 
 **Windows (PowerShell):**
 ```powershell
@@ -113,7 +113,7 @@ npm install
 cd ..
 ```
 
-## 🌟 Overview
+##  Overview
 
 This system enables educational institutions to issue tamper-proof, verifiable academic credentials as NFTs on the Ethereum blockchain. These credentials are **Soulbound** (non-transferable), ensuring they remain permanently tied to the recipient's wallet address.
 
@@ -147,7 +147,7 @@ This system enables educational institutions to issue tamper-proof, verifiable a
 - Check revocation status
 - Access public verification portal
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────┐      ┌──────────────────┐
@@ -189,7 +189,7 @@ This system enables educational institutions to issue tamper-proof, verifiable a
 - **Metadata Storage**: IPFS (Pinata)
 - **Networks**: Localhost (Hardhat) + Sepolia Testnet
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 tokenized-academic-credentials/
@@ -231,9 +231,9 @@ tokenized-academic-credentials/
 └── README.md
 ```
 
-## 📦 Prerequisites
+##  Prerequisites
 
-> 💡 **For detailed setup instructions, see [INSTALL.md](INSTALL.md)**
+>  **For detailed setup instructions, see [INSTALL.md](INSTALL.md)**
 
 Before you begin, ensure you have the following installed:
 
@@ -255,7 +255,7 @@ npm --version     # Should be >= 9.0.0
 git --version
 ```
 
-## 💻 Installation
+##  Installation
 
 ### Quick Installation (One Command)
 
@@ -385,7 +385,7 @@ https://gateway.pinata.cloud/ipfs/QmHash...
 
 The `.env` contains the base URL (`https://gateway.pinata.cloud/ipfs/`) - the hash is automatically appended by the application when accessing files.
 
-## 🚀 Deployment
+##  Deployment
 
 ### Deploy to Local Network (Hardhat)
 
@@ -413,7 +413,7 @@ VITE_CONTRACT_ADDRESS=<deployed_contract_address>
 
 ### Deploy to Sepolia Testnet
 
-> 📘 **For complete step-by-step deployment guide, see [SEPOLIA_DEPLOYMENT.md](SEPOLIA_DEPLOYMENT.md)**
+>  **For complete step-by-step deployment guide, see [SEPOLIA_DEPLOYMENT.md](SEPOLIA_DEPLOYMENT.md)**
 > 
 > The guide includes:
 > - Detailed setup for Alchemy & Pinata accounts
@@ -460,7 +460,7 @@ VITE_NETWORK_ID=11155111
 VITE_NETWORK_NAME=sepolia
 ```
 
-## 🖥️ Frontend Setup
+##  Frontend Setup
 
 ### 1. Start Development Server
 
@@ -536,7 +536,7 @@ node scripts/issueCredential.js <student_address>
 3. Connect wallet (view-only, no transaction needed)
 4. View credential details and status
 
-## 🔐 Smart Contract Details
+##  Smart Contract Details
 
 ### Main Functions
 
@@ -599,7 +599,7 @@ node scripts/issueCredential.js <student_address>
 }
 ```
 
-## 🧪 Testing
+##  Testing
 
 ### Compile Contracts
 
@@ -619,7 +619,7 @@ npx hardhat test
 npx hardhat size-contracts
 ```
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -650,7 +650,7 @@ If you encounter issues:
 3. Verify contract deployment
 4. Check environment variables
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please follow these steps:
 
