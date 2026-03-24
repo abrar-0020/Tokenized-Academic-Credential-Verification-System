@@ -12,7 +12,7 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 ** Production Site:** [https://tokcred.vercel.app](https://tokcred.vercel.app)  
 ** Smart Contract:** [0x7B5206a636d9D0819E469fA4dfABF0BE062e0297](https://sepolia.etherscan.io/address/0x7B5206a636d9D0819E469fA4dfABF0BE062e0297)  
 ** Network:** Sepolia Testnet (Chain ID: 11155111)  
-** Status:** ✅ Live and Production-Ready
+** Status:**  Live and Production-Ready
 
 ### Access the Live Application:
 1. Visit [https://tokcred.vercel.app](https://tokcred.vercel.app)
@@ -23,7 +23,7 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 **For Students:** Get your academic credentials verified on the blockchain  
 **For Institutions:** Issue tamper-proof, verifiable credentials to students
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -126,7 +126,7 @@ This system enables educational institutions to issue tamper-proof, verifiable a
 - ✅ **Cost-Effective**: Eliminates paperwork and manual verification processes
 - ✅ **Privacy-Preserving**: Students control who can view their credentials
 
-## 🚀 Features
+##  Features
 
 ### For Institutions (Issuers)
 - Issue digital credentials as ERC-721 NFTs
@@ -170,7 +170,7 @@ This system enables educational institutions to issue tamper-proof, verifiable a
 2. **Verification**: Verifier enters Token ID → Contract returns credential data → Metadata fetched from IPFS
 3. **Revocation**: Institution calls `revokeCredential()` → Status updated on-chain
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Blockchain & Smart Contracts
 - **Solidity**: ^0.8.20
@@ -316,7 +316,7 @@ npm install
 cd ..
 ```
 
-## ⚙️ Configuration
+##  Configuration
 
 ### 1. Create Environment File
 
@@ -660,11 +660,11 @@ Contributions are welcome! Please follow these steps:
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - OpenZeppelin for secure smart contract libraries
 - Hardhat for development framework
@@ -672,7 +672,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Tailwind CSS for styling
 - IPFS/Pinata for decentralized storage
 
-## 📞 Contact
+##  Contact
 
 For questions or support:
 - Create an issue on GitHub
@@ -680,4 +680,4 @@ For questions or support:
 
 ---
 
-**Built with ❤️ using Solidity, React, and Web3**
+**Built with using Solidity, React, and Web3**
