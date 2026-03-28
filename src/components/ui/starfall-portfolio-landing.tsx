@@ -124,9 +124,9 @@ const defaultData = {
   },
   projects: [
     {
-      title: 'On-chain Issuance',
-      description: 'Institutions mint academic records directly to the blockchain with immutable provenance.',
-      tags: ['Smart Contracts', 'IPFS'],
+      title: 'Institution Issues',
+      description: 'Authorized institutions issue non-transferable digital credentials as Soulbound NFTs to students.',
+      tags: ['✓'],
       imageContent: (
         <img
           src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80"
@@ -137,9 +137,9 @@ const defaultData = {
       ),
     },
     {
-      title: 'Instant Verification',
-      description: 'Students and third parties can validate authenticity with token ID in seconds.',
-      tags: ['Public Verify', 'Zero Trust'],
+      title: 'Student Owns',
+      description: 'Students permanently own their credentials. Credentials cannot be transferred, ensuring authenticity.',
+      tags: ['✓'],
       imageContent: (
         <img
           src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=800&q=80"
@@ -150,12 +150,12 @@ const defaultData = {
       ),
     },
     {
-      title: 'Institution Dashboard',
-      description: 'Admin and issuer roles manage lifecycle, history, and revocations with full transparency.',
-      tags: ['RBAC', 'Audit Trail'],
+      title: 'Anyone Verifies',
+      description: 'Employers and third parties can instantly verify credentials on-chain without intermediaries.',
+      tags: ['✓'],
       imageContent: (
         <img
-          src="https://images.unsplash.com/photo-1551281044-8b6d7f4f4f0d?auto=format&fit=crop&w=800&q=80"
+          src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
           alt="Dashboard analytics"
           className="w-full h-full object-cover rounded-xl"
           loading="lazy"
@@ -228,6 +228,9 @@ const PortfolioPage: React.FC<PortfolioPageProps> = ({
               </button>
             </div>
             <div className="divider mb-16" />
+            <h2 className="text-2xl md:text-3xl font-semibold geist-font text-[#e7e5e4] text-center mb-8">
+              How It Works
+            </h2>
             <div id="projects" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
               {projects.map((project, index) => (
                 <div key={index} className="glass-card rounded-2xl p-6 text-left">

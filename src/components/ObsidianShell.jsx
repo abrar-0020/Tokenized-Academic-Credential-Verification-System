@@ -23,7 +23,7 @@ const iconMap = {
 };
 
 const ObsidianShell = ({ title, subtitle, children }) => {
-  const { account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading } = useWeb3();
+  const { account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading, error } = useWeb3();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   
@@ -61,6 +61,7 @@ const ObsidianShell = ({ title, subtitle, children }) => {
               connectWallet={connectWallet}
               disconnectWallet={disconnectWallet}
               loading={loading}
+              error={error}
             />
             {pathname === '/verify' && (
               <span className="hidden md:inline text-[10px] uppercase tracking-[0.2em] text-[#8197ff] font-bold">Verify Mode</span>

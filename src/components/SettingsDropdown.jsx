@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Settings, LogOut } from 'lucide-react';
 import { formatAddress } from '../utils/helpers';
 
-const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading }) => {
+const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading, error }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const networkLabel =
+    networkId == null ? 'Not connected' : networkId === 11155111 ? 'Sepolia Testnet' : `Network ID: ${networkId}`;
 
   return (
     <div className="relative">
@@ -17,6 +19,12 @@ const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet
       {showSettings && (
         <div className="absolute right-0 mt-2 w-80 bg-[#131313] border border-[#484848]/30 rounded-lg shadow-lg z-50">
           <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
+            {error && (
+              <div className="border border-[#7f2737]/40 bg-[#7f2737]/20 text-[#ec7c8a] rounded-md px-3 py-2 text-xs">
+                {error}
+              </div>
+            )}
+
             {/* Wallet Info - only show if connected */}
             {account && (
               <div className="border-b border-[#484848]/20 pb-3">
@@ -30,9 +38,7 @@ const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet
             {/* Network Info - always show */}
             <div className="border-b border-[#484848]/20 pb-3">
               <p className="text-[10px] uppercase tracking-[0.2em] text-[#8197ff] font-bold mb-2">Network</p>
-              <p className="text-[#c6c6c7] text-xs">
-                {networkId === 11155111 ? 'Sepolia Testnet' : `Network ID: ${networkId}`}
-              </p>
+              <p className="text-[#c6c6c7] text-xs">{networkLabel}</p>
             </div>
             
             {/* Role Info - only show if connected */}

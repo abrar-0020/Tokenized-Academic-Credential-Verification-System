@@ -6,7 +6,7 @@ import SettingsDropdown from '@/components/SettingsDropdown';
 import { Home as HomeIcon, LayoutDashboard, FileText, CheckCircle, Eye, Clock } from 'lucide-react';
 
 const Home = () => {
-  const { account, connectWallet, disconnectWallet, isAdmin, isIssuer, networkId, loading } = useWeb3();
+  const { account, connectWallet, disconnectWallet, isAdmin, isIssuer, networkId, loading, error } = useWeb3();
   const navigate = useNavigate();
 
   const navItems = [
@@ -98,6 +98,7 @@ const Home = () => {
               connectWallet={connectWallet}
               disconnectWallet={disconnectWallet}
               loading={loading}
+              error={error}
             />
           </div>
         </div>
