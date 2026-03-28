@@ -1,1 +1,11 @@
 node_modules
+dist
+.vercel
+
+# Local environment files (never commit)
+.env
+.env.*
+.evn
+.evn.*
+!.env.example
+!.env.production.example

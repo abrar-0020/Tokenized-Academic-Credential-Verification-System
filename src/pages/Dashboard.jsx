@@ -3,7 +3,7 @@ import { useWeb3 } from '../context/Web3Context';
 import Alert from '../components/Alert';
 import Loading from '../components/Loading';
 import ObsidianShell from '../components/ObsidianShell';
-import { formatDate } from '../utils/helpers';
+import { formatDate, ipfsToHttp } from '../utils/helpers';
 import { loadAllCredentials, loadStudentCredentials, revokeCredential } from '../logic';
 
 const Dashboard = () => {
@@ -55,6 +55,20 @@ const Dashboard = () => {
   const displayCredentials = viewMode === 'owned' ? credentials : allCredentials;
   const recentRows = useMemo(() => displayCredentials.slice(0, 4), [displayCredentials]);
   const validCount = displayCredentials.filter((c) => !c.revoked).length;
+
+  const initialsFor = (name) => (name || 'Unknown Scholar').slice(0, 2).toUpperCase();
+
+  const fallbackImageFor = (name) => {
+    const initials = initialsFor(name);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#252626"/><text x="50%" y="53%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#8197ff">${initials}</text></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  };
+
+  const imageFor = (row) => {
+    const raw = row.metadata?.image;
+    if (!raw) return fallbackImageFor(row.metadata?.studentName);
+    return raw.startsWith('ipfs://') ? ipfsToHttp(raw) : raw;
+  };
 
   return (
     <ObsidianShell title="Protocol Overview" subtitle="Real-Time Ledger Metrics">
@@ -144,9 +158,16 @@ const Dashboard = () => {
                           <tr key={row.tokenId.toString()} className="group hover:bg-[#1f2020] transition-colors">
                             <td className="py-5 pr-4 border-t border-[#484848]/10">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-[#252626] flex items-center justify-center text-[10px] text-[#8197ff] font-bold">
-                                  {(row.metadata?.studentName || 'U').slice(0, 2).toUpperCase()}
-                                </div>
+                                <img
+                                  src={imageFor(row)}
+                                  alt={`${row.metadata?.studentName || 'Scholar'} credential`}
+                                  className="w-8 h-8 rounded-full object-cover border border-[#484848]/30"
+                                  loading="lazy"
+                                  onError={(event) => {
+                                    event.currentTarget.onerror = null;
+                                    event.currentTarget.src = fallbackImageFor(row.metadata?.studentName);
+                                  }}
+                                />
                                 <div>
                                   <p className="font-semibold text-[#c6c6c7]">{row.metadata?.studentName || 'Unknown Scholar'}</p>
                                   <p className="text-xs text-[#acabaa]">{row.metadata?.institution || 'Unknown Institution'}</p>
