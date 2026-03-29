@@ -13,28 +13,80 @@ export const ipfsToHttp = (uri) => {
 };
 
 /**
- * Fetch metadata from IPFS with localStorage fallback used by local testing.
+ * Fetch metadata from IPFS with multiple fallbacks (localStorage, sessionStorage, alternative gateways).
  */
 export const fetchMetadata = async (uri) => {
   try {
     if (uri.startsWith('ipfs://')) {
       const hash = uri.replace('ipfs://', '');
       const storageKey = `ipfs_metadata_${hash}`;
+      
+      // Try localStorage first (local testing fallback)
       const localData = localStorage.getItem(storageKey);
-
       if (localData) {
         return JSON.parse(localData);
       }
+
+      // Try sessionStorage (session-level cache from previous fetches)
+      const sessionData = sessionStorage.getItem(storageKey);
+      if (sessionData) {
+        return JSON.parse(sessionData);
+      }
     }
 
-    const url = ipfsToHttp(uri);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Failed to fetch metadata from IPFS');
+    // Try primary IPFS gateway
+    let url = ipfsToHttp(uri);
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Store in sessionStorage for session-level persistence
+        if (uri.startsWith('ipfs://')) {
+          const hash = uri.replace('ipfs://', '');
+          const storageKey = `ipfs_metadata_${hash}`;
+          try {
+            sessionStorage.setItem(storageKey, JSON.stringify(data));
+          } catch {
+            // Ignore storage errors
+          }
+        }
+        
+        return data;
+      }
+    } catch (primaryError) {
+      // Primary gateway failed, try alternative gateway as fallback
+      console.warn('Primary IPFS gateway failed, trying alternative...', primaryError);
+      
+      if (uri.startsWith('ipfs://')) {
+        const hash = uri.replace('ipfs://', '');
+        const altUrl = `https://ipfs.io/ipfs/${hash}`;
+        
+        try {
+          const response = await fetch(altUrl, { signal: AbortSignal.timeout(10000) });
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Store in sessionStorage
+            const storageKey = `ipfs_metadata_${hash}`;
+            try {
+              sessionStorage.setItem(storageKey, JSON.stringify(data));
+            } catch {
+              // Ignore storage errors
+            }
+            
+            return data;
+          }
+        } catch {
+          // Alternative gateway also failed
+          console.warn('Alternative IPFS gateway also failed');
+        }
+      }
     }
-
-    return await response.json();
+    
+    throw new Error('Failed to fetch metadata from IPFS');
   } catch (error) {
+    console.warn('Metadata fetch failed, returning defaults:', error);
     return {
       name: 'Academic Credential',
       description: 'Credential data unavailable',
@@ -74,6 +126,24 @@ export const buildCredentialMetadata = (formData) => {
  * Falls back to localStorage simulation used for local testing.
  */
 export const uploadToIPFS = async (metadata, pinataKey, pinataSecret) => {
+  // Prefer server-side proxy (safer for secrets and avoids CORS issues).
+  try {
+    const proxyResp = await fetch('/api/pinata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(metadata),
+    });
+
+    if (proxyResp.ok) {
+      const data = await proxyResp.json();
+      return `ipfs://${data.IpfsHash}`;
+    }
+  } catch (err) {
+    // Proxy may not be available in local dev — fall back to client-side attempt below
+    console.warn('Pinata proxy failed or unavailable, falling back to client upload', err);
+  }
+
+  // Client-side Pinata attempt (may fail due to CORS / blocked secrets) — keep for advanced users.
   if (pinataKey && pinataSecret) {
     try {
       const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
@@ -98,7 +168,7 @@ export const uploadToIPFS = async (metadata, pinataKey, pinataSecret) => {
       const data = await response.json();
       return `ipfs://${data.IpfsHash}`;
     } catch (error) {
-      throw new Error('Failed to upload metadata to IPFS. Check your Pinata credentials.');
+      throw new Error('Failed to upload metadata to IPFS. Check your Pinata credentials or use the server proxy.');
     }
   }
 
