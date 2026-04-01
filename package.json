@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "tokenized-academic-credentials",
   "version": "1.0.0",
   "description": "Blockchain-based Academic Credential Verification System",
@@ -36,5 +37,45 @@
     "cobe": "^2.0.1",
     "dotenv": "^16.4.1",
     "form-data": "^4.0.0"
+=======
+  "name": "academic-credentials-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@web3modal/ethers": "^5.1.11",
+    "axios": "^1.6.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cobe": "^0.6.5",
+    "ethers": "^6.10.0",
+    "framer-motion": "^12.36.0",
+    "jspdf": "^4.2.0",
+    "lucide-react": "^0.577.0",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.9.3",
+    "vite": "^5.1.0"
+>>>>>>> origin/new-ui
   }
 }

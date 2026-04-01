@@ -1,0 +1,26 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#3b82f6" rx="24"/>
+  
+  <!-- Graduation Cap Icon -->
+  <g transform="translate(36, 56)">
+    <!-- Cap base -->
+    <path d="M60 20 L10 40 L60 60 L110 40 Z" fill="#ffffff" stroke="#ffffff" stroke-width="2"/>
+    
+    <!-- Cap top -->
+    <path d="M60 20 L60 60" stroke="#ffffff" stroke-width="3" fill="none"/>
+    
+    <!-- Tassel -->
+    <circle cx="60" cy="18" r="4" fill="#fbbf24"/>
+    <line x1="60" y1="18" x2="60" y2="10" stroke="#fbbf24" stroke-width="2"/>
+    
+    <!-- Document lines -->
+    <rect x="40" y="70" width="40" height="3" fill="#ffffff" rx="1"/>
+    <rect x="40" y="78" width="35" height="3" fill="#ffffff" rx="1"/>
+    <rect x="40" y="86" width="30" height="3" fill="#ffffff" rx="1"/>
+  </g>
+  
+  <!-- Blockchain badge -->
+  <circle cx="152" cy="152" r="24" fill="#10b981"/>
+  <path d="M152 140 L152 164 M140 152 L164 152" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+</svg>

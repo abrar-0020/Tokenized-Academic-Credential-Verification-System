@@ -1,0 +1,42 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#3b82f6" rx="64"/>
+  
+  <!-- Graduation Cap Icon -->
+  <g transform="translate(106, 156)">
+    <!-- Cap base -->
+    <path d="M150 50 L30 100 L150 150 L270 100 Z" fill="#ffffff" stroke="#ffffff" stroke-width="4"/>
+    
+    <!-- Cap side -->
+    <path d="M30 100 L30 140 Q30 160 50 170 L150 210 L250 170 Q270 160 270 140 L270 100" 
+          fill="#ffffff" opacity="0.8"/>
+    
+    <!-- Cap top detail -->
+    <path d="M150 50 L150 150" stroke="#ffffff" stroke-width="6" fill="none"/>
+    
+    <!-- Tassel -->
+    <circle cx="150" cy="44" r="10" fill="#fbbf24"/>
+    <line x1="150" y1="44" x2="150" y2="24" stroke="#fbbf24" stroke-width="4"/>
+    <circle cx="150" cy="20" r="8" fill="#fbbf24"/>
+    
+    <!-- Document -->
+    <rect x="90" y="220" width="120" height="150" fill="#ffffff" rx="8"/>
+    <rect x="110" y="240" width="80" height="8" fill="#3b82f6" rx="2"/>
+    <rect x="110" y="260" width="70" height="6" fill="#94a3b8" rx="2"/>
+    <rect x="110" y="275" width="75" height="6" fill="#94a3b8" rx="2"/>
+    <rect x="110" y="290" width="65" height="6" fill="#94a3b8" rx="2"/>
+    
+    <!-- Seal/Badge on document -->
+    <circle cx="150" cy="335" r="25" fill="#10b981"/>
+    <path d="M150 320 L150 350 M135 335 L165 335" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Blockchain badge -->
+  <circle cx="420" cy="420" r="60" fill="#10b981"/>
+  <g transform="translate(420, 420)">
+    <!-- Blockchain link icon -->
+    <rect x="-35" y="-8" width="30" height="16" fill="#ffffff" rx="8"/>
+    <rect x="5" y="-8" width="30" height="16" fill="#ffffff" rx="8"/>
+    <line x1="-15" y1="0" x2="15" y2="0" stroke="#10b981" stroke-width="8"/>
+  </g>
+</svg>
