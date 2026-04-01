@@ -176,6 +176,10 @@ const PublicVerify = () => {
                       <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Issue Date</p>
                       <p className="text-[#e7e5e4] text-sm font-medium">{formatDate(credential.issueTimestamp)}</p>
                     </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Grade</p>
+                      <p className="text-[#e7e5e4] text-sm font-medium">{metadata?.grade || 'Not Provided'}</p>
+                    </div>
                   </div>
 
                   <div>

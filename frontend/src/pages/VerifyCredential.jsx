@@ -162,6 +162,10 @@ const VerifyCredential = () => {
                         <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Issue Date</p>
                         <p className="text-[#c6c6c7] font-medium text-sm">{formatDate(credential.issueTimestamp)}</p>
                       </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Grade</p>
+                        <p className="text-[#c6c6c7] font-medium text-sm">{metadata?.grade || 'Not Provided'}</p>
+                      </div>
                     </div>
                   </div>
 
