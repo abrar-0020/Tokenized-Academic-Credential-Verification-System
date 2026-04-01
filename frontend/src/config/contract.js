@@ -1,5 +1,30 @@
-export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
-export const NETWORK_ID = parseInt(import.meta.env.VITE_NETWORK_ID || '31337');
+const rawContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+const rawNetworkId = parseInt(import.meta.env.VITE_NETWORK_ID || '31337', 10);
+
+const normalizeContractAddress = (value) => {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+};
+
+const isValidEvmAddress = (value) => /^0x[a-fA-F0-9]{40}$/.test(value || '');
+
+export const NETWORK_ID = Number.isInteger(rawNetworkId) ? rawNetworkId : 31337;
+
+const DEFAULT_CONTRACT_ADDRESSES = {
+  31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+  11155111: '0x7B5206a636d9D0819E469fA4dfABF0BE062e0297',
+};
+
+const fallbackContractAddress = DEFAULT_CONTRACT_ADDRESSES[NETWORK_ID] || null;
+
+export const CONTRACT_ADDRESS = normalizeContractAddress(rawContractAddress) || fallbackContractAddress;
+export const IS_CONTRACT_ADDRESS_VALID = isValidEvmAddress(CONTRACT_ADDRESS);
+export const CONTRACT_CONFIG_ERROR = !CONTRACT_ADDRESS
+  ? `Missing VITE_CONTRACT_ADDRESS and no fallback configured for network ${NETWORK_ID}. Set it in frontend/.env.`
+  : !IS_CONTRACT_ADDRESS_VALID
+    ? `Invalid VITE_CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`
+    : null;
 export const NETWORK_NAME = import.meta.env.VITE_NETWORK_NAME || 'localhost';
 export const IPFS_GATEWAY = import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
 

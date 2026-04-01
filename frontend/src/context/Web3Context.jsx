@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, NETWORK_ID } from '../config/contract';
+import { CONTRACT_ADDRESS, CONTRACT_ABI, NETWORK_ID, CONTRACT_CONFIG_ERROR } from '../config/contract';
 
 const Web3Context = createContext();
 
@@ -87,6 +87,10 @@ export const Web3Provider = ({ children }) => {
       const provider = getProvider();
       if (!provider) {
         throw new Error('MetaMask provider not found');
+      }
+
+      if (CONTRACT_CONFIG_ERROR) {
+        throw new Error(CONTRACT_CONFIG_ERROR);
       }
 
       // Request account access

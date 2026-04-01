@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, IPFS_GATEWAY } from './config/contract';
+import { CONTRACT_ADDRESS, CONTRACT_ABI, IPFS_GATEWAY, CONTRACT_CONFIG_ERROR } from './config/contract';
 
 /**
  * Convert IPFS URI to HTTP gateway URL.
@@ -268,6 +268,10 @@ export const verifyCredential = async (contract, tokenId) => {
  * Build a read-only public contract instance for verification without wallet.
  */
 export const getPublicContract = (rpcUrl) => {
+  if (CONTRACT_CONFIG_ERROR) {
+    throw new Error(CONTRACT_CONFIG_ERROR);
+  }
+
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 };
