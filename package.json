@@ -1,5 +1,5 @@
 {
-<<<<<<< HEAD
+
   "name": "tokenized-academic-credentials",
   "version": "1.0.0",
   "description": "Blockchain-based Academic Credential Verification System",
@@ -76,6 +76,6 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3",
     "vite": "^5.1.0"
->>>>>>> origin/new-ui
+
   }
 }

@@ -1,5 +1,4 @@
 node_modules
-<<<<<<< HEAD
 .env
 coverage
 coverage.json
@@ -37,4 +36,3 @@ dist
 .evn.*
 !.env.example
 !.env.production.example
->>>>>>> origin/new-ui
