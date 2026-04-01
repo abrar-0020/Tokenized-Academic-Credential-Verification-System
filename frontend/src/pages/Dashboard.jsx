@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [viewMode, setViewMode] = useState('owned');
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   useEffect(() => {
     if (account && contract) {
@@ -53,7 +54,9 @@ const Dashboard = () => {
   };
 
   const displayCredentials = viewMode === 'owned' ? credentials : allCredentials;
-  const recentRows = useMemo(() => displayCredentials.slice(0, 4), [displayCredentials]);
+  const recentRows = useMemo(() => {
+    return showAllActivity ? displayCredentials : displayCredentials.slice(0, 4);
+  }, [displayCredentials, showAllActivity]);
   const validCount = displayCredentials.filter((c) => !c.revoked).length;
 
   const initialsFor = (name) => (name || 'Unknown Scholar').slice(0, 2).toUpperCase();
@@ -141,7 +144,15 @@ const Dashboard = () => {
                 <div className="bg-[#131313] rounded-lg p-6 overflow-hidden">
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="font-headline text-xl font-bold text-[#c6c6c7]">Recent Verifications</h2>
-                    <button className="text-[#8197ff] text-sm font-medium hover:underline" type="button">View All Activity</button>
+                    {displayCredentials.length > 4 && (
+                      <button
+                        className="text-[#8197ff] text-sm font-medium hover:underline"
+                        type="button"
+                        onClick={() => setShowAllActivity((prev) => !prev)}
+                      >
+                        {showAllActivity ? 'Show Less' : 'View All Activity'}
+                      </button>
+                    )}
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
