@@ -1,0 +1,14 @@
+# Never upload local env files
+.env
+.env.*
+.evn
+.evn.*
+
+# Keep safe templates
+!.env.example
+!.env.production.example
+
+# Local build/cache artifacts
+node_modules
+dist
+.vercel
