@@ -74,12 +74,12 @@ contract AcademicCredential is ERC721, ERC721URIStorage, AccessControl {
         bytes32 metadataHash = keccak256(abi.encodePacked(student, metadataURI));
         require(!_metadataHashExists[metadataHash], "Credential already exists for this metadata");
 
-        // Get current token ID and increment
+        // Assign current counter value first (starts at 0), then increment
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;
 
         // Mint the token
-        _safeMint(student, tokenId);
+        _mint(student, tokenId);
         _setTokenURI(tokenId, metadataURI);
 
         // Store credential details

@@ -162,11 +162,21 @@ export const Web3Provider = ({ children }) => {
         web3Signer
       );
 
-      // Check roles
-      const issuerRole = await contractInstance.ISSUER_ROLE();
-      const adminRole = await contractInstance.DEFAULT_ADMIN_ROLE();
-      const hasIssuerRole = await contractInstance.hasRole(issuerRole, accounts[0]);
-      const hasAdminRole = await contractInstance.hasRole(adminRole, accounts[0]);
+      // Check roles — wrapped in try/catch in case the contract is unreachable
+      // (e.g. CALL_EXCEPTION when the Sepolia deployment is stale or removed)
+      let hasIssuerRole = false;
+      let hasAdminRole = false;
+      let contractReachable = true;
+
+      try {
+        const issuerRole = await contractInstance.ISSUER_ROLE();
+        const adminRole = await contractInstance.DEFAULT_ADMIN_ROLE();
+        hasIssuerRole = await contractInstance.hasRole(issuerRole, accounts[0]);
+        hasAdminRole = await contractInstance.hasRole(adminRole, accounts[0]);
+      } catch (roleErr) {
+        contractReachable = false;
+        console.error('Contract unreachable — role check failed:', roleErr);
+      }
 
       setAccount(accounts[0]);
       setProvider(web3Provider);
@@ -176,6 +186,14 @@ export const Web3Provider = ({ children }) => {
       setIsIssuer(hasIssuerRole);
       setIsAdmin(hasAdminRole);
       setLoading(false);
+
+      if (!contractReachable) {
+        setError(
+          `Contract at ${CONTRACT_ADDRESS} is not reachable on ${network.name || 'this network'}. ` +
+          `It may have been removed or the network may have reset. ` +
+          `Please redeploy the contract and update VITE_CONTRACT_ADDRESS in frontend/.env.`
+        );
+      }
     } catch (err) {
       console.error('Error connecting wallet:', err);
       setError(err.message);

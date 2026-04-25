@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 const provider = new ethers.JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com');
-const address = '0x7B5206a636d9D0819E469fA4dfABF0BE062e0297';
+const address = '0x4b948b20C17E793021835a3423B42A2da71E96b3';
 
 const abi = [
   "function name() view returns (string)",
