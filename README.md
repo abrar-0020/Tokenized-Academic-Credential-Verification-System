@@ -15,7 +15,7 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 ** Status:**  Live and Production-Ready
 
 ### Access the Live Application:
-1. Visit https://www.deoxys.in/](https://www.deoxys.in/)
+1. Visit https://www.deoxys.in/
 2. Install MetaMask browser extension
 3. Switch to Sepolia test network
 4. Connect your wallet and start using the platform!
