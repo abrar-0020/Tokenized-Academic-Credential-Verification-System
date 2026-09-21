@@ -9,7 +9,7 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ##  Live Deployment
 
-** Production Site:** [https://tokcred.vercel.app](https://tokcred.vercel.app)  
+** Production Site:** [https://tokcred.vercel.app]  
 ** Smart Contract:** [0x4b948b20C17E793021835a3423B42A2da71E96b3](https://sepolia.etherscan.io/address/0x4b948b20C17E793021835a3423B42A2da71E96b3)  
 ** Network:** Sepolia Testnet (Chain ID: 11155111)  
 ** Status:**  Live and Production-Ready
