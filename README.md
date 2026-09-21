@@ -676,7 +676,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions or support:
 - Create an issue on GitHub
-- Email: doaminexpansion@gmail.com
+- Email: space.pikkle@gmail.com
 
 ---
 
