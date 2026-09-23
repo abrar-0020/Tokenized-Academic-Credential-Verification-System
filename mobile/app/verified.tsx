@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import TopAppBar from '@/components/M3/TopAppBar';
 import Button from '@/components/M3/Button';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/config/theme';
+import { CONTRACT_ADDRESS } from '@/config/contract';
 
 export default function VerifiedCredential() {
   const router = useRouter();
@@ -106,7 +107,7 @@ export default function VerifiedCredential() {
             <Text style={styles.blockchainLabel}>Token ID</Text>
             <Text style={[styles.blockchainValue, { fontFamily: 'Inter_400Regular' }]}>#{tokenId}</Text>
           </View>
-          <TouchableOpacity onPress={() => Linking.openURL(`https://sepolia.etherscan.io/nft/${process.env.EXPO_PUBLIC_CONTRACT_ADDRESS}/${tokenId}`)}>
+          <TouchableOpacity onPress={() => Linking.openURL(`https://sepolia.etherscan.io/token/${CONTRACT_ADDRESS}?a=${tokenId}`)}>
             <Text style={styles.explorerLink}>View on Explorer →</Text>
           </TouchableOpacity>
         </View>

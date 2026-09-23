@@ -10,7 +10,7 @@ import { Colors, Typography, Spacing, Radius, Shadow } from '@/config/theme';
 import { getCredentialDetails } from '@/services/blockchain/credentials';
 import { fetchMetadata } from '@/services/ipfs/metadata';
 import { formatDate, shortenAddress, shortenHash } from '@/utils/helpers';
-import { CredentialData, CredentialMetadata } from '@/config/contract';
+import { CredentialData, CredentialMetadata, CONTRACT_ADDRESS } from '@/config/contract';
 
 export default function CredentialDetails() {
   const router = useRouter();
@@ -145,7 +145,7 @@ export default function CredentialDetails() {
             <Text style={styles.blockchainLabel}>Token ID</Text>
             <Text style={[styles.blockchainValue, { fontFamily: 'Inter_400Regular' }]}>#{id}</Text>
           </View>
-          <TouchableOpacity onPress={() => Linking.openURL(`https://sepolia.etherscan.io/nft/${process.env.EXPO_PUBLIC_CONTRACT_ADDRESS}/${id}`)}>
+          <TouchableOpacity onPress={() => Linking.openURL(`https://sepolia.etherscan.io/token/${CONTRACT_ADDRESS}?a=${id}`)}>
             <Text style={styles.explorerLink}>View on Explorer →</Text>
           </TouchableOpacity>
         </View>
