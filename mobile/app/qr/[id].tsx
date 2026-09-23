@@ -12,7 +12,7 @@ export default function CredentialQR() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   // QR value encodes the credential ID so any verifier can scan and verify
-  const qrValue = `credentialvault://verify/${id}`;
+  const qrValue = `tokcred://verify/${id}`;
 
   const handleShare = async () => {
     await Share.share({
@@ -22,7 +22,7 @@ export default function CredentialQR() {
 
   return (
     <View style={styles.screen}>
-      <TopAppBar title="CredentialVault" showBack />
+      <TopAppBar title="TokCred" showBack />
       <View style={[styles.center, { paddingBottom: insets.bottom + Spacing.xl }]}>
         <View style={styles.card}>
           {/* Gradient accent bar */}

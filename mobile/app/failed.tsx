@@ -82,7 +82,7 @@ export default function VerificationFailed() {
 
           {/* Card footer */}
           <View style={styles.cardFooter}>
-            <Text style={styles.footerText}>Verified by CredentialVault Protocol · Secure Ledger</Text>
+            <Text style={styles.footerText}>Verified by TokCred Protocol · Secure Ledger</Text>
           </View>
         </View>
       </View>

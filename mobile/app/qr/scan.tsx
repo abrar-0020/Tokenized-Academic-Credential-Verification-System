@@ -45,7 +45,7 @@ export default function ScanQR() {
     let extractedId = '';
 
     // Parse URL formats:
-    // 1: credentialvault://verify/42
+    // 1: tokcred://verify/42
     // 2: https://www.deoxys.in/public-verify?tokenId=42
     // 3: 42 (plain text)
 
@@ -53,7 +53,7 @@ export default function ScanQR() {
       if (data.includes('tokenId=')) {
         const url = new URL(data);
         extractedId = url.searchParams.get('tokenId') || '';
-      } else if (data.startsWith('credentialvault://verify/')) {
+      } else if (data.startsWith('tokcred://verify/')) {
         extractedId = data.split('/').pop() || '';
       } else {
         extractedId = data.trim();

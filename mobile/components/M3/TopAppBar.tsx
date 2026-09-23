@@ -10,7 +10,7 @@ type Props = {
   trailing?: React.ReactNode;
 };
 
-export default function TopAppBar({ title = 'CredentialVault', showBack = false, trailing }: Props) {
+export default function TopAppBar({ title = 'TokCred', showBack = false, trailing }: Props) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 

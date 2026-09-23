@@ -1,4 +1,4 @@
-// CredentialVault — Material 3 "Academic Tech Precision" Design System
+// TokCred — Material 3 "Academic Tech Precision" Design System
 // All tokens extracted from the UI screen DESIGN.md and code.html files.
 
 export const Colors = {

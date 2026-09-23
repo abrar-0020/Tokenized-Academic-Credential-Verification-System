@@ -75,7 +75,7 @@ export default function WalletConnect() {
         <View style={styles.noteBox}>
           <Ionicons name="information-circle" size={18} color={Colors.onSurfaceVariant} style={{ marginTop: 2 }} />
           <Text style={styles.noteText}>
-            CredentialVault never stores your private key. Connection is read-only until you initiate a transaction.
+            TokCred never stores your private key. Connection is read-only until you initiate a transaction.
           </Text>
         </View>
       </ScrollView>

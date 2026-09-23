@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "CredentialVault",
-    "slug": "credentialvault",
-    "scheme": "credentialvault",
+    "name": "TokCred",
+    "slug": "tokcred",
+    "scheme": "tokcred",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,21 +15,21 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.credentialvault.app"
+      "bundleIdentifier": "com.tokcred.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#f9f9f8"
       },
-      "package": "com.credentialvault.app",
+      "package": "com.tokcred.app",
       "intentFilters": [
         {
           "action": "VIEW",
           "autoVerify": true,
           "data": [
             {
-              "scheme": "credentialvault"
+              "scheme": "tokcred"
             }
           ],
           "category": [
@@ -53,7 +53,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow CredentialVault to access your camera to scan credential QR codes."
+          "cameraPermission": "Allow TokCred to access your camera to scan credential QR codes."
         }
       ],
       "expo-secure-store"

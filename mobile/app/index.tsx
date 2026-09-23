@@ -33,7 +33,7 @@ export default function AppEntry() {
         <View style={styles.logoCircle}>
           <Ionicons name="ribbon" size={48} color={Colors.onPrimary} style={{ marginLeft: 2 }} />
         </View>
-        <Text style={styles.appName}>CredentialVault</Text>
+        <Text style={styles.appName}>TokCred</Text>
         <Text style={styles.tagline}>Verified academic credentials{'\n'}on the blockchain</Text>
       </View>
 

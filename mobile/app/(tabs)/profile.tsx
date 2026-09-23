@@ -127,7 +127,7 @@ export default function Profile() {
           style={styles.disconnectBtn}
         />
 
-        <Text style={styles.footer}>CredentialVault · Powered by Ethereum</Text>
+        <Text style={styles.footer}>TokCred · Powered by Ethereum</Text>
       </ScrollView>
     </View>
   );
