@@ -82,8 +82,8 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-[#1f2020] flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
           <p>&copy; {new Date().getFullYear()} The Scholar Ledger. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-[#8197ff] transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-[#8197ff] transition-colors">Terms of Service</a>
+            <a href="/privacy" className="hover:text-[#8197ff] transition-colors">Privacy Policy</a>
+            <a href="/terms" className="hover:text-[#8197ff] transition-colors">Terms of Service</a>
           </div>
         </div>
       </div>

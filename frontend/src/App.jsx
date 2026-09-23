@@ -10,9 +10,11 @@ import Dashboard from './pages/Dashboard';
 import VerifyCredential from './pages/VerifyCredential';
 import PublicVerify from './pages/PublicVerify';
 import History from './pages/History';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import { SkeletonDemo } from '@/components/ui/demo';
 
-const obsidianRoutes = ['/', '/dashboard', '/issue', '/verify', '/public-verify', '/history'];
+const obsidianRoutes = ['/', '/dashboard', '/issue', '/verify', '/public-verify', '/history', '/privacy', '/terms'];
 
 const AppLayout = () => {
   const location = useLocation();
@@ -29,6 +31,8 @@ const AppLayout = () => {
           <Route path="/verify" element={<VerifyCredential />} />
           <Route path="/public-verify" element={<PublicVerify />} />
           <Route path="/history" element={<History />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="/skeleton" element={<SkeletonDemo />} />
         </Routes>
       </main>
