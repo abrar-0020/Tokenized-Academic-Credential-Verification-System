@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verify a Credential - CredentialVault</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#476c5b",
+                        "surface": "#f9f9f8",
+                        "on-tertiary-fixed": "#331200",
+                        "tertiary-fixed-dim": "#ffb68e",
+                        "secondary-container": "#c3ecd7",
+                        "surface-dim": "#dadad9",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "outline": "#707974",
+                        "surface-tint": "#2b6954",
+                        "secondary-fixed": "#c3ecd7",
+                        "inverse-primary": "#95d3ba",
+                        "tertiary": "#502000",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f9f9f8",
+                        "primary-container": "#064e3b",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-primary-fixed": "#002117",
+                        "on-surface-variant": "#404944",
+                        "on-surface": "#1a1c1c",
+                        "primary-fixed": "#b0f0d6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-primary-container": "#80bea6",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffdbca",
+                        "on-tertiary-container": "#ff985a",
+                        "outline-variant": "#bfc9c3",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002115",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "secondary": "#416656",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "tertiary-container": "#733100",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e8e8e7",
+                        "primary": "#003527",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "surface-container": "#eeeeed",
+                        "background": "#f9f9f8",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "gutter": "24px",
+                        "xl": "40px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "max-width": "1280px",
+                        "margin-desktop": "64px",
+                        "lg": "24px",
+                        "margin-mobile": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "label-lg": ["Inter", "sans-serif"],
+                        "display-lg": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "title-lg": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- Suppressed navigation shell due to linear/transactional intent (Public Verifier) -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<div class="max-w-md w-full bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-outline-variant/20 p-xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10"></div>
+<div class="text-center mb-lg">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-high mb-md text-primary">
+<span class="material-symbols-outlined text-4xl" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-sm">Verify a Credential</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Enter the credential details or scan to authenticate.</p>
+</div>
+<form class="space-y-md">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-md flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<input class="block w-full pl-12 pr-md py-4 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder-on-surface-variant/60" id="credential-id" placeholder="Enter credential or token ID" type="text"/>
+</div>
+<div class="flex flex-col gap-sm">
+<button class="w-full flex items-center justify-center gap-sm py-4 px-md bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg hover:bg-primary-container/90 transition-colors shadow-sm active:scale-[0.98]" type="button">
+                        Verify Credential
+                    </button>
+<button class="w-full flex items-center justify-center gap-sm py-4 px-md bg-transparent border border-outline text-on-surface rounded-xl font-label-lg text-label-lg hover:bg-surface-variant/30 transition-colors active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+                        Scan QR Code
+                    </button>
+</div>
+<div class="text-center mt-md">
+<p class="font-label-md text-label-md text-outline flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="info">info</span>
+                        No wallet required
+                    </p>
+</div>
+</form>
+</div>
+</main>
+</body></html>

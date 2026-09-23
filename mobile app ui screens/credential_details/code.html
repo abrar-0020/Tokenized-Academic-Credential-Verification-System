@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Credential Detail - CredentialVault</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "secondary-fixed": "#c3ecd7",
+                    "surface-container-highest": "#e2e2e2",
+                    "tertiary-container": "#733100",
+                    "surface-container": "#eeeeed",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "outline": "#707974",
+                    "surface-container-high": "#e8e8e7",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#95d3ba",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ff985a",
+                    "tertiary-fixed": "#ffdbca",
+                    "surface-tint": "#2b6954",
+                    "background": "#f9f9f8",
+                    "on-secondary-fixed": "#002115",
+                    "primary": "#003527",
+                    "primary-fixed-dim": "#95d3ba",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#bfc9c3",
+                    "primary-container": "#064e3b",
+                    "secondary": "#416656",
+                    "surface-dim": "#dadad9",
+                    "on-secondary-fixed-variant": "#294e3f",
+                    "on-primary-container": "#80bea6",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-tertiary-fixed": "#331200",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#763300",
+                    "inverse-surface": "#2f3130",
+                    "primary-fixed": "#b0f0d6",
+                    "on-secondary-container": "#476c5b",
+                    "tertiary": "#502000",
+                    "surface-container-low": "#f3f4f3",
+                    "on-primary-fixed-variant": "#0b513d",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#ffb68e",
+                    "secondary-container": "#c3ecd7",
+                    "on-background": "#1a1c1c",
+                    "on-primary-fixed": "#002117",
+                    "secondary-fixed-dim": "#a8cfbc",
+                    "surface-bright": "#f9f9f8",
+                    "on-surface": "#1a1c1c",
+                    "on-surface-variant": "#404944",
+                    "surface": "#f9f9f8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "max-width": "1280px",
+                    "lg": "24px",
+                    "xl": "40px",
+                    "xs": "4px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter", "sans-serif"],
+                    "body-lg": ["Inter", "sans-serif"],
+                    "headline-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "label-lg": ["Inter", "sans-serif"],
+                    "display-lg": ["Inter", "sans-serif"],
+                    "title-lg": ["Inter", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                    "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                    "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                    "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- Shared Component: TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-container-low bg-surface-container dark:bg-surface-container-high shadow-sm z-40">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full max-w-max-width mx-auto">
+<!-- Leading Icon -->
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 transition-colors active:scale-95 duration-150 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">account_balance</span>
+</button>
+<!-- Headline -->
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed font-semibold">
+                CredentialVault
+            </h1>
+<!-- Trailing Avatar -->
+<button class="hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 transition-colors active:scale-95 duration-150 rounded-full overflow-hidden w-8 h-8 focus:outline-none focus:ring-2 focus:ring-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a young adult with a neutral expression, clean modern lighting, corporate academic context, soft gray background. The style is highly realistic, high resolution, suitable for a premium application user profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7bdL6PvDidmpb8CDZuy2B_3bl1R3zJ4jZuxp4RNYxPk-UPYNV2BlkcEufWKdAtyWQHuoSMgPfcPuL61_Wh0PWTJDjvFv-je-qyxc-x_fQtweYABYhe_6qhffo0LmRgugKHzUbtAJniC69uILroOPiZtxvLCYilxFUHevf9R6IbS6eQkyKTb3-I6tWQxkiHWWIcfMKafWdeK7R9jffkrBu5Aw1R_01mo-J1Km6AYOfxAtHbKSH-32H"/>
+</button>
+</div>
+</header>
+<!-- Note: NavigationDrawer and BottomNavBar are intentionally suppressed per the 'Semantic Shell' mandate 
+         as this is a Task-Focused/Detail view sub-page that implies a temporary departure from the main flow. -->
+<!-- Main Canvas Area -->
+<main class="flex-grow w-full max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-lg flex flex-col">
+<!-- Contextual Back Navigation -->
+<a class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors mb-lg font-label-lg text-label-lg w-fit" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Credentials
+        </a>
+<!-- Header Section: Identity & Actions -->
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-lg mb-xl">
+<div class="flex flex-col gap-sm">
+<!-- Status Chip -->
+<div class="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container font-label-md text-label-md px-3 py-1 rounded-full w-fit mb-xs">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    Verified via Vault Network
+                </div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">
+                    Master of Business Administration
+                </h2>
+<p class="font-title-lg text-title-lg text-on-surface-variant">
+                    University of Pennsylvania - Wharton
+                </p>
+</div>
+<!-- Actions Row -->
+<div class="flex items-center gap-md mt-md md:mt-0 shrink-0">
+<!-- Secondary Actions (Compact) -->
+<button aria-label="View QR Code" class="bg-surface-container hover:bg-surface-variant transition-colors text-primary p-3 rounded-xl flex items-center justify-center group relative shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+<span class="material-symbols-outlined">qr_code_2</span>
+<!-- Tooltip -->
+<span class="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-inverse-surface text-inverse-on-surface font-label-md text-label-md px-2 py-1 rounded">QR</span>
+</button>
+<button aria-label="View Blockchain Explorer" class="bg-surface-container hover:bg-surface-variant transition-colors text-primary p-3 rounded-xl flex items-center justify-center group relative shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+<span class="material-symbols-outlined">link</span>
+<!-- Tooltip -->
+<span class="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-inverse-surface text-inverse-on-surface font-label-md text-label-md px-2 py-1 rounded">Blockchain</span>
+</button>
+<!-- Primary Action -->
+<button class="bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-lg text-label-lg py-3 px-6 rounded-xl flex items-center gap-2 shadow-[0_2px_8px_rgba(6,78,59,0.15)]">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+                    Share Credential
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Visual Seal & Core Details -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Credential Seal Card (High Focus) -->
+<div class="bg-surface rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] relative overflow-hidden flex flex-col items-center justify-center p-xl min-h-[320px] border border-outline-variant/20">
+<!-- Subtle background pattern -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, #003527 1px, transparent 0); background-size: 24px 24px;"></div>
+<!-- Tertiary Gold Seal Component -->
+<div class="relative w-40 h-40 flex items-center justify-center mb-md">
+<div class="absolute inset-0 border-[6px] border-tertiary-container rounded-full opacity-20"></div>
+<div class="absolute inset-2 border-[2px] border-tertiary-container rounded-full border-dashed opacity-50"></div>
+<div class="absolute inset-4 bg-tertiary-container rounded-full flex items-center justify-center shadow-inner">
+<span class="material-symbols-outlined text-on-tertiary text-[48px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+</div>
+<div class="font-label-lg text-label-lg text-tertiary-container text-center tracking-widest uppercase">
+                        Official Record
+                    </div>
+<div class="font-body-md text-body-md text-on-surface-variant text-center mt-xs">
+                        ID: W-2023-88492
+                    </div>
+</div>
+</div>
+<!-- Right Column: Verification, Metadata, Blockchain -->
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Verification Details Card (Full width in right column area) -->
+<div class="md:col-span-2 bg-surface rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-lg border-l-[4px] border-primary-container relative">
+<h3 class="font-title-lg text-title-lg text-primary mb-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+                        Verification Details
+                    </h3>
+<dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-gutter gap-y-md">
+<div class="flex flex-col border-b border-surface-variant/50 pb-sm">
+<dt class="font-label-md text-label-md text-on-surface-variant mb-1">Recipient Name</dt>
+<dd class="font-body-lg text-body-lg text-on-surface">Eleanor V. Vance</dd>
+</div>
+<div class="flex flex-col border-b border-surface-variant/50 pb-sm">
+<dt class="font-label-md text-label-md text-on-surface-variant mb-1">Date of Issue</dt>
+<dd class="font-body-lg text-body-lg text-on-surface">May 15, 2023</dd>
+</div>
+<div class="flex flex-col border-b border-surface-variant/50 pb-sm">
+<dt class="font-label-md text-label-md text-on-surface-variant mb-1">Issuing Institution</dt>
+<dd class="font-body-lg text-body-lg text-on-surface">University of Pennsylvania</dd>
+</div>
+<div class="flex flex-col border-b border-surface-variant/50 pb-sm">
+<dt class="font-label-md text-label-md text-on-surface-variant mb-1">Expiration</dt>
+<dd class="font-body-lg text-body-lg text-on-surface">Does Not Expire</dd>
+</div>
+</dl>
+</div>
+<!-- Academic Metadata Card -->
+<div class="bg-surface rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-lg">
+<h3 class="font-title-lg text-title-lg text-primary mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">school</span>
+                        Academic Record
+                    </h3>
+<ul class="flex flex-col">
+<li class="py-sm border-b border-surface-variant/50 last:border-0 flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Degree Focus</span>
+<span class="font-label-lg text-label-lg text-on-surface text-right">Finance &amp; Economics</span>
+</li>
+<li class="py-sm border-b border-surface-variant/50 last:border-0 flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Honors</span>
+<span class="font-label-lg text-label-lg text-on-surface text-right">Summa Cum Laude</span>
+</li>
+<li class="py-sm border-b border-surface-variant/50 last:border-0 flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">GPA</span>
+<span class="font-label-lg text-label-lg text-on-surface text-right">3.98 / 4.0</span>
+</li>
+<li class="py-sm border-b border-surface-variant/50 last:border-0 flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Credit Hours</span>
+<span class="font-label-lg text-label-lg text-on-surface text-right">120 Verified</span>
+</li>
+</ul>
+</div>
+<!-- Blockchain Record (Visually Quiet) -->
+<div class="bg-surface-container-low rounded-xl p-lg border border-outline-variant/30 flex flex-col justify-between">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface-variant mb-md flex items-center gap-2 opacity-80">
+<span class="material-symbols-outlined text-[20px]">database</span>
+                            Ledger Proof
+                        </h3>
+<div class="flex flex-col gap-sm mb-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-outline">Network</span>
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+                                    Ethereum Mainnet
+                                </span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-outline">Transaction Hash</span>
+<span class="font-body-md text-body-md text-on-surface-variant font-mono truncate bg-surface-container py-1 px-2 rounded mt-1 opacity-70 cursor-copy hover:opacity-100 transition-opacity" onclick="navigator.clipboard.writeText('0x8f2a39b4e7c1d5f8a2b6c9d4e1f7a8b3c5d9e2f4a1b6c8d7e9f2a3b4c5d69c4b')" title="0x8f2a...9c4b">
+                                    0x8f2a...9c4b
+                                </span>
+</div>
+</div>
+</div>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:underline w-fit" href="#">
+                        View on Explorer
+                        <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+</body></html>

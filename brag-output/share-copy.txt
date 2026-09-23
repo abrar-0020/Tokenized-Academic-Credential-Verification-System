@@ -1,0 +1,1 @@
+Introducing The Scholar Ledger: Immutable academic credentials verified instantly on the blockchain. Built with React and Solidity.

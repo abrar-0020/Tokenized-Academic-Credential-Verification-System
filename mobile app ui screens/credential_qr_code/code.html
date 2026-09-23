@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CredentialVault - QR Presentation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e2",
+                        "secondary-fixed": "#c3ecd7",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-container": "#733100",
+                        "surface-container": "#eeeeed",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline": "#707974",
+                        "surface-container-high": "#e8e8e7",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#95d3ba",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ff985a",
+                        "tertiary-fixed": "#ffdbca",
+                        "surface-tint": "#2b6954",
+                        "background": "#f9f9f8",
+                        "on-secondary-fixed": "#002115",
+                        "primary": "#003527",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bfc9c3",
+                        "primary-container": "#064e3b",
+                        "secondary": "#416656",
+                        "surface-dim": "#dadad9",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-primary-container": "#80bea6",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-tertiary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "inverse-surface": "#2f3130",
+                        "primary-fixed": "#b0f0d6",
+                        "on-secondary-container": "#476c5b",
+                        "tertiary": "#502000",
+                        "surface-container-low": "#f3f4f3",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb68e",
+                        "secondary-container": "#c3ecd7",
+                        "on-background": "#1a1c1c",
+                        "on-primary-fixed": "#002117",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "surface-bright": "#f9f9f8",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#404944",
+                        "surface": "#f9f9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "max-width": "1280px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "xs": "4px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-container-low shadow-sm z-40">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full max-w-max-width mx-auto">
+<div class="flex items-center gap-sm">
+<button class="p-2 text-primary dark:text-primary-fixed hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 transition-colors active:scale-95 duration-150 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed font-semibold">
+                CredentialVault
+            </div>
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 rounded-full overflow-hidden hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 transition-colors active:scale-95 duration-150 border border-outline-variant/30 flex items-center justify-center bg-surface-container">
+<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-margin-mobile py-lg">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-outline-variant/20 p-lg flex flex-col items-center text-center relative overflow-hidden">
+<!-- Subtle Background Accent -->
+<div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-container to-secondary-container"></div>
+<div class="mb-md">
+<span class="material-symbols-outlined text-primary text-5xl" data-icon="qr_code_scanner" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</div>
+<h1 class="font-title-lg text-title-lg text-on-surface mb-xs">
+                Scan to verify this credential
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">
+                No wallet or account required
+            </p>
+<!-- QR Code Container -->
+<div class="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/30 mb-lg relative group transition-transform duration-300 hover:scale-[1.02]">
+<!-- Placeholder for actual QR code image -->
+<img alt="Credential QR Code" class="w-64 h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity" data-alt="A clean, high-contrast, minimalist QR code image centered on a pristine white background. The QR code is sharp and detailed, representing a secure digital credential. The overall aesthetic is modern, professional, and trustworthy, suitable for an academic technology platform. Subtle, even lighting ensures perfect clarity without glare." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpaNtpW-98-1GQszMtPGEQbEenA9dwq2hbNj0auaLpUkaz5Ypd6jWGpyNw5E7VO7MF7CLGfN_A-S0EPR3JNbojmEfwvbf7Clfl0zwG1Q6X9oalX855kImNBnuLJSRNg1L2bOguqGtTSgVjUc21F1VflcykmMfPbT3tPGpgKeRvOap2_78-h-6Sx0cNtvK28TmtnOuwcd9_lQnirC2dG6atSz9f1EYggi1xHsQbLz9AdohDFtpTFW7t"/>
+<!-- Scanning animation overlay (decorative) -->
+<div class="absolute inset-0 border-2 border-primary/20 rounded-xl pointer-events-none">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary/40 blur-[2px] rounded-full shadow-[0_0_8px_rgba(0,53,39,0.5)] animate-[scan_3s_ease-in-out_infinite]"></div>
+</div>
+</div>
+<!-- Credential Details Summary -->
+<div class="w-full bg-surface-container-low rounded-lg p-md text-left flex items-start gap-md border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center shrink-0 border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="school">school</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Alex Mercer</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Master of Science in Computer Science</span>
+<span class="font-label-md text-label-md text-primary mt-xs flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                        University of Technology
+                    </span>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-lg w-full flex justify-center gap-md">
+<button class="flex items-center gap-xs font-label-lg text-label-lg text-primary hover:text-primary-container transition-colors py-2 px-4 rounded-full hover:bg-primary-container/5">
+<span class="material-symbols-outlined text-[20px]" data-icon="share">share</span>
+                     Share Link
+                 </button>
+</div>
+</div>
+</main>
+<style>
+        @keyframes scan {
+            0%, 100% { top: 0%; opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { top: 100%; opacity: 1; }
+        }
+    </style>
+</body></html>

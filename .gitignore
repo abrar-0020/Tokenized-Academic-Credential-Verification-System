@@ -1,38 +1,71 @@
+# Dependencies
 node_modules/
-.env
-coverage
-coverage.json
-typechain
-typechain-types
+**/node_modules/
 
-# Hardhat files
-cache
-artifacts
-
-# Frontend
-frontend/node_modules
-frontend/dist
-frontend/.env
-frontend/.env.local
-frontend/.env.production
-
-# IDE
-.idea
-.vscode
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-dist/
-.vercel
-
-# Local environment files (never commit)
+# Environment files (NEVER commit secrets)
 .env
 .env.*
-.evn
-.evn.*
+*.env
+*.env.*
+*.local
+!*.example
+!*.example.*
 !.env.example
 !.env.production.example
+!frontend/.env.example
+!frontend/.env.production.example
+!mobile/.env.example
+
+# Hardhat & Solidity artifacts
+cache/
+artifacts/
+typechain/
+typechain-types/
+coverage/
+coverage.json
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+web-build/
+*.tsbuildinfo
+
+# Mobile & Expo
+mobile/platform-tools/
+.expo/
+**/.expo/
+mobile/android/
+mobile/ios/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Hyperframes & Media caches
+.hyperframes/
+**/.hyperframes/
+**/.thumbnails/
+**/.waveform-cache/
+brag-output/composition/renders/*.mp4
+
+# Agents & Tooling local metadata
+.agents/
+skills-lock.json
+.claude/
+**/.claude/
+.vercel
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

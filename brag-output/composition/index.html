@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>The Scholar Ledger - Launch Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #070913;
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: #f8fafc;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 10%, #172554 0%, #080c1b 60%, #030712 100%);
+      }
+
+      /* Starfall & Grid Ambient Background */
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-size: 60px 60px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 70%, transparent 100%);
+        pointer-events: none;
+      }
+      .bg-glow-1 {
+        position: absolute;
+        width: 1000px;
+        height: 1000px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%);
+        top: -200px;
+        left: 50%;
+        transform: translateX(-50%);
+        filter: blur(90px);
+        pointer-events: none;
+      }
+      .bg-glow-2 {
+        position: absolute;
+        width: 800px;
+        height: 800px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+        bottom: -150px;
+        right: 10%;
+        filter: blur(100px);
+        pointer-events: none;
+      }
+
+      .clip {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      /* Typography */
+      .font-display {
+        font-family: 'Manrope', sans-serif;
+      }
+      .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 40%, #818cf8 75%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .gradient-accent {
+        background: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Glassmorphism Containers */
+      .glass-card {
+        background: rgba(15, 23, 42, 0.72);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.08);
+        border-radius: 24px;
+      }
+
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        color: #a5b4fc;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+
+      /* Top Brand Header */
+      .nav-header {
+        position: absolute;
+        top: 44px;
+        left: 80px;
+        right: 80px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 50;
+      }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: 'Manrope', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #f1f5f9;
+      }
+      .brand-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+      }
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        background: rgba(30, 41, 59, 0.6);
+        padding: 6px 14px;
+        border-radius: 9999px;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+      }
+
+      /* Scene 1 Elements */
+      #scene1 {
+        text-align: center;
+      }
+      .s1-hero-title {
+        font-size: 78px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+        margin-bottom: 24px;
+        max-width: 1300px;
+      }
+      .s1-hero-sub {
+        font-size: 26px;
+        color: #94a3b8;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        margin-bottom: 32px;
+      }
+      .feature-tags-row {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+      }
+      .feature-tag {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 15px;
+        color: #cbd5e1;
+        font-weight: 500;
+      }
+
+      /* Scene 2 Admin Elements */
+      .admin-modal {
+        width: 1080px;
+        padding: 44px 52px;
+        position: relative;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .form-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .form-input {
+        background: rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 16px;
+        color: #e2e8f0;
+        font-family: 'JetBrains Mono', monospace;
+        height: 52px;
+        display: flex;
+        align-items: center;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 16px 32px;
+        color: white;
+        font-size: 17px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+      }
+      .success-toast {
+        position: absolute;
+        inset: 24px;
+        background: rgba(8, 28, 21, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        opacity: 0;
+        transform: scale(0.92);
+        box-shadow: 0 0 60px rgba(16, 185, 129, 0.25);
+      }
+
+      /* Scene 3 Tech Pillar Cards */
+      .pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        width: 1240px;
+      }
+      .pillar-card {
+        padding: 36px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      .pillar-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #818cf8;
+      }
+      .pillar-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f8fafc;
+      }
+      .pillar-desc {
+        font-size: 15px;
+        color: #94a3b8;
+        line-height: 1.6;
+      }
+
+      /* Scene 4 Verification Elements */
+      .verify-container {
+        width: 1100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .search-box {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(99, 102, 241, 0.35);
+        border-radius: 20px;
+        padding: 22px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(99, 102, 241, 0.15);
+        margin-bottom: 36px;
+      }
+      .search-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        color: #e2e8f0;
+        flex: 1;
+      }
+      .search-cursor {
+        display: inline-block;
+        width: 10px;
+        height: 22px;
+        background: #38bdf8;
+        margin-left: 2px;
+        vertical-align: middle;
+      }
+      .credential-cert {
+        width: 100%;
+        padding: 40px 48px;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 30, 0.95) 100%);
+        border: 1.5px solid rgba(52, 211, 153, 0.4);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(16, 185, 129, 0.15);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* Scene 5 Outro */
+      #scene5 {
+        text-align: center;
+      }
+      .outro-logo-shield {
+        width: 96px;
+        height: 96px;
+        border-radius: 26px;
+        background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 28px auto;
+        box-shadow: 0 0 60px rgba(79, 70, 229, 0.6);
+      }
+      .outro-title {
+        font-size: 84px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 16px;
+      }
+      .outro-subtitle {
+        font-size: 32px;
+        font-weight: 600;
+        color: #38bdf8;
+        letter-spacing: -0.01em;
+        margin-bottom: 36px;
+      }
+
+      /* Simulated Cursor */
+      .fake-cursor {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        pointer-events: none;
+        z-index: 100;
+        opacity: 0;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+      }
+      
+      .blinking-cursor {
+        display: inline-block;
+        width: 10px;
+        height: 20px;
+        background: #38bdf8;
+        margin-left: 2px;
+        vertical-align: middle;
+        opacity: 0; 
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-hf-id="hf-root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080">
+      <!-- Ambient Glows -->
+      <div data-hf-id="hf-yqqm" class="bg-grid"></div>
+      <div data-hf-id="hf-mf93" class="bg-glow-1" id="glow1"></div>
+      <div data-hf-id="hf-u7kp" class="bg-glow-2" id="glow2"></div>
+
+      <!-- Persistent Global Header -->
+      <header data-hf-id="hf-1xyv" class="nav-header">
+        <div data-hf-id="hf-y9s5" class="brand-logo">
+          <div data-hf-id="hf-2ti3" class="brand-icon">
+            <svg data-hf-id="hf-guy8" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path data-hf-id="hf-kfcs" d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path data-hf-id="hf-tdcq" d="M2 17l10 5 10-5" />
+              <path data-hf-id="hf-xx9v" d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span data-hf-id="hf-484j">The Scholar Ledger</span>
+        </div>
+        <div data-hf-id="hf-9hoa" class="status-indicator">
+          <div data-hf-id="hf-l9dc" class="status-dot"></div>
+          <span data-hf-id="hf-q23m">ETHEREUM MAINNET • IPFS ACTIVE</span>
+        </div>
+      </header>
+
+      <!-- Simulated Mouse Cursor -->
+      <div data-hf-id="hf-bc2u" class="fake-cursor" id="cursor">
+        <svg data-hf-id="hf-5rbb" width="24" height="24" viewBox="0 0 24 24" fill="#ffffff" stroke="#000000" stroke-width="1.5">
+          <polygon data-hf-id="hf-r7m8" points="0 0, 0 20, 5 15, 9 24, 13 22, 9 13, 16 13" />
+        </svg>
+      </div>
+
+      <!-- ================= SCENE 1: THE HOOK (0s - 6.0s) ================= -->
+      <section data-hf-id="hf-s1" id="scene1" class="clip" data-start="0" data-duration="6.0" data-track-index="0">
+        <div data-hf-id="hf-ad6o" class="badge-pill" id="s1-pill">
+          <svg data-hf-id="hf-vnd4" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon data-hf-id="hf-9m10" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+          Next-Gen Academic Credential Infrastructure
+        </div>
+        <h1 data-hf-id="hf-tluu" class="s1-hero-title font-display gradient-text" id="s1-title">
+          Decentralized Academic<br data-hf-id="hf-x5px"><span data-hf-id="hf-96ui" class="gradient-accent">Credentials</span>
+        </h1>
+        <p data-hf-id="hf-agtn" class="s1-hero-sub" id="s1-sub">
+          Immutable. Tamper-Proof. Cryptographically Verified.
+        </p>
+        <div data-hf-id="hf-r4jx" class="feature-tags-row" id="s1-tags">
+          <div data-hf-id="hf-ucef" class="feature-tag">🔒 Zero Paperwork</div>
+          <div data-hf-id="hf-6uzj" class="feature-tag">⚡ Instant Proof</div>
+          <div data-hf-id="hf-0lcu" class="feature-tag">🌐 Blockchain Secured</div>
+          <div data-hf-id="hf-no9g" class="feature-tag">🎓 Direct Institutional Trust</div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 2: ADMIN ISSUANCE (6.0s - 22.0s) ================= -->
+      <section data-hf-id="hf-s2" id="scene2" class="clip" data-start="6.0" data-duration="16.0" data-track-index="1" style="opacity: 0;">
+        <div data-hf-id="hf-ppdi" class="badge-pill" id="s2-pill">
+          <svg data-hf-id="hf-eck9" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path data-hf-id="hf-frh1" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle data-hf-id="hf-nb88" cx="9" cy="7" r="4" /><line data-hf-id="hf-kjq1" x1="19" y1="8" x2="19" y2="14" /><line data-hf-id="hf-q9lf" x1="22" y1="11" x2="16" y2="11" /></svg>
+          Institution Portal • Instant On-Chain Minting
+        </div>
+        <div data-hf-id="hf-86qz" class="glass-card admin-modal" id="s2-modal">
+          <div data-hf-id="hf-20xn" class="modal-header">
+            <div data-hf-id="hf-yeow">
+              <h2 data-hf-id="hf-wyh8" class="font-display" style="font-size: 24px; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Issue New Academic Credential</h2>
+              <p data-hf-id="hf-v02z" style="font-size: 14px; color: #94a3b8;">Authorizing Issuer: Stanford University Registrar (0x7a3...9d8)</p>
+            </div>
+            <span data-hf-id="hf-6h0x" style="font-family: 'JetBrains Mono'; font-size: 13px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">ERC-721 Standard</span>
+          </div>
+
+          <div data-hf-id="hf-i36f" class="form-grid">
+            <div data-hf-id="hf-dx00" class="form-group">
+              <label data-hf-id="hf-hvo5" class="form-label">Recipient Full Name</label>
+              <div data-hf-id="hf-5f9h" class="form-input">
+                <span data-hf-id="hf-963m" id="s2-typed-name"></span><span data-hf-id="hf-8el6" class="blinking-cursor" id="s2-cursor-name"></span>
+              </div>
+            </div>
+            <div data-hf-id="hf-1m3s" class="form-group">
+              <label data-hf-id="hf-ji5x" class="form-label">Student ID / Roll No</label>
+              <div data-hf-id="hf-ril5" class="form-input">
+                <span data-hf-id="hf-qhrc" id="s2-typed-id"></span><span data-hf-id="hf-re5s" class="blinking-cursor" id="s2-cursor-id"></span>
+              </div>
+            </div>
+            <div data-hf-id="hf-0f6p" class="form-group">
+              <label data-hf-id="hf-73ni" class="form-label">Degree Conferred</label>
+              <div data-hf-id="hf-spi8" class="form-input">
+                <span data-hf-id="hf-sn7p" id="s2-typed-deg"></span><span data-hf-id="hf-59e5" class="blinking-cursor" id="s2-cursor-deg"></span>
+              </div>
+            </div>
+            <div data-hf-id="hf-0thq" class="form-group">
+              <label data-hf-id="hf-lh3f" class="form-label">Graduation Honors</label>
+              <div data-hf-id="hf-sb77" class="form-input">
+                <span data-hf-id="hf-cf7g" id="s2-typed-honors"></span><span data-hf-id="hf-ik8k" class="blinking-cursor" id="s2-cursor-honors"></span>
+              </div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-noj9" style="display: flex; justify-content: flex-end;">
+            <div data-hf-id="hf-arnq" class="btn-primary" id="s2-mint-btn">
+              <svg data-hf-id="hf-7308" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon data-hf-id="hf-oz1e" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+              <span data-hf-id="hf-fx07">Mint Credential to Blockchain</span>
+            </div>
+          </div>
+
+          <!-- Success Confirmation Toast / Overlay -->
+          <div data-hf-id="hf-6ujo" class="success-toast" id="s2-toast">
+            <div data-hf-id="hf-yht8" style="width: 72px; height: 72px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
+              <svg data-hf-id="hf-qgrj" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline data-hf-id="hf-mlxs" points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 data-hf-id="hf-q4yx" class="font-display" style="font-size: 32px; font-weight: 800; color: #ecfdf5; margin-bottom: 10px;">Credential Minted Successfully</h3>
+            <p data-hf-id="hf-3w6d" style="font-size: 17px; color: #a7f3d0; margin-bottom: 20px;">Proof anchored to Block #19824910 with cryptographic IPFS timestamp.</p>
+            <div data-hf-id="hf-zp2d" style="font-family: 'JetBrains Mono'; font-size: 14px; background: rgba(6, 78, 59, 0.5); padding: 10px 24px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7;">
+              TOKEN ID: #0x8F94...3B1C • IPFS: QmXoyp...6uco
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 3: ARCHITECTURE & TRUST PILLARS (22.0s - 28.5s) ================= -->
+      <section data-hf-id="hf-s3" id="scene3" class="clip" data-start="22.0" data-duration="6.5" data-track-index="2" style="opacity: 0;">
+        <div data-hf-id="hf-7pp8" class="badge-pill" id="s3-pill">
+          <svg data-hf-id="hf-jssg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon data-hf-id="hf-q33a" points="12 2 2 7 12 12 22 7 12 2" /><polyline data-hf-id="hf-00a9" points="2 17 12 22 22 17" /><polyline data-hf-id="hf-jabd" points="2 12 12 17 22 12" /></svg>
+          Decentralized Architecture
+        </div>
+        <h2 data-hf-id="hf-vm2e" class="font-display" id="s3-heading" style="font-size: 46px; font-weight: 800; text-align: center; margin-bottom: 38px; letter-spacing: -0.02em;">
+          Built for Global Scale &amp; <span data-hf-id="hf-yqfs" class="gradient-accent">Zero Friction</span>
+        </h2>
+        <div data-hf-id="hf-te2o" class="pillars-grid">
+          <div data-hf-id="hf-hyag" class="glass-card pillar-card" id="pillar-1">
+            <div data-hf-id="hf-yxoe" class="pillar-icon">
+              <svg data-hf-id="hf-ycth" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle data-hf-id="hf-m1lh" cx="12" cy="12" r="10" /><line data-hf-id="hf-d7cg" x1="2" y1="12" x2="22" y2="12" /><path data-hf-id="hf-izf7" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+            </div>
+            <h3 data-hf-id="hf-ogn5" class="pillar-title">Decentralized IPFS</h3>
+            <p data-hf-id="hf-a85r" class="pillar-desc">Certificates and transcript records pinned permanently across a global distributed node network with zero single points of failure.</p>
+          </div>
+          <div data-hf-id="hf-qm6b" class="glass-card pillar-card" id="pillar-2">
+            <div data-hf-id="hf-xuxu" class="pillar-icon">
+              <svg data-hf-id="hf-t2nt" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect data-hf-id="hf-m8bx" x="2" y="7" width="20" height="14" rx="2" ry="2" /><path data-hf-id="hf-iv3z" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+            </div>
+            <h3 data-hf-id="hf-eh9v" class="pillar-title">Smart Contract Proofs</h3>
+            <p data-hf-id="hf-6wek" class="pillar-desc">Cryptographic signatures from verified university wallets guarantee non-repudiation and prevent certificate fraud forever.</p>
+          </div>
+          <div data-hf-id="hf-mo2a" class="glass-card pillar-card" id="pillar-3">
+            <div data-hf-id="hf-y98v" class="pillar-icon">
+              <svg data-hf-id="hf-u9kw" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path data-hf-id="hf-06ci" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            </div>
+            <h3 data-hf-id="hf-blu9" class="pillar-title">Instant Verification</h3>
+            <p data-hf-id="hf-713z" class="pillar-desc">Employers and background checkers verify authenticity in sub-seconds with zero fees and no intermediary bottlenecks.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 4: VERIFICATION (28.5s - 34.5s) ================= -->
+      <section data-hf-id="hf-s4" id="scene4" class="clip" data-start="28.5" data-duration="6.0" data-track-index="3" style="opacity: 0;">
+        <div data-hf-id="hf-jz05" class="verify-container">
+          <div data-hf-id="hf-reed" class="badge-pill" id="s4-pill">
+            <svg data-hf-id="hf-ejw9" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path data-hf-id="hf-v37q" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            Universal Public Verification
+          </div>
+
+          <div data-hf-id="hf-h8u0" class="search-box" id="s4-search">
+            <svg data-hf-id="hf-42n1" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.5"><circle data-hf-id="hf-7tjq" cx="11" cy="11" r="8" /><line data-hf-id="hf-qhri" x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            <div data-hf-id="hf-ztf8" class="search-text">
+              <span data-hf-id="hf-w0dw" id="s4-typed-text"></span><span data-hf-id="hf-9bwj" class="blinking-cursor" id="s4-cursor" style="opacity:1;"></span>
+            </div>
+            <div id="s4-verify-btn" data-hf-id="hf-b94f" style="background: rgba(99, 102, 241, 0.2); color: #c7d2fe; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 10px; border: 1px solid rgba(129, 140, 248, 0.3); display: inline-block;">
+              Verify On-Chain
+            </div>
+          </div>
+
+          <div data-hf-id="hf-a4bs" class="credential-cert" id="s4-cert">
+            <div data-hf-id="hf-qu51" style="display: flex; align-items: center; gap: 32px;">
+              <div data-hf-id="hf-cmrt" style="width: 84px; height: 84px; border-radius: 20px; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(16, 185, 129, 0.3);">
+                <svg data-hf-id="hf-zik1" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path data-hf-id="hf-vhir" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <polyline data-hf-id="hf-dfxi" points="9 12 11 14 15 10" />
+                </svg>
+              </div>
+              <div data-hf-id="hf-y7yw">
+                <div data-hf-id="hf-8ydr" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 700; color: #34d399; background: rgba(6, 78, 59, 0.6); padding: 4px 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(52, 211, 153, 0.3);">
+                  <span data-hf-id="hf-hhf9">● VERIFIED AUTHENTIC</span>
+                </div>
+                <h3 data-hf-id="hf-re8l" class="font-display" style="font-size: 28px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">Alex Chen — B.S. Computer Science &amp; AI</h3>
+                <p data-hf-id="hf-dvfw" style="font-size: 16px; color: #94a3b8;">Issued by: <strong data-hf-id="hf-2wx3" style="color: #e2e8f0;">Stanford University</strong> • Validated on Ethereum Ledger</p>
+              </div>
+            </div>
+
+            <div data-hf-id="hf-dgmu" style="text-align: right; border-left: 1px solid rgba(148, 163, 184, 0.15); padding-left: 36px;">
+              <div data-hf-id="hf-g9b3" style="font-family: 'JetBrains Mono'; font-size: 13px; color: #94a3b8; margin-bottom: 4px;">Zero Intermediaries</div>
+              <div data-hf-id="hf-6h43" class="gradient-accent" style="font-size: 24px; font-weight: 800;">100% Tamper Proof</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCENE 5: OUTRO (34.5s - 40.0s) ================= -->
+      <section data-hf-id="hf-s5" id="scene5" class="clip" data-start="34.5" data-duration="5.5" data-track-index="4" style="opacity: 0;">
+        <div data-hf-id="hf-yugr" class="outro-logo-shield" id="s5-logo">
+          <svg data-hf-id="hf-wn9s" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path data-hf-id="hf-aqlw" d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path data-hf-id="hf-mx32" d="M2 17l10 5 10-5" />
+            <path data-hf-id="hf-y80j" d="M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <h1 data-hf-id="hf-9l5l" class="outro-title font-display gradient-text" id="s5-title">
+          The Scholar Ledger
+        </h1>
+        <p data-hf-id="hf-ha37" class="outro-subtitle font-display" id="s5-sub">
+          Immutable Ledger-backed Proofs.
+        </p>
+        <div data-hf-id="hf-fc5g" class="badge-pill" id="s5-pill" style="margin-bottom: 0;">
+          <span data-hf-id="hf-pcio">Deploy for Your Institution →</span>
+        </div>
+      </section>
+
+      <!-- Audio Track & Sound Effects -->
+      <audio data-hf-id="hf-0fv8" id="bg-music" data-start="0" data-duration="40" data-track-index="10" data-volume="0.35" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3"></audio>
+      <audio data-hf-id="hf-a6ok" id="sfx-entry" data-start="0.3" data-duration="1.5" data-track-index="11" data-volume="0.6" src="assets/sfx/interface/drop_001.ogg"></audio>
+      
+      <!-- Typing SFX: Since we only have a generic click, we use a few scattered clicks for the long typing sequence -->
+      <audio data-hf-id="hf-jg28" id="sfx-type-1" data-start="6.8" data-duration="1.0" data-track-index="12" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-quyo" id="sfx-type-2" data-start="8.4" data-duration="1.0" data-track-index="13" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-fwzc" id="sfx-type-3" data-start="10.3" data-duration="1.0" data-track-index="14" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-2xfp" id="sfx-type-4" data-start="12.0" data-duration="1.0" data-track-index="15" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-peek" id="sfx-type-5" data-start="13.8" data-duration="1.0" data-track-index="16" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-zigj" id="sfx-type-6" data-start="29.4" data-duration="1.0" data-track-index="17" data-volume="0.3" src="assets/sfx/interface/click_002.ogg"></audio>
+      
+      <!-- Major Interaction SFX -->
+      <audio data-hf-id="hf-ihsz" id="sfx-click" data-start="18.0" data-duration="0.8" data-track-index="18" data-volume="0.75" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-rqvt" id="sfx-success" data-start="18.4" data-duration="2.0" data-track-index="19" data-volume="0.8" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio data-hf-id="hf-cak6" id="sfx-pillar" data-start="22.8" data-duration="1.5" data-track-index="20" data-volume="0.5" src="assets/sfx/interface/drop_001.ogg"></audio>
+      <audio data-hf-id="hf-4axi" id="sfx-click-2" data-start="31.9" data-duration="0.8" data-track-index="21" data-volume="0.75" src="assets/sfx/interface/click_002.ogg"></audio>
+      <audio data-hf-id="hf-0jg0" id="sfx-verify" data-start="32.2" data-duration="2.0" data-track-index="22" data-volume="0.8" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio data-hf-id="hf-ui4i" id="sfx-outro" data-start="34.8" data-duration="2.0" data-track-index="23" data-volume="0.7" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+    </div>
+
+    <!-- Timeline Animation Script -->
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+
+      // Helper function to animate typing effect smoothly and slower
+      function typeText(tl, targetElementId, cursorId, text, startTime, durationSecs) {
+        tl.to(`#${cursorId}`, { opacity: 1, duration: 0.1 }, startTime - 0.4);
+        tl.to(`#${cursorId}`, { opacity: 0, duration: 0.2, yoyo: true, repeat: 1 }, startTime - 0.3);
+        tl.to(`#${cursorId}`, { opacity: 1, duration: 0.1 }, startTime);
+        
+        const timePerChar = durationSecs / text.length;
+        for (let i = 1; i <= text.length; i++) {
+          const partial = text.substring(0, i);
+          tl.call(() => {
+            const el = document.getElementById(targetElementId);
+            if (el) el.innerText = partial;
+          }, null, startTime + (i * timePerChar));
+        }
+        
+        tl.to(`#${cursorId}`, { opacity: 0, duration: 0.3 }, startTime + durationSecs + 0.4);
+      }
+
+      // Ambient breathing background
+      tl.to("#glow1", { scale: 1.25, opacity: 0.8, duration: 15, ease: "sine.inOut", yoyo: true, repeat: -1 }, 0);
+      tl.to("#glow2", { scale: 1.3, opacity: 0.7, duration: 14, ease: "sine.inOut", yoyo: true, repeat: -1 }, 0);
+
+      // ================= SCENE 1 (0.0s - 6.0s) =================
+      tl.fromTo("#s1-pill", 
+        { opacity: 0, y: -20, scale: 0.9 }, 
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "back.out(1.4)" }, 
+        0.3
+      );
+      tl.fromTo("#s1-title", 
+        { opacity: 0, y: 40, scale: 0.95 }, 
+        { opacity: 1, y: 0, scale: 1, duration: 1.1, ease: "power3.out" }, 
+        0.6
+      );
+      tl.fromTo("#s1-sub", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.9, ease: "power2.out" }, 
+        1.0
+      );
+      tl.fromTo("#s1-tags", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 
+        1.4
+      );
+
+      // Out transition for Scene 1
+      tl.to("#scene1", { opacity: 0, scale: 0.95, filter: "blur(8px)", duration: 0.7, ease: "power2.in" }, 5.3);
+
+      // ================= SCENE 2 (6.0s - 22.0s) =================
+      tl.fromTo("#scene2", 
+        { opacity: 0, scale: 1.05 }, 
+        { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" }, 
+        6.0
+      );
+      tl.fromTo("#s2-modal", 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 
+        6.2
+      );
+
+      // Slower Typing animations for the form inputs
+      typeText(tl, "s2-typed-name", "s2-cursor-name", "Alex Chen", 6.8, 1.2);
+      typeText(tl, "s2-typed-id", "s2-cursor-id", "STU-2026-9842", 8.4, 1.4);
+      typeText(tl, "s2-typed-deg", "s2-cursor-deg", "B.S. in Computer Science & Artificial Intelligence", 10.3, 3.0);
+      typeText(tl, "s2-typed-honors", "s2-cursor-honors", "Summa Cum Laude (GPA 3.98/4.00)", 13.8, 2.0);
+
+      // Fake cursor movement & click on "Mint Credential" (now delayed until 16.2s)
+      tl.fromTo("#cursor", 
+        { opacity: 0, x: 960, y: 900 }, 
+        { opacity: 1, x: 1290, y: 720, duration: 1.4, ease: "power2.inOut" }, 
+        16.2
+      );
+      
+      // Button press effect
+      tl.to("#s2-mint-btn", { scale: 0.94, duration: 0.15, ease: "power1.inOut" }, 18.0);
+      tl.to("#s2-mint-btn", { scale: 1.0, duration: 0.15, ease: "power1.inOut" }, 18.15);
+      tl.to("#cursor", { opacity: 0, duration: 0.3 }, 18.3);
+
+      // Success Toast pops up
+      tl.to("#s2-toast", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 18.4);
+
+      // Out transition for Scene 2
+      tl.to("#scene2", { opacity: 0, x: -60, filter: "blur(6px)", duration: 0.7, ease: "power2.in" }, 21.0);
+
+      // ================= SCENE 3: PILLARS (22.0s - 28.5s) =================
+      tl.fromTo("#scene3", 
+        { opacity: 0, x: 60 }, 
+        { opacity: 1, x: 0, duration: 0.7, ease: "power2.out" }, 
+        22.0
+      );
+      tl.fromTo("#s3-pill", 
+        { opacity: 0, y: -15 }, 
+        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 
+        22.2
+      );
+      tl.fromTo("#s3-heading", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 
+        22.4
+      );
+
+      // Staggered cards
+      tl.to("#pillar-1", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 22.8);
+      tl.to("#pillar-2", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 23.3);
+      tl.to("#pillar-3", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 23.8);
+
+      // Out transition for Scene 3
+      tl.to("#scene3", { opacity: 0, scale: 0.95, filter: "blur(8px)", duration: 0.7, ease: "power2.in" }, 27.8);
+
+      // ================= SCENE 4: VERIFICATION (28.5s - 34.5s) =================
+      tl.fromTo("#scene4", 
+        { opacity: 0, x: 60 }, 
+        { opacity: 1, x: 0, duration: 0.7, ease: "power2.out" }, 
+        28.5
+      );
+      tl.fromTo("#s4-search", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 
+        28.8
+      );
+
+      // Simulated typing in search bar - much slower now
+      typeText(tl, "s4-typed-text", "s4-cursor", "0x8F94...3B1C (Token ID)", 29.4, 2.0);
+
+      // Cursor moves and clicks "Verify On-Chain"
+      tl.fromTo("#cursor", 
+        { opacity: 0, x: 960, y: 900 }, 
+        { opacity: 1, x: 1410, y: 470, duration: 1.0, ease: "power2.inOut" }, 
+        30.8
+      );
+      tl.to("#s4-verify-btn", { scale: 0.95, duration: 0.1 }, 31.9);
+      tl.to("#s4-verify-btn", { scale: 1.0, duration: 0.1 }, 32.0);
+      tl.to("#cursor", { opacity: 0, duration: 0.3 }, 32.3);
+
+      // Result Credential Card slides in
+      tl.to("#s4-cert", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 32.2);
+      tl.fromTo("#s4-cert", { boxShadow: "0 0 0px rgba(16, 185, 129, 0)" }, { boxShadow: "0 25px 60px rgba(0, 0, 0, 0.8), 0 0 60px rgba(16, 185, 129, 0.3)", duration: 0.9 }, 32.6);
+
+      // Out transition for Scene 4
+      tl.to("#scene4", { opacity: 0, scale: 0.95, filter: "blur(8px)", duration: 0.7, ease: "power2.in" }, 33.8);
+
+      // ================= SCENE 5: OUTRO (34.5s - 40.0s) =================
+      tl.fromTo("#scene5", 
+        { opacity: 0, scale: 0.9 }, 
+        { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 
+        34.5
+      );
+      tl.fromTo("#s5-logo", 
+        { scale: 0.5, rotation: -15, opacity: 0 }, 
+        { scale: 1, rotation: 0, opacity: 1, duration: 0.9, ease: "back.out(1.6)" }, 
+        34.6
+      );
+      tl.fromTo("#s5-title", 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 
+        35.0
+      );
+      tl.fromTo("#s5-sub", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 
+        35.4
+      );
+      tl.fromTo("#s5-pill", 
+        { opacity: 0, scale: 0.9 }, 
+        { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" }, 
+        35.8
+      );
+
+      // Final settle
+      tl.seek(0);
+    </script>
+  </body>
+</html>

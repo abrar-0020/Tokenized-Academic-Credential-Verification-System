@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Dashboard - CredentialVault</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e2",
+                        "secondary-fixed": "#c3ecd7",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-container": "#733100",
+                        "surface-container": "#eeeeed",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline": "#707974",
+                        "surface-container-high": "#e8e8e7",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#95d3ba",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ff985a",
+                        "tertiary-fixed": "#ffdbca",
+                        "surface-tint": "#2b6954",
+                        "background": "#f9f9f8",
+                        "on-secondary-fixed": "#002115",
+                        "primary": "#003527",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bfc9c3",
+                        "primary-container": "#064e3b",
+                        "secondary": "#416656",
+                        "surface-dim": "#dadad9",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-primary-container": "#80bea6",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-tertiary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "inverse-surface": "#2f3130",
+                        "primary-fixed": "#b0f0d6",
+                        "on-secondary-container": "#476c5b",
+                        "tertiary": "#502000",
+                        "surface-container-low": "#f3f4f3",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb68e",
+                        "secondary-container": "#c3ecd7",
+                        "on-background": "#1a1c1c",
+                        "on-primary-fixed": "#002117",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "surface-bright": "#f9f9f8",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#404944",
+                        "surface": "#f9f9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "max-width": "1280px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "xs": "4px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-24 md:pb-0 relative">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-container-low bg-surface-container dark:bg-surface-container-high shadow-sm z-40">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full max-w-max-width mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">account_balance</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed font-semibold">CredentialVault</span>
+</div>
+<div class="hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 transition-colors active:scale-95 duration-150 rounded-full cursor-pointer p-1">
+<img alt="user_profile_avatar" class="w-8 h-8 rounded-full object-cover shadow-sm bg-surface-variant" data-alt="A professional headshot of a young adult student in a modern, well-lit academic setting. The aesthetic is clean, light-mode, and corporate, utilizing a bright ivory background with soft lighting. The mood is confident and verified, suitable for a high-end academic credential platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAMdbQpZIPNXIf1SBVasEeqViIuae8b6G0zwOR8LgqeJSJXUqw9U7xvlnOqrxZnvTxVcPtfIPxjE_0zoTwY23BCwuc1DEkKhKUopBiTg75Sbf9NimRjy9K3H_AHNCrH7m34dhNFmgXYm9RTzMOFa4BqUGaQ6xP2mg8xoDoK7O_tk6ceeJ9DAv258szydwzZ6hC11trgkPpFl_ENI6_3GN6oeQymfIlNXDEZghBCc6GZfPCFT18R6UP"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-margin-mobile pt-lg pb-lg max-w-max-width mx-auto flex flex-col gap-lg">
+<!-- Header Section: Greeting & Status -->
+<section class="flex flex-col gap-sm md:flex-row md:justify-between md:items-end">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Good morning,<br/>Academic Holder</h1>
+</div>
+<div class="inline-flex items-center self-start md:self-auto gap-1 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-full font-label-md text-label-md shadow-sm border border-secondary/10">
+<span class="material-symbols-outlined" data-weight="fill" style="font-size: 16px;">account_balance_wallet</span>
+<span>Wallet Connected</span>
+</div>
+</section>
+<!-- Bento Grid: Analytics -->
+<section class="grid grid-cols-2 gap-md">
+<!-- Total Count Card -->
+<div class="bg-surface-container-low shadow-sm rounded-xl p-md relative overflow-hidden flex flex-col justify-between h-32 hover:bg-surface-variant/20 transition-colors cursor-default">
+<div class="absolute -right-4 -bottom-4 opacity-5 text-primary">
+<span class="material-symbols-outlined" style="font-size: 100px;">school</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface-variant z-10">Total Credentials</span>
+<span class="font-display-lg text-display-lg text-primary z-10">14</span>
+</div>
+<!-- Verified Count Card -->
+<div class="bg-surface-container-low shadow-sm rounded-xl p-md relative overflow-hidden flex flex-col justify-between h-32 hover:bg-surface-variant/20 transition-colors cursor-default">
+<div class="absolute -right-4 -bottom-4 opacity-5 text-primary">
+<span class="material-symbols-outlined" style="font-size: 100px;">verified</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface-variant z-10">Verified Status</span>
+<span class="font-display-lg text-display-lg text-primary z-10">12</span>
+</div>
+</section>
+<!-- Recent Credentials List -->
+<section class="flex flex-col gap-sm">
+<div class="flex justify-between items-center mb-1">
+<h2 class="font-title-lg text-title-lg text-primary">Recent Credentials</h2>
+<button class="font-label-lg text-label-lg text-primary hover:text-primary-container transition-colors active:scale-95">View All</button>
+</div>
+<!-- List Item 1 -->
+<article class="bg-surface-container-low shadow-sm rounded-xl p-md relative overflow-hidden flex items-start gap-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary group-hover:w-1.5 transition-all"></div>
+<div class="w-12 h-12 rounded-full bg-surface shadow-sm flex items-center justify-center shrink-0 border border-surface-variant">
+<img class="w-7 h-7 object-contain" data-alt="A minimalist, modern crest logo for a prestigious university. The design features clean geometric lines in deep emerald and muted gold, set against a pristine white background. The aesthetic is academic tech precision, conveying trust, heritage, and digital verification." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh6UfBr4NaDmZS1ClibP1WyuJWie8GOEXGTj28VTwzfzmzXrNdp7BIFKKv76lQij1x-7snFQYJN1J3l17UBu-4D2WsPYIgjgcb9pATTa4qE64LediOqgk8bnPgsAUyfljTAxrPT7qmn9u4S5wWxfCT5W_Fk5TeHn_IGGqAuTOlE1dtaZ-q93EjvuEZriputlzqNTD8Akav03_QYQiW2Do-tsJbkT2UR0zPV6DdqqKQ9LQCvin_QK_u"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate pr-2">B.S. Computer Science</h3>
+<div class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-sm font-label-md text-label-md flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 1;">verified</span>
+                            Verified
+                        </div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Stanford University</p>
+<p class="font-label-md text-label-md text-outline mt-1.5">Issued: May 2023</p>
+</div>
+</article>
+<!-- List Item 2 -->
+<article class="bg-surface-container-low shadow-sm rounded-xl p-md relative overflow-hidden flex items-start gap-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary group-hover:w-1.5 transition-all"></div>
+<div class="w-12 h-12 rounded-full bg-surface shadow-sm flex items-center justify-center shrink-0 border border-surface-variant text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate pr-2">AWS Solutions Architect</h3>
+<div class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-sm font-label-md text-label-md flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 1;">verified</span>
+                            Verified
+                        </div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Amazon Web Services</p>
+<p class="font-label-md text-label-md text-outline mt-1.5">Issued: Aug 2023</p>
+</div>
+</article>
+<!-- List Item 3 (Pending State) -->
+<article class="bg-surface-container-low shadow-sm rounded-xl p-md relative overflow-hidden flex items-start gap-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-outline-variant group-hover:w-1.5 transition-all"></div>
+<div class="w-12 h-12 rounded-full bg-surface shadow-sm flex items-center justify-center shrink-0 border border-surface-variant text-outline">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate pr-2">Official Transcript</h3>
+<div class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-sm font-label-md text-label-md flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined" style="font-size: 14px;">pending</span>
+                            Pending
+                        </div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Stanford University</p>
+<p class="font-label-md text-label-md text-outline mt-1.5">Requested: Oct 12, 2023</p>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Shell) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-container bg-surface-container dark:bg-surface-container-high border-t border-outline-variant/30 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe">
+<!-- Home (Active) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container rounded-full px-5 py-1 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</button>
+<!-- Credentials (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-on-surface-variant/5 dark:hover:bg-on-surface-variant/10 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md mt-1">Credentials</span>
+</button>
+<!-- Activity (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-on-surface-variant/5 dark:hover:bg-on-surface-variant/10 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md mt-1">Activity</span>
+</button>
+<!-- Profile (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-on-surface-variant/5 dark:hover:bg-on-surface-variant/10 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</button>
+</div>
+</nav>
+</body></html>
