@@ -32,7 +32,7 @@ const AppLayout = () => {
           <Route path="/skeleton" element={<SkeletonDemo />} />
         </Routes>
       </main>
-      {!isObsidianRoute && <Footer />}
+      <Footer />
       <ConnectionDebug />
     </div>
   );

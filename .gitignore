@@ -34,6 +34,10 @@ build/
 web-build/
 *.tsbuildinfo
 
+# Sub-projects / UI Drafts
+mobile app ui screens/
+landing page/tokcred-landing/
+
 # Mobile & Expo
 mobile/platform-tools/
 .expo/
