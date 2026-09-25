@@ -32,7 +32,7 @@ export default function GetAppButton() {
 
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-center mb-8">
               <QRCodeSVG 
-                value="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/download/v1.0.0/app-debug.apk" 
+                value="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/tag/v1.0.0" 
                 size={200}
                 level="H"
               />
@@ -43,7 +43,7 @@ export default function GetAppButton() {
             </div>
 
             <a 
-              href="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/download/v1.0.0/app-debug.apk"
+              href="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/tag/v1.0.0"
               className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors w-full shadow-md"
             >
               <Github size={24} />
