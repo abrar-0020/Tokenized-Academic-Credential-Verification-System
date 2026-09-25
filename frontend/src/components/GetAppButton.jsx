@@ -32,7 +32,7 @@ export default function GetAppButton() {
 
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-center mb-8">
               <QRCodeSVG 
-                value="https://deoxys.in" 
+                value="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/download/v1.0.0/app-debug.apk" 
                 size={200}
                 level="H"
               />
