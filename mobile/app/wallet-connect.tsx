@@ -1,24 +1,24 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import TopAppBar from '@/components/M3/TopAppBar';
-import WalletOption from '@/components/Wallet/WalletOption';
+import Button from '@/components/M3/Button';
 import { useWallet } from '@/context/WalletContext';
 import { Colors, Typography, Spacing, Radius } from '@/config/theme';
 
 export default function WalletConnect() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { connectWallet, loading, error } = useWallet();
+  const { connectWallet, account, loading, error } = useWallet();
 
-  const handleConnect = async (walletName: string) => {
-    await connectWallet();
-    if (!error) {
+  // Once connected, navigate to the tabs
+  useEffect(() => {
+    if (account) {
       router.replace('/(tabs)');
     }
-  };
+  }, [account, router]);
 
   return (
     <View style={styles.screen}>
@@ -41,28 +41,16 @@ export default function WalletConnect() {
           </Text>
         </View>
 
-        {/* Wallet options */}
+        {/* Connect Button — Opens AppKit modal with MetaMask, WalletConnect, etc. */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Choose Wallet</Text>
-
-          <WalletOption
-            icon="🦊"
-            name="MetaMask"
-            description="Connect via MetaMask mobile app"
-            onPress={() => handleConnect('MetaMask')}
+          <Button
+            label={loading ? 'Connecting…' : 'Connect Wallet'}
+            onPress={connectWallet}
+            disabled={loading}
           />
-          <WalletOption
-            icon="🔵"
-            name="Coinbase Wallet"
-            description="Connect via Coinbase Wallet app"
-            onPress={() => handleConnect('Coinbase')}
-          />
-          <WalletOption
-            icon="🌐"
-            name="WalletConnect"
-            description="Scan QR to connect any wallet"
-            onPress={() => handleConnect('WalletConnect')}
-          />
+          <Text style={styles.supportedText}>
+            Supports MetaMask, Trust Wallet, Rainbow, Coinbase Wallet, and 300+ others via WalletConnect
+          </Text>
         </View>
 
         {error ? (
@@ -111,13 +99,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 300,
   },
-  section: { marginBottom: Spacing.lg },
-  sectionLabel: {
-    ...Typography.labelMd,
+  section: {
+    marginBottom: Spacing.lg,
+    gap: Spacing.md,
+  },
+  supportedText: {
+    ...Typography.bodyMd,
     color: Colors.outline,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.sm,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   errorBox: {
     backgroundColor: Colors.errorContainer,

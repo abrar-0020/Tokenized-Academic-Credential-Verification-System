@@ -1,17 +1,17 @@
 {
   "expo": {
     "name": "TokCred",
-    "slug": "tokcred",
+    "slug": "credentialvault",
     "scheme": "tokcred",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#f9f9f8"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,8 +19,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#f9f9f8"
+        "foregroundImage": "./assets/icon.jpg",
+        "backgroundColor": "#000000"
       },
       "package": "com.tokcred.app",
       "intentFilters": [
@@ -56,22 +56,28 @@
           "cameraPermission": "Allow TokCred to access your camera to scan credential QR codes."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "updates": {
-      "url": "https://u.expo.dev/477d33da-c5f2-4723-952e-993469d326b6"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "477d33da-c5f2-4723-952e-993469d326b6"
+        "projectId": "0f4bb364-20a8-4da1-b162-68c0814a85c0"
       }
-    }
+    },
+    "owner": "victorvandooom"
   }
 }

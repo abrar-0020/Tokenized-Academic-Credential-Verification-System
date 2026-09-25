@@ -1,3 +1,6 @@
+import '../globals';
+import '@/config/appkit'; // Initialize AppKit before anything else
+
 import { Stack } from 'expo-router';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { useEffect } from 'react';
@@ -7,9 +10,12 @@ import * as Updates from 'expo-updates';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AppKit } from '@reown/appkit-react-native';
 import { WalletProvider } from '@/context/WalletContext';
 import { Colors } from '@/config/theme';
+import AnimatedSplashScreen from '@/components/AnimatedSplashScreen';
 
+// Keep the native splash screen visible while fonts and app initialize
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -47,40 +53,40 @@ export default function RootLayout() {
     }
   }, []);
 
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
-
   if (!loaded) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <WalletProvider>
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: Colors.background },
-              animation: 'slide_from_right',
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="wallet-connect" />
-            <Stack.Screen name="verify" />
-            <Stack.Screen name="verifying" options={{ animation: 'fade' }} />
-            <Stack.Screen name="verified" />
-            <Stack.Screen name="failed" />
-            <Stack.Screen name="credential/[id]" />
-            <Stack.Screen name="qr/[id]" />
-            <Stack.Screen name="issue" />
-            <Stack.Screen name="review" />
-            <Stack.Screen name="transaction" options={{ animation: 'fade', gestureEnabled: false }} />
-            <Stack.Screen name="success" />
-            <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-          </Stack>
-        </WalletProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <AnimatedSplashScreen>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <WalletProvider>
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: Colors.background },
+                animation: 'slide_from_right',
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="wallet-connect" />
+              <Stack.Screen name="verify" />
+              <Stack.Screen name="verifying" options={{ animation: 'fade' }} />
+              <Stack.Screen name="verified" />
+              <Stack.Screen name="failed" />
+              <Stack.Screen name="credential/[id]" />
+              <Stack.Screen name="qr/[id]" />
+              <Stack.Screen name="issue" />
+              <Stack.Screen name="review" />
+              <Stack.Screen name="transaction" options={{ animation: 'fade', gestureEnabled: false }} />
+              <Stack.Screen name="success" />
+              <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+            </Stack>
+            {/* AppKit renders the WalletConnect modal */}
+            <AppKit />
+          </WalletProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </AnimatedSplashScreen>
   );
 }
