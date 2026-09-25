@@ -3,7 +3,6 @@ import { Web3Provider } from './context/Web3Context';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import GetAppButton from './components/GetAppButton';
 import ConnectionDebug from './components/ConnectionDebug';
 import Home from './pages/Home';
 import IssueCredential from './pages/IssueCredential';
