@@ -4,7 +4,7 @@ import { appKitInstance } from '@/config/appkit';
 import { Stack } from 'expo-router';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { useEffect, Component } from 'react';
-import { Alert, Text, View, ScrollView } from 'react-native';
+import { Alert, Text, View, ScrollView, LogBox } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Updates from 'expo-updates';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +14,24 @@ import { AppKit, AppKitProvider } from '@reown/appkit-react-native';
 import { WalletProvider } from '@/context/WalletContext';
 import { Colors } from '@/config/theme';
 import AnimatedSplashScreen from '@/components/AnimatedSplashScreen';
+
+
+LogBox.ignoreLogs([
+  "Cannot read property 'setDefaultChain' of undefined",
+  "setDefaultChain"
+]);
+
+// Suppress unhandled promise rejections for this specific bug
+if (typeof ErrorUtils !== 'undefined') {
+  const originalHandler = ErrorUtils.getGlobalHandler();
+  ErrorUtils.setGlobalHandler((error, isFatal) => {
+    if (error && error.message && error.message.includes('setDefaultChain')) {
+      console.log('Suppressed setDefaultChain error');
+      return;
+    }
+    originalHandler(error, isFatal);
+  });
+}
 
 SplashScreen.preventAutoHideAsync();
 
