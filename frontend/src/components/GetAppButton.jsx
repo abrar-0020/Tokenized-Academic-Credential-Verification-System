@@ -42,7 +42,6 @@ export default function GetAppButton() {
               Scan with your phone camera
             </div>
 
-            </div>
           </div>
         </div>
       )}
