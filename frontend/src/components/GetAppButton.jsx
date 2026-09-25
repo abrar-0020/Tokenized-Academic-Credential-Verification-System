@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QrCode, X } from 'lucide-react';
+import { QrCode, X, Github } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function GetAppButton() {
@@ -27,7 +27,7 @@ export default function GetAppButton() {
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Get the TokCred App</h2>
             <p className="text-gray-500 text-center mb-8 text-sm">
-              Point your phone camera at the QR code to open the app store instantly.
+              Point your phone camera at the QR code or download directly to install the app.
             </p>
 
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-center mb-8">
@@ -38,9 +38,20 @@ export default function GetAppButton() {
               />
             </div>
 
-            <div className="text-center text-sm text-gray-400 mb-4">
+            <div className="text-center text-sm text-gray-400 mb-6">
               Scan with your phone camera
             </div>
+
+            <a 
+              href="https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/releases/download/v1.0.0/app-debug.apk"
+              className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors w-full shadow-md"
+            >
+              <Github size={24} />
+              <div className="text-left leading-tight">
+                <div className="text-[10px] text-gray-300 uppercase tracking-wider font-medium">Download from</div>
+                <div className="text-base font-semibold">GitHub</div>
+              </div>
+            </a>
 
           </div>
         </div>
