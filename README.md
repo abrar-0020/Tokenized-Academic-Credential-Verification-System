@@ -9,10 +9,10 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ##  Live Deployment
 
-** Production Site:** [https://www.deoxys.in/](https://www.deoxys.in/)
-** Smart Contract:** [0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1](https://sepolia.etherscan.io/address/0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1) 
-** Network:** Sepolia Testnet (Chain ID: 11155111)  
-** Status:**  Live and Production-Ready
+ Production Site: [https://www.deoxys.in/](https://www.deoxys.in/) 
+ Smart Contract: [0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1](https://sepolia.etherscan.io/address/0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1) 
+ Network:Sepolia Testnet (Chain ID: 11155111)
+ Status:  Live and Production-Ready
 
 
 ### Access the Live Application:
