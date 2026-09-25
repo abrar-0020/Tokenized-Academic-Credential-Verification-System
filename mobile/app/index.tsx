@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  Image,
+  Animated,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/M3/Button';
+import { useWallet } from '@/context/WalletContext';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/config/theme';
 
 const { width } = Dimensions.get('window');
@@ -18,6 +22,25 @@ const { width } = Dimensions.get('window');
 export default function AppEntry() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const floatAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: -10,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   return (
     <ScrollView
@@ -30,9 +53,15 @@ export default function AppEntry() {
     >
       {/* Logo + Hero */}
       <View style={styles.hero}>
-        <View style={styles.logoCircle}>
-          <Ionicons name="ribbon" size={48} color={Colors.onPrimary} style={{ marginLeft: 2 }} />
-        </View>
+                <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
+          <View style={[styles.logoCircle, { backgroundColor: 'transparent', overflow: 'hidden' }]}>
+            <Image 
+              source={require('../assets/new-icon.png')} 
+              style={{ width: 88, height: 88, borderRadius: 20 }} 
+              resizeMode="cover"
+            />
+          </View>
+        </Animated.View>
         <Text style={styles.appName}>TokCred</Text>
         <Text style={styles.tagline}>Verified academic credentials{'\n'}on the blockchain</Text>
       </View>
@@ -58,7 +87,7 @@ export default function AppEntry() {
         {/* Student CTA */}
         <TouchableOpacity
           style={[styles.ctaCard, styles.ctaCardPrimary]}
-          onPress={() => router.push('/wallet-connect')}
+          onPress={() => router.push('/wallet-connect?type=student')}
           activeOpacity={0.85}
         >
           <View style={[styles.ctaIconBox, { backgroundColor: Colors.primaryContainer + '20' }]}>
@@ -90,7 +119,7 @@ export default function AppEntry() {
         {/* Issuer CTA */}
         <TouchableOpacity
           style={[styles.ctaCard, styles.ctaCardTertiary]}
-          onPress={() => router.push('/wallet-connect')}
+          onPress={() => router.push('/wallet-connect?type=issuer')}
           activeOpacity={0.85}
         >
           <View style={[styles.ctaIconBox, { backgroundColor: Colors.tertiaryContainer + '20' }]}>
@@ -105,9 +134,24 @@ export default function AppEntry() {
       </View>
 
       {/* Tagline footer */}
-      <Text style={styles.footer}>
-        Secured by Ethereum · Decentralized · Tamper-proof
-      </Text>
+      <View style={styles.footerContainer}>
+        <Text style={styles.footer}>
+          Secured by Ethereum · Decentralized · Tamper-proof
+        </Text>
+        <View style={styles.footerLinks}>
+          <TouchableOpacity onPress={() => router.push('/about')}>
+            <Text style={styles.footerLink}>About</Text>
+          </TouchableOpacity>
+          <Text style={styles.footerDot}>·</Text>
+          <TouchableOpacity onPress={() => router.push('/privacy')}>
+            <Text style={styles.footerLink}>Privacy</Text>
+          </TouchableOpacity>
+          <Text style={styles.footerDot}>·</Text>
+          <TouchableOpacity onPress={() => router.push('/terms')}>
+            <Text style={styles.footerLink}>Terms</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -208,10 +252,29 @@ const styles = StyleSheet.create({
     color: Colors.onSurfaceVariant,
     marginTop: 2,
   },
+  footerContainer: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
   footer: {
     ...Typography.labelMd,
     color: Colors.outline,
     textAlign: 'center',
     letterSpacing: 0.5,
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  footerLink: {
+    ...Typography.labelMd,
+    color: Colors.primary,
+  },
+  footerDot: {
+    ...Typography.labelMd,
+    color: Colors.outline,
   },
 });

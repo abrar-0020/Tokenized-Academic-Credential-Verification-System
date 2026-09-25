@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.tokcred.app",
+    "sha256_cert_fingerprints": [
+      "BF:35:BD:D4:CF:8C:C1:C9:2F:B9:8A:FB:6D:FF:D3:B8:F5:AE:63:96:A5:9B:78:8C:D7:32:9A:57:59:15:1B:2E"
+    ]
+  }
+}]

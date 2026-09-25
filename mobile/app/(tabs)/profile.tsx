@@ -79,8 +79,8 @@ export default function Profile() {
             )}
             {isAdmin && (
               <View style={[styles.badge, styles.badgeAdmin]}>
-                <Ionicons name="shield-checkmark" size={14} color={Colors.onError} />
-                <Text style={[styles.badgeText, { color: Colors.onError }]}>Admin</Text>
+                <Ionicons name="shield-checkmark" size={14} color={Colors.onErrorContainer} />
+                <Text style={[styles.badgeText, { color: Colors.onErrorContainer }]}>Admin</Text>
               </View>
             )}
           </View>

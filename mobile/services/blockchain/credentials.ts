@@ -73,3 +73,14 @@ export async function checkRoles(
     return { isIssuer: false, isAdmin: false };
   }
 }
+
+/** Revoke a credential (signed — requires issuer or admin wallet) */
+export async function revokeCredentialTx(
+  signer: import('ethers').Signer,
+  tokenId: string | number | bigint
+): Promise<import('ethers').TransactionResponse> {
+  const contract = getSignedContract(signer);
+  const tx = await contract.revokeCredential(BigInt(tokenId));
+  await tx.wait();
+  return tx;
+}

@@ -5,21 +5,26 @@
     "scheme": "tokcred",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.jpg",
+    "icon": "./assets/new-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.jpg",
+      "image": "./assets/new-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tokcred.app"
+      "bundleIdentifier": "com.tokcred.app",
+      "associatedDomains": [
+        "applinks:www.deoxys.in"
+      ]
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.jpg",
+        "foregroundImage": "./assets/new-icon.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#000000"
       },
       "package": "com.tokcred.app",
@@ -28,6 +33,11 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
+            {
+              "scheme": "https",
+              "host": "www.deoxys.in",
+              "pathPrefix": "/public-verify"
+            },
             {
               "scheme": "tokcred"
             }
@@ -67,6 +77,15 @@
             "buildToolsVersion": "35.0.0"
           }
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/new-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
       ]
     ],
     "experiments": {
@@ -78,6 +97,9 @@
         "projectId": "0f4bb364-20a8-4da1-b162-68c0814a85c0"
       }
     },
-    "owner": "victorvandooom"
+    "owner": "victorvandooom",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

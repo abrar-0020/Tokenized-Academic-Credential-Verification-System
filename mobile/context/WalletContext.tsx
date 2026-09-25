@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { checkRoles } from '@/services/blockchain/credentials';
-import { useAppKitAccount, useAppKitProvider, useAppKit } from '@reown/appkit-react-native';
+import { useAccount, useProvider, useAppKit } from '@reown/appkit-react-native';
 
 type WalletContextType = {
   account: string | null;
@@ -12,7 +12,7 @@ type WalletContextType = {
   loading: boolean;
   error: string | null;
   connectWallet: () => Promise<void>;
-  disconnectWallet: () => void;
+  disconnectWallet: () => Promise<void>;
 };
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -24,18 +24,17 @@ export function useWallet(): WalletContextType {
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+  const [ethProvider, setEthProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isIssuer, setIsIssuer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { open, disconnect } = useAppKit();
+  const { address, isConnected } = useAccount();
+  const { provider: walletProvider } = useProvider();
 
-  // When AppKit connects and we get a provider, build the ethers signer
   useEffect(() => {
     async function setupProvider() {
       if (isConnected && walletProvider && address) {
@@ -43,29 +42,28 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           const web3Provider = new ethers.BrowserProvider(walletProvider as any);
           const web3Signer = await web3Provider.getSigner();
           const roles = await checkRoles(web3Signer, address);
-
-          setProvider(web3Provider);
+          setEthProvider(web3Provider);
           setSigner(web3Signer);
           setIsIssuer(roles.isIssuer);
           setIsAdmin(roles.isAdmin);
           setError(null);
         } catch (err: any) {
           console.warn('Role check failed (may be on wrong network):', err.message);
-          // Still set provider/signer even if role check fails
-          const web3Provider = new ethers.BrowserProvider(walletProvider as any);
-          const web3Signer = await web3Provider.getSigner();
-          setProvider(web3Provider);
-          setSigner(web3Signer);
+          try {
+            const web3Provider = new ethers.BrowserProvider(walletProvider as any);
+            const web3Signer = await web3Provider.getSigner();
+            setEthProvider(web3Provider);
+            setSigner(web3Signer);
+          } catch {}
           setError(null);
         }
       } else if (!isConnected) {
-        setProvider(null);
+        setEthProvider(null);
         setSigner(null);
         setIsIssuer(false);
         setIsAdmin(false);
       }
     }
-
     setupProvider();
   }, [isConnected, walletProvider, address]);
 
@@ -81,19 +79,24 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
   }, [open]);
 
-  const disconnectWallet = useCallback(() => {
-    setProvider(null);
+  const disconnectWallet = useCallback(async () => {
+    try {
+      await disconnect();
+    } catch (e) {
+      console.warn('Disconnect error:', e);
+    }
+    setEthProvider(null);
     setSigner(null);
     setIsIssuer(false);
     setIsAdmin(false);
     setError(null);
-  }, []);
+  }, [disconnect]);
 
   return (
     <WalletContext.Provider
       value={{
         account: address ?? null,
-        provider,
+        provider: ethProvider,
         signer,
         isIssuer,
         isAdmin,

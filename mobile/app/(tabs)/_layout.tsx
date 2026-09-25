@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography } from '@/config/theme';
 import { Text, View, StyleSheet } from 'react-native';
+import { useWallet } from '@/context/WalletContext';
 
 function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
   return (
@@ -13,6 +14,8 @@ function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { isIssuer, isAdmin } = useWallet();
+  const isPrivileged = isIssuer || isAdmin;
 
   return (
     <Tabs
@@ -42,8 +45,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+          title: isPrivileged ? 'Dashboard' : 'Home',
+          tabBarIcon: ({ focused }) => <TabIcon icon={isPrivileged ? '🏛️' : '🏠'} focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -56,6 +59,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          href: isPrivileged ? null : '/(tabs)/profile',
           title: 'Profile',
           tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} />,
         }}

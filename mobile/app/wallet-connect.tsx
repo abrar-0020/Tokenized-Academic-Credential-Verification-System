@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import TopAppBar from '@/components/M3/TopAppBar';
@@ -11,14 +11,27 @@ import { Colors, Typography, Spacing, Radius } from '@/config/theme';
 export default function WalletConnect() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { connectWallet, account, loading, error } = useWallet();
+  const { connectWallet, account, loading, error, signer, isIssuer, isAdmin, disconnectWallet } = useWallet();
+  const { type } = useLocalSearchParams();
 
-  // Once connected, navigate to the tabs
+  // Once connected and roles are checked (signer is ready), validate and navigate
   useEffect(() => {
-    if (account) {
-      router.replace('/(tabs)');
+    if (account && signer) {
+      const isPrivileged = isIssuer || isAdmin;
+      
+      if (type === 'issuer' && !isPrivileged) {
+        Alert.alert('Access Denied', 'This portal is restricted to authorized Issuers and Admins.', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else if (type === 'student' && isPrivileged) {
+        Alert.alert('Access Denied', 'Admins and Issuers cannot log in via the Student Portal.', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        router.replace('/(tabs)');
+      }
     }
-  }, [account, router]);
+  }, [account, signer, isIssuer, isAdmin, router, type]);
 
   return (
     <View style={styles.screen}>
@@ -49,7 +62,7 @@ export default function WalletConnect() {
             disabled={loading}
           />
           <Text style={styles.supportedText}>
-            Supports MetaMask, Trust Wallet, Rainbow, Coinbase Wallet, and 300+ others via WalletConnect
+            Supports MetaMask
           </Text>
         </View>
 

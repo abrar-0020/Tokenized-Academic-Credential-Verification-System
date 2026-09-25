@@ -19,7 +19,7 @@ export default function TopAppBar({ title = 'TokCred', showBack = false, trailin
       {/* Leading */}
       <View style={styles.leading}>
         {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/")} style={styles.iconBtn} activeOpacity={0.7}>
             <Text style={styles.icon}>←</Text>
           </TouchableOpacity>
         ) : (
