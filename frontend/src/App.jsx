@@ -39,7 +39,6 @@ const AppLayout = () => {
       </main>
       <Footer />
       <ConnectionDebug />
-      <GetAppButton />
     </div>
   );
 };
