@@ -9,10 +9,10 @@ export default function GetAppButton() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed top-1/2 right-0 -translate-y-1/2 bg-slate-800 text-white rounded-l-full py-3 pl-6 pr-4 shadow-lg hover:bg-slate-700 transition-colors flex items-center gap-2 z-50 group"
+        className="fixed bottom-8 right-8 bg-slate-800 text-white rounded-full p-4 shadow-xl hover:bg-slate-700 transition-all duration-300 flex items-center gap-2 z-50 group hover:pr-6 hover:shadow-2xl"
       >
-        <span className="font-semibold overflow-hidden w-0 group-hover:w-16 transition-all duration-300 ease-in-out whitespace-nowrap">Get App</span>
         <QrCode size={24} />
+        <span className="font-semibold overflow-hidden w-0 opacity-0 group-hover:w-16 group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 ease-in-out whitespace-nowrap">Get App</span>
       </button>
 
       {isOpen && (
