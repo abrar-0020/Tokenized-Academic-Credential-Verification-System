@@ -42,26 +42,6 @@ export default function GetAppButton() {
               Scan with your phone camera
             </div>
 
-            <div className="flex justify-center gap-3">
-              <button className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M4 2.5C4 2.5 17.5 10 20.5 11.5C21.5 12 21.5 13 20.5 13.5C17.5 15 4 22.5 4 22.5C3 23 2 22 2 21V4C2 3 3 2 4 2.5Z" />
-                </svg>
-                <div className="text-left">
-                  <div className="text-[8px] leading-tight uppercase opacity-80">GET IT ON</div>
-                  <div className="text-xs font-semibold leading-tight whitespace-nowrap">Google Play</div>
-                </div>
-              </button>
-
-              <button className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C12 2 12 4 13.5 5.5C15 7 17 7 17 7C17 7 16.5 5 15.5 4C14 2.5 12 2 12 2ZM7.5 9C5.5 9 4 10.5 4 13.5C4 16.5 6 21 8 22C9 22.5 10 22 11.5 22C13 22 14 22.5 15 22C17 21 19 16.5 19 13.5C19 10.5 17.5 9 15.5 9C14.5 9 13.5 9.5 12.5 10C11.5 9.5 10.5 9 9.5 9H7.5Z" />
-                </svg>
-                <div className="text-left">
-                  <div className="text-[8px] leading-tight opacity-80 whitespace-nowrap">Download on the</div>
-                  <div className="text-xs font-semibold leading-tight whitespace-nowrap">App Store</div>
-                </div>
-              </button>
             </div>
           </div>
         </div>
