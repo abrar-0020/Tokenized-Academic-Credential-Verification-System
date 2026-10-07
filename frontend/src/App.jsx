@@ -18,50 +18,7 @@ import { SkeletonDemo } from '@/components/ui/demo';
 
 const obsidianRoutes = ['/', '/dashboard', '/issue', '/verify', '/public-verify', '/history', '/privacy', '/terms'];
 
-const SplashLoader = ({ onFinished }) => {
-  const [fadeOut, setFadeOut] = useState(false);
 
-  useEffect(() => {
-    // Play the full animation cycle (3.2s), then start fade out
-    const fadeTimer = setTimeout(() => setFadeOut(true), 4000);
-    // After fade completes (0.5s transition), signal done
-    const doneTimer = setTimeout(() => onFinished(), 4500);
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(doneTimer);
-    };
-  }, [onFinished]);
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#000000',
-        transition: 'opacity 0.5s ease-out',
-        opacity: fadeOut ? 0 : 1,
-        pointerEvents: fadeOut ? 'none' : 'all',
-      }}
-    >
-      <div className="loader">
-        <div className="box box0"><div></div></div>
-        <div className="box box1"><div></div></div>
-        <div className="box box2"><div></div></div>
-        <div className="box box3"><div></div></div>
-        <div className="box box4"><div></div></div>
-        <div className="box box5"><div></div></div>
-        <div className="box box6"><div></div></div>
-        <div className="box box7"><div></div></div>
-        <div className="ground"><div></div></div>
-      </div>
-    </div>
-  );
-};
 
 const AppLayout = () => {
   const location = useLocation();
@@ -91,12 +48,9 @@ const AppLayout = () => {
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
   return (
     <ThemeProvider>
     <Web3Provider>
-      {loading && <SplashLoader onFinished={() => setLoading(false)} />}
       <Router>
         <AppLayout />
       </Router>
