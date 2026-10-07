@@ -289,7 +289,7 @@
   justify-content: center;
   min-height: 100vh;
   font-family: sans-serif;
-  background-color: #0f172a; /* Nice dark background by default */
+  background-color: #000000; /* Black background for loader */
 }
 .loader {
   --size: 32px;
