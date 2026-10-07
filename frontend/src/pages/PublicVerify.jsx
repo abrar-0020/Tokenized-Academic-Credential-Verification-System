@@ -304,7 +304,7 @@ const PublicVerify = () => {
                 <span className="font-headline font-bold text-sm text-[#e7e5e4]">Official Protocol</span>
               </div>
               <p className="text-[11px] text-[#acabaa] leading-relaxed">
-                Scholar Ledger uses the Archivist Protocol to ensure academic records remain accessible even if the issuing institution is offline.
+                TokCred uses the Archivist Protocol to ensure academic records remain accessible even if the issuing institution is offline.
               </p>
             </div>
           </div>

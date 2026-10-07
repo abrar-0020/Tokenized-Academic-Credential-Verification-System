@@ -2,7 +2,7 @@ import React from 'react';
 import { PortfolioPage } from '@/components/ui/starfall-portfolio-landing';
 
 const defaultData = {
-  logo: { initials: 'SL', name: 'Scholar Ledger' },
+  logo: { initials: 'SL', name: 'TokCred' },
   hero: {
     titleLine1: 'Tokenized Academic',
     titleLine2Gradient: 'Credentials',

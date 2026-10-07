@@ -9,7 +9,7 @@ const TermsOfService = () => {
           
           <h2 className="text-[#e7e5e4] font-headline mt-8 mb-4 text-2xl font-bold">1. Acceptance of Terms</h2>
           <p className="text-[#acabaa] leading-relaxed mb-6">
-            By accessing or using TokCred / The Scholar Ledger, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform.
+            By accessing or using TokCred, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform.
           </p>
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">2. Platform Nature and Non-Custodial Services</h2>
@@ -34,7 +34,7 @@ const TermsOfService = () => {
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">5. Limitation of Liability</h2>
           <p className="text-[#acabaa] leading-relaxed mb-6">
-            To the maximum extent permitted by law, TokCred / The Scholar Ledger shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the platform. We are not responsible for network outages, high transaction (gas) fees, blockchain forks, or inaccuracies in the data provided by issuing institutions.
+            To the maximum extent permitted by law, TokCred shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the platform. We are not responsible for network outages, high transaction (gas) fees, blockchain forks, or inaccuracies in the data provided by issuing institutions.
           </p>
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">6. Contact</h2>

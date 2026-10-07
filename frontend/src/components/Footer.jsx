@@ -10,7 +10,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded bg-[#1f2020] border border-[#8197ff]/20 flex items-center justify-center">
                 <span className="text-[#8197ff] font-headline font-bold text-lg leading-none">SL</span>
               </div>
-              <span className="font-headline font-bold text-[#c6c6c7] text-lg tracking-tight">The Scholar Ledger</span>
+              <span className="font-headline font-bold text-[#c6c6c7] text-lg tracking-tight">TokCred</span>
             </div>
             <p className="text-sm leading-relaxed">
               Decentralized infrastructure for academic credential issuance and verification using Soulbound NFTs.
@@ -80,7 +80,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-[#1f2020] flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>&copy; {new Date().getFullYear()} The Scholar Ledger. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} TokCred. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="/privacy" className="hover:text-[#8197ff] transition-colors">Privacy Policy</a>
             <a href="/terms" className="hover:text-[#8197ff] transition-colors">Terms of Service</a>

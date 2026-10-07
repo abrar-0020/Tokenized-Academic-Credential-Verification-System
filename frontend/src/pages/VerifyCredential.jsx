@@ -79,7 +79,7 @@ const VerifyCredential = () => {
               <span className="text-[#8197ff] italic">Authenticity</span>
             </h2>
             <p className="text-[#acabaa] max-w-md leading-relaxed">
-              Enter a credential token ID to retrieve a permanent on-chain record from the Scholar Ledger.
+              Enter a credential token ID to retrieve a permanent on-chain record from TokCred.
             </p>
           </header>
 

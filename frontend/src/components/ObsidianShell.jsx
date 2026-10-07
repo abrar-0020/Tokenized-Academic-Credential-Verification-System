@@ -48,7 +48,7 @@ const ObsidianShell = ({ title, subtitle, children }) => {
       <header className="fixed top-0 right-0 left-0 z-30 bg-[#0e0e0e]/85 backdrop-blur-md border-b border-[#1f2020]/30">
         <div className="flex justify-between items-center px-8 py-4 w-full">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold tracking-tighter text-[#c6c6c7] font-headline">The Scholar Ledger</h2>
+            <h2 className="text-xl font-bold tracking-tighter text-[#c6c6c7] font-headline">TokCred</h2>
           </div>
 
           <div className="flex items-center gap-4">

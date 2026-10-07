@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
           
           <h2 className="text-[#e7e5e4] font-headline mt-8 mb-4 text-2xl font-bold">1. Introduction</h2>
           <p className="text-[#acabaa] leading-relaxed mb-6">
-            Welcome to TokCred / The Scholar Ledger ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you understand exactly how your information is handled within a decentralized, blockchain-based environment. This Privacy Policy explains our data collection, storage, and handling practices.
+            Welcome to TokCred ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you understand exactly how your information is handled within a decentralized, blockchain-based environment. This Privacy Policy explains our data collection, storage, and handling practices.
           </p>
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">2. Blockchain Immutability & Public Data</h2>
