@@ -39,7 +39,7 @@ const TermsOfService = () => {
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">6. Contact</h2>
           <p className="text-[#acabaa] leading-relaxed mb-6">
-            For any legal or institutional inquiries regarding these terms, please contact us at <a href="mailto:space.pikkle@gmail.com" className="text-[#8197ff] hover:underline font-medium">space.pikkle@gmail.com</a>.
+            For any legal or institutional inquiries regarding these terms, please contact us at <a href="mailto:founder@deoxys.in" className="text-[#8197ff] hover:underline font-medium">founder@deoxys.in</a>.
           </p>
         </div>
       </div>

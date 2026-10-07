@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
 
           <h2 className="text-[#e7e5e4] font-headline mt-10 mb-4 text-2xl font-bold">5. Contact Us</h2>
           <p className="text-[#acabaa] leading-relaxed mb-6">
-            If you have questions regarding this Privacy Policy or how your data is handled within our decentralized infrastructure, please contact us at <a href="mailto:space.pikkle@gmail.com" className="text-[#8197ff] hover:underline font-medium">space.pikkle@gmail.com</a>.
+            If you have questions regarding this Privacy Policy or how your data is handled within our decentralized infrastructure, please contact us at <a href="mailto:founder@deoxys.in" className="text-[#8197ff] hover:underline font-medium">founder@deoxys.in</a>.
           </p>
         </div>
       </div>

@@ -70,7 +70,7 @@ const Footer = () => {
               <li className="flex items-start gap-2 pt-2">
                 <span className="material-symbols-outlined text-[#8197ff] text-[16px] mt-0.5">mail</span>
                 <div className="flex flex-col">
-                  <a href="mailto:space.pikkle@gmail.com" className="hover:text-[#8197ff] transition-colors font-medium text-[#e7e5e4]">space.pikkle@gmail.com</a>
+                  <a href="mailto:founder@deoxys.in" className="hover:text-[#8197ff] transition-colors font-medium text-[#e7e5e4]">founder@deoxys.in</a>
                   <span className="text-xs text-[#acabaa]/70 mt-1">For institutional inquiries</span>
                 </div>
               </li>
