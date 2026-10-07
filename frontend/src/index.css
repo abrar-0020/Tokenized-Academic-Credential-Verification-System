@@ -310,14 +310,14 @@
   position: absolute;
   transform-style: preserve-3d;
 }
-.loader .box:nth-child(1) { transform: translate(100%, 0); animation: box-move0 var(--duration) linear infinite; }
-.loader .box:nth-child(2) { transform: translate(0, 100%); animation: box-move1 var(--duration) linear infinite; }
-.loader .box:nth-child(3) { transform: translate(100%, 100%); animation: box-move2 var(--duration) linear infinite; }
-.loader .box:nth-child(4) { transform: translate(200%, 0); animation: box-move3 var(--duration) linear infinite; }
-.loader .box:nth-child(5) { transform: translate(200%, 100%); animation: box-move4 var(--duration) linear infinite; }
-.loader .box:nth-child(6) { transform: translate(0, 200%); animation: box-move5 var(--duration) linear infinite; }
-.loader .box:nth-child(7) { transform: translate(100%, 200%); animation: box-move6 var(--duration) linear infinite; }
-.loader .box:nth-child(8) { transform: translate(200%, 200%); animation: box-move7 var(--duration) linear infinite; }
+.loader .box0 { --x: -64px; --y: -64px; transform: translate(100%, 0); animation: box-move0 var(--duration) linear infinite, box-scale0 var(--duration) linear infinite; }
+.loader .box1 { --x: 0px;   --y: -64px; transform: translate(0, 100%); animation: box-move1 var(--duration) linear infinite, box-scale1 var(--duration) linear infinite; }
+.loader .box2 { --x: 64px;  --y: -64px; transform: translate(100%, 100%); animation: box-move2 var(--duration) linear infinite, box-scale2 var(--duration) linear infinite; }
+.loader .box3 { --x: -64px; --y: 0px;   transform: translate(200%, 0); animation: box-move3 var(--duration) linear infinite, box-scale3 var(--duration) linear infinite; }
+.loader .box4 { --x: 64px;  --y: 0px;   transform: translate(200%, 100%); animation: box-move4 var(--duration) linear infinite, box-scale4 var(--duration) linear infinite; }
+.loader .box5 { --x: -64px; --y: 64px;  transform: translate(0, 200%); animation: box-move5 var(--duration) linear infinite, box-scale5 var(--duration) linear infinite; }
+.loader .box6 { --x: 0px;   --y: 64px;  transform: translate(100%, 200%); animation: box-move6 var(--duration) linear infinite, box-scale6 var(--duration) linear infinite; }
+.loader .box7 { --x: 64px;  --y: 64px;  transform: translate(200%, 200%); animation: box-move7 var(--duration) linear infinite, box-scale7 var(--duration) linear infinite; }
 .loader .box > div {
   --bg: #5c8df6;
   --right: #2d5db8;
@@ -364,6 +364,14 @@
   transform-origin: 0 0;
   transform: rotateX(90deg) translateZ(-64px);
   animation: ground var(--duration) linear infinite;
+}
+.loader .ground > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  transform: translateZ(0);
+  animation: ground-shine var(--duration) linear infinite;
 }
 
 
