@@ -22,10 +22,10 @@ const SplashLoader = ({ onFinished }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Play the full animation for 2.5s, then start fade out
-    const fadeTimer = setTimeout(() => setFadeOut(true), 2500);
+    // Play the full animation cycle (3.2s), then start fade out
+    const fadeTimer = setTimeout(() => setFadeOut(true), 4000);
     // After fade completes (0.5s transition), signal done
-    const doneTimer = setTimeout(() => onFinished(), 3000);
+    const doneTimer = setTimeout(() => onFinished(), 4500);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
