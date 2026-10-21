@@ -712,7 +712,7 @@ const History = () => {
               <button
                 onClick={() => {
                   setSelectedRecord(null);
-                  navigate(`/public-verify`);
+                  navigate(`/public-verify?tokenId=${selectedRecord.tokenId}`);
                 }}
                 className="px-4 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 transition-all"
               >

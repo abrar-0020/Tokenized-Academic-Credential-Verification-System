@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
-import { ChevronDown, Link2, ExternalLink, Copy, Check, X } from 'lucide-react';
+import { ChevronDown, Link2, ExternalLink, Copy, Check, X, AlertTriangle, Lock } from 'lucide-react';
 import Alert from '../components/Alert';
 import { formatDate } from '../utils/helpers';
 import { verifyCredentialPublic, ipfsToHttp } from '../logic';
@@ -28,6 +28,8 @@ const PublicVerify = () => {
   const [copied, setCopied] = useState(false);
   const [showBlockchainModal, setShowBlockchainModal] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isRevoked = Boolean(credential?.revoked);
 
   const copyToClipboard = async (text, field) => {
     try {
@@ -51,7 +53,10 @@ const PublicVerify = () => {
       setCredential(null);
       setMetadata(null);
 
+      console.log('PublicVerify verifyTokenId:', id, 'PUBLIC_RPC:', PUBLIC_RPC);
       const result = await verifyCredentialPublic(id, PUBLIC_RPC);
+      console.log('PublicVerify result:', result);
+      console.log('result.credential?.revoked:', result?.credential?.revoked);
       setCredential(result.credential);
       setMetadata(result.metadata);
       setShareUrl(`${window.location.origin}/public-verify?tokenId=${id}`);
@@ -66,15 +71,17 @@ const PublicVerify = () => {
     }
   };
 
+  const [searchParams] = useSearchParams();
+  const tidParam = searchParams.get('tokenId');
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tid = params.get('tokenId');
+    const tid = tidParam || new URLSearchParams(window.location.search).get('tokenId');
     setShareUrl(window.location.href);
     if (tid) {
       setTokenId(tid);
       void verifyTokenId(tid);
     }
-  }, []);
+  }, [tidParam]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,7 +99,7 @@ const PublicVerify = () => {
   };
 
   const handleDownloadCertificate = async () => {
-    if (!credential) return;
+    if (!credential || isRevoked) return;
     try {
       setDownloading(true);
       await downloadCertificatePdf(credential, metadata);
@@ -201,9 +208,9 @@ const PublicVerify = () => {
   };
 
   const CertificatePreview = ({ isResult }) => (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center w-full max-w-[706px]">
       <div 
-        className="relative flex flex-col items-center justify-center w-[706px] h-[552px] rounded-[28px] isolate overflow-hidden"
+        className="relative flex flex-col items-center justify-center w-full h-[360px] sm:h-[450px] md:h-[520px] lg:h-[552px] rounded-[20px] sm:rounded-[28px] isolate overflow-hidden"
         style={{
           background: 'rgba(198, 198, 200, 0.22)',
           backdropFilter: 'blur(12px)',
@@ -215,8 +222,10 @@ const PublicVerify = () => {
         {/* Ambient glow */}
         <div className="absolute -top-32 -right-20 w-[400px] h-[400px] bg-white/20 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Container for the paper stack */}
-      <div className="relative w-[608px] h-[452px] -mt-8">
+      {/* Responsive Scaled Container for the paper stack */}
+      <div className="w-full flex items-center justify-center -mt-6 sm:-mt-8">
+        <div className="transform scale-[0.46] xs:scale-[0.54] sm:scale-[0.72] md:scale-[0.88] lg:scale-100 origin-center transition-transform duration-200">
+          <div className="relative w-[608px] h-[452px]">
         
         {/* Layer 1 (Bottom paper, shifted right and rotated right) */}
         <div className="absolute inset-0 bg-[#E8E2D2] shadow-[0px_16px_28px_rgba(68,50,84,0.1)] rounded-[3px] rotate-[4deg] translate-x-[20px] -translate-y-[6px] z-10 pointer-events-none"></div>
@@ -347,20 +356,35 @@ const PublicVerify = () => {
           <span className="font-['IBM_Plex_Mono'] text-[8.5px] text-[#9C95A5]">
             {isResult && credential?.tokenId !== undefined ? `TC-RU-2026-${credential.tokenId.toString().padStart(5, '0')}` : 'TC-RU-2026-•••••'}
           </span>
-          <span className="font-['Inter'] text-[8.5px] tracking-[0.5px] text-[#7053AD] uppercase font-medium">
-            {isResult && credential ? 'Digitally Issued • TokCred' : 'Preview Artifact • Sample'}
+          <span className={`font-['Inter'] text-[8.5px] tracking-[0.5px] uppercase font-semibold ${isResult && isRevoked ? 'text-[#D92D20]' : 'text-[#7053AD]'}`}>
+            {isResult && credential ? (isRevoked ? 'Status: Officially Revoked' : 'Digitally Issued • TokCred') : 'Preview Artifact • Sample'}
           </span>
         </div>
+
+        {/* Revoked diagonal watermark stamp */}
+        {isResult && isRevoked && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+            <div className="transform -rotate-12 border-[3.5px] border-[#D92D20]/85 bg-[#D92D20]/15 px-8 py-2.5 rounded-[10px] backdrop-blur-[0.5px] shadow-[0_12px_28px_rgba(217,45,32,0.22)]">
+              <span className="font-['Inter'] font-black text-[32px] sm:text-[38px] tracking-[8px] text-[#D92D20] uppercase select-none opacity-95">
+                REVOKED
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+        </div>
+      </div>
 
       {/* Presentation caption (Moved inside glass container) */}
-      <div className="absolute bottom-[24px] flex items-center gap-2 px-[18px] py-[10px] bg-white/95 border border-white rounded-full z-30 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
-        <div className="text-[#7053AD]">
-          {isResult ? <Icons.CheckCircle /> : <Icons.Eye />}
+      <div className={`absolute bottom-[14px] sm:bottom-[24px] flex items-center gap-2 px-3 sm:px-[18px] py-1.5 sm:py-[10px] ${isResult && isRevoked ? 'bg-[#FFF5F5] border border-red-200 text-[#D92D20]' : 'bg-white/95 border border-white text-[#292333]'} rounded-full z-30 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md max-w-[90%]`}>
+        <div className={`shrink-0 ${isResult && isRevoked ? 'text-[#D92D20]' : 'text-[#7053AD]'}`}>
+          {isResult ? (isRevoked ? <AlertTriangle className="w-4 h-4 text-[#D92D20]" /> : <Icons.CheckCircle />) : <Icons.Eye />}
         </div>
-        <span className="font-['Inter'] text-[12px] text-[#292333] font-medium tracking-[0.2px]">
-          {isResult ? "Authenticated against the issuer's record" : "Awaiting credential verification · Enter Token ID"}
+        <span className={`font-['Inter'] text-[10px] sm:text-[12px] font-medium tracking-[0.2px] truncate ${isResult && isRevoked ? 'text-[#D92D20] font-semibold' : 'text-[#292333]'}`}>
+          {isResult 
+            ? (isRevoked ? "Official record revoked on-chain by issuing authority" : "Authenticated against the issuer's record") 
+            : "Awaiting credential verification · Enter Token ID"}
         </span>
       </div>
     </div>
@@ -374,14 +398,14 @@ const PublicVerify = () => {
       `}</style>
       
       {/* HEADER */}
-      <div className="w-full pt-[24px] flex justify-center px-16 z-[100] mb-8 shrink-0">
+      <div className="w-full pt-[16px] sm:pt-[24px] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-16 z-[100] mb-4 sm:mb-8 shrink-0">
         <div className="w-full max-w-[1312px] flex items-center justify-between relative">
           {/* Left: Logo */}
-          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity h-[56px] -ml-6" onClick={() => navigate('/')}>
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity h-[48px] sm:h-[56px] -ml-2 sm:-ml-6" onClick={() => navigate('/')}>
             <img 
               src="/tokcred_logo-removebg-preview.png" 
               alt="TokCred" 
-              className="h-[90px] lg:h-[120px] max-w-none object-contain relative transition-all duration-300" 
+              className="h-[75px] sm:h-[90px] lg:h-[120px] max-w-none object-contain relative transition-all duration-300" 
               style={{ filter: 'none' }}
             />
           </div>
@@ -402,7 +426,7 @@ const PublicVerify = () => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-[16px]">
+          <div className="flex items-center gap-2 sm:gap-[16px]">
             <div>
               <SettingsDropdown 
                 account={account}
@@ -413,62 +437,127 @@ const PublicVerify = () => {
                 disconnectWallet={disconnectWallet}
                 loading={web3Loading}
                 error={web3Error}
-                buttonClassName={`w-[56px] h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]`}
-                iconSize={22}
+                buttonClassName={`w-[44px] h-[44px] sm:w-[56px] sm:h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]`}
+                iconSize={20}
               />
             </div>
 
             <button 
               onClick={account ? disconnectWallet : connectWallet} 
               title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[56px] px-[24px] text-[15px] font-[500] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+              className="h-[44px] sm:h-[56px] px-3 sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 sm:gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
             >
               {account ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
+                  <span className="hidden xs:inline">Connected</span>
+                  <span className="xs:hidden">Done</span>
                 </>
               ) : (
-                <span>Connect Wallet</span>
+                <>
+                  <span className="hidden xs:inline">Connect Wallet</span>
+                  <span className="xs:hidden">Connect</span>
+                </>
+              )}
+            </button>
+
+            {/* Mobile Navigation Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden w-[44px] h-[44px] rounded-full flex items-center justify-center bg-white text-[#101014] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:opacity-80 transition-opacity"
+              aria-label="Toggle navigation"
+            >
+              {mobileMenuOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
               )}
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden w-full max-w-[1312px] mt-3 p-3 bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl flex flex-col gap-1 z-[99]">
+            <button 
+              onClick={() => { setMobileMenuOpen(false); navigate('/'); }}
+              className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-medium text-[#292333] hover:bg-[#7053AD]/10 hover:text-[#513582] transition-colors"
+            >
+              Home
+            </button>
+            {Boolean(account && (isAdmin || isIssuer)) ? (
+              <>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); navigate('/dashboard'); }}
+                  className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-medium text-[#292333] hover:bg-[#7053AD]/10 hover:text-[#513582] transition-colors"
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); navigate('/issue'); }}
+                  className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-medium text-[#292333] hover:bg-[#7053AD]/10 hover:text-[#513582] transition-colors"
+                >
+                  Issue Credential
+                </button>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); navigate('/history'); }}
+                  className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-medium text-[#292333] hover:bg-[#7053AD]/10 hover:text-[#513582] transition-colors"
+                >
+                  History
+                </button>
+              </>
+            ) : Boolean(account) ? (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); navigate('/student-dashboard'); }}
+                className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-medium text-[#292333] hover:bg-[#7053AD]/10 hover:text-[#513582] transition-colors"
+              >
+                Student Dashboard
+              </button>
+            ) : null}
+            <button 
+              onClick={() => { setMobileMenuOpen(false); navigate('/public-verify'); }}
+              className="flex items-center px-4 py-2.5 rounded-xl text-left text-[14px] font-semibold text-[#513582] bg-[#7053AD]/10 transition-colors"
+            >
+              Public Verify
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center pt-[52px] pb-[48px] px-16 max-w-[1440px] mx-auto w-full gap-10 relative">
+      <main className="flex-1 flex flex-col items-center pt-4 sm:pt-[52px] pb-[48px] px-4 sm:px-6 md:px-12 lg:px-16 max-w-[1440px] mx-auto w-full gap-8 sm:gap-10 relative">
         
         {!credential && !error ? (
           /* Search / Entry State */
           <>
-            <div className="flex flex-row items-center justify-start gap-16 w-full max-w-[1312px]">
+            <div className="flex flex-col lg:flex-row items-center justify-start gap-10 lg:gap-16 w-full max-w-[1312px]">
               {/* Credential inquiry */}
-              <div className="flex flex-col items-start gap-4 w-[542px] shrink-0">
+              <div className="flex flex-col items-start gap-4 w-full lg:w-[542px] shrink-0">
                 {/* Pill */}
-                <div className="flex items-center justify-start gap-[7px] px-[15px] py-[12px] bg-white/40 border border-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.02),inset_0_1px_1px_rgba(255,255,255,1)] backdrop-blur-md rounded-full w-fit h-[44px] mb-1">
+                <div className="flex items-center justify-start gap-[7px] px-[12px] sm:px-[15px] py-[8px] sm:py-[12px] bg-white/40 border border-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.02),inset_0_1px_1px_rgba(255,255,255,1)] backdrop-blur-md rounded-full w-fit mb-1">
                   <Icons.Expand />
-                  <span className="font-['Inter'] font-semibold text-[14px] tracking-normal text-[#7053AD] uppercase whitespace-nowrap">
+                  <span className="font-['Inter'] font-semibold text-[11px] sm:text-[14px] tracking-normal text-[#7053AD] uppercase whitespace-nowrap">
                     Public credential verification
                   </span>
                 </div>
 
-                <h1 className="font-['Cormorant_Garamond'] font-medium text-[72px] leading-[96%] tracking-[-2px] text-[#292333] mb-2">
+                <h1 className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[56px] lg:text-[72px] leading-[96%] tracking-[-1.5px] sm:tracking-[-2px] text-[#292333] mb-2">
                   Every<br/>achievement.<br/>Authentically<br/>theirs.
                 </h1>
                 
-                <p className="font-['Inter'] text-[15px] leading-[160%] text-[#5B5565] max-w-[340px]">
+                <p className="font-['Inter'] text-[14px] sm:text-[15px] leading-[160%] text-[#5B5565] max-w-[340px]">
                   Confirm an academic credential directly with its issuing institution. No account. No guesswork.
                 </p>
 
                 {/* Verification form */}
-                <form onSubmit={handleSubmit} className="flex flex-col w-[438px] gap-3 mt-4">
+                <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-[438px] gap-3 mt-2 sm:mt-4">
                 <div className="flex flex-col gap-2 w-full">
-                  <label className="font-['Inter'] font-semibold text-[15px] text-[#292333]">Credential ID</label>
-                  <div className="flex items-center gap-3 px-5 py-[2px] h-[56px] bg-white border border-[#E4DFE9] rounded-[12px] focus-within:border-[#7053AD] focus-within:ring-4 focus-within:ring-[#7053AD]/10 transition-all shadow-sm group">
+                  <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Credential ID</label>
+                  <div className="flex items-center gap-3 px-4 sm:px-5 py-[2px] h-[52px] sm:h-[56px] bg-white border border-[#E4DFE9] rounded-[12px] focus-within:border-[#7053AD] focus-within:ring-4 focus-within:ring-[#7053AD]/10 transition-all shadow-sm group">
                     <div className="text-[#9C95A5] group-focus-within:text-[#7053AD] transition-colors"><Icons.Fingerprint /></div>
                     <input
-                      className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
+                      className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[14px] sm:text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
                       placeholder="e.g. 1 (Token ID)"
                       type="text"
                       value={tokenId}
@@ -476,45 +565,45 @@ const PublicVerify = () => {
                       disabled={loading}
                     />
                   </div>
-                  <p className="font-['Inter'] text-[13px] text-[#756F80]">Find this ID on your certificate or issuer's shared link.</p>
+                  <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#756F80]">Find this ID on your certificate or issuer's shared link.</p>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center justify-center gap-3 w-full h-[54px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#1A1A1A] rounded-[12px] shadow-[0px_12px_24px_rgba(68,50,84,0.18)] hover:shadow-[0px_16px_32px_rgba(68,50,84,0.25)] active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
+                  className="flex items-center justify-center gap-3 w-full h-[50px] sm:h-[54px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#1A1A1A] rounded-[12px] shadow-[0px_12px_24px_rgba(68,50,84,0.18)] hover:shadow-[0px_16px_32px_rgba(68,50,84,0.25)] active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
                 >
-                  <span className="font-['Inter'] font-semibold text-[17px] text-white">
+                  <span className="font-['Inter'] font-semibold text-[15px] sm:text-[17px] text-white">
                     {loading ? 'Verifying...' : 'Verify credential'}
                   </span>
                   {!loading && <Icons.ArrowRight />}
                 </button>
               </form>
 
-              <p className="font-['Inter'] text-[13px] text-[#756F80] mt-4 pt-4 border-t border-[#E4DFE9]/50 w-[438px]">
+              <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#756F80] mt-2 sm:mt-4 pt-3 sm:pt-4 border-t border-[#E4DFE9]/50 w-full max-w-[438px]">
                 Free to verify · No personal information required
               </p>
             </div>
 
             {/* Credential focal point */}
-            <div className="relative flex flex-col items-center justify-center flex-1">
+            <div className="relative flex flex-col items-center justify-center w-full flex-1">
               
               {/* Background ambient orbs for glassmorphism diffraction */}
-              <div className="absolute top-[5%] right-[10%] w-[450px] h-[450px] bg-white/50 rounded-full blur-[100px] pointer-events-none z-0"></div>
-              <div className="absolute bottom-[5%] left-[5%] w-[350px] h-[350px] bg-[#E8DBC0]/40 rounded-full blur-[80px] pointer-events-none z-0"></div>
+              <div className="absolute top-[5%] right-[10%] w-[320px] sm:w-[450px] h-[320px] sm:h-[450px] bg-white/50 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none z-0"></div>
+              <div className="absolute bottom-[5%] left-[5%] w-[250px] sm:w-[350px] h-[250px] sm:h-[350px] bg-[#E8DBC0]/40 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none z-0"></div>
               
-              <div className="z-10">
+              <div className="z-10 w-full flex justify-center">
                 <CertificatePreview isResult={false} />
               </div>
               
-              <p className="font-['Inter'] text-[13px] text-[#5B5565] text-center w-full mt-6 z-10">
+              <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#5B5565] text-center w-full mt-4 sm:mt-6 z-10">
                 A digital record. An enduring achievement.
               </p>
             </div>
           </div>
 
           {/* Verification guidance */}
-          <div className="flex flex-row items-center p-[28px] gap-8 w-full max-w-[1312px] bg-white/20 border border-white/40 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-lg">
+          <div className="flex flex-col md:flex-row items-start md:items-center p-5 sm:p-[28px] gap-6 sm:gap-8 w-full max-w-[1312px] bg-white/20 border border-white/40 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-lg">
               <div className="flex gap-3 flex-1">
                 <div className="flex items-center justify-center w-9 h-9 bg-[#F5F1FA] rounded-[10px] shrink-0">
                   <Icons.Fingerprint />
@@ -556,34 +645,34 @@ const PublicVerify = () => {
             </button>
 
             {/* Verification workspace */}
-            <div className="flex flex-row items-start gap-[64px] w-full">
+            <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-[64px] w-full">
               {/* Left Column */}
-              <div className="flex flex-col items-start gap-[22px] w-[438px] shrink-0">
+              <div className="flex flex-col items-start gap-[22px] w-full lg:w-[438px] shrink-0">
                  {/* Status badge */}
                  <div className="flex items-center gap-[7px] px-[12px] py-[7px] bg-[rgba(255,59,48,0.12)] border border-[rgba(255,59,48,0.3)] rounded-full h-[39px]">
                     <div className="w-[15px] h-[15px] rounded-full border-[1.6px] border-[#D92D20] flex items-center justify-center">
                       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D92D20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </div>
-                    <span className="font-['Inter'] font-semibold text-[15px] leading-[18px] text-[#D92D20]">
+                    <span className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] leading-[18px] text-[#D92D20]">
                       Credential not found
                     </span>
                  </div>
                  
                  {/* Headline */}
-                 <h1 className="font-['Cormorant_Garamond'] font-medium text-[64px] leading-[102%] tracking-[-1.5px] text-[#292333]">
+                 <h1 className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[54px] lg:text-[64px] leading-[102%] tracking-[-1.5px] text-[#292333]">
                    No record<br/>found.
                  </h1>
-                 <p className="font-['Inter'] text-[15px] leading-[170%] text-[#756F80]">
+                 <p className="font-['Inter'] text-[14px] sm:text-[15px] leading-[170%] text-[#756F80]">
                    We couldn't find a credential matching the ID provided. Please check for typos and try again.
                  </p>
 
                  {/* Invalid credential input */}
-                 <div className="flex flex-col gap-2 w-full mt-2">
-                    <label className="font-['Inter'] font-semibold text-[15px] text-[#292333]">Credential ID</label>
-                    <div className="flex items-center gap-3 px-5 py-[2px] h-[56px] bg-white border border-[#D92D20] rounded-[12px] focus-within:ring-4 focus-within:ring-[#D92D20]/10 transition-all shadow-sm group">
+                 <div className="flex flex-col gap-2 w-full mt-2 max-w-[438px]">
+                    <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Credential ID</label>
+                    <div className="flex items-center gap-3 px-4 sm:px-5 py-[2px] h-[52px] sm:h-[56px] bg-white border border-[#D92D20] rounded-[12px] focus-within:ring-4 focus-within:ring-[#D92D20]/10 transition-all shadow-sm group">
                       <div className="text-[#D92D20]"><Icons.Fingerprint /></div>
                       <input
-                        className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
+                        className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[14px] sm:text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
                         type="text"
                         value={tokenId}
                         onChange={(e) => setTokenId(e.target.value)}
@@ -593,9 +682,9 @@ const PublicVerify = () => {
                     <button
                       onClick={handleSubmit}
                       disabled={loading}
-                      className="flex items-center justify-center gap-3 w-full h-[54px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#1A1A1A] rounded-[12px] shadow-[0px_12px_24px_rgba(68,50,84,0.18)] hover:shadow-[0px_16px_32px_rgba(68,50,84,0.25)] active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
+                      className="flex items-center justify-center gap-3 w-full h-[50px] sm:h-[54px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#1A1A1A] rounded-[12px] shadow-[0px_12px_24px_rgba(68,50,84,0.18)] hover:shadow-[0px_16px_32px_rgba(68,50,84,0.25)] active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
                     >
-                      <span className="font-['Inter'] font-semibold text-[17px] text-white">
+                      <span className="font-['Inter'] font-semibold text-[15px] sm:text-[17px] text-white">
                         {loading ? 'Verifying...' : 'Verify another ID'}
                       </span>
                       {!loading && <Icons.ArrowRight />}
@@ -603,9 +692,9 @@ const PublicVerify = () => {
                  </div>
 
                  {/* Troubleshooting card */}
-                 <div className="flex flex-col items-start p-[24px] gap-[16px] w-[438px] bg-[rgba(255,255,255,0.3)] border border-[#E4DFE9] rounded-[16px] mt-2 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-                    <h3 className="font-['Inter'] font-semibold text-[16px] text-[#292333]">Troubleshooting tips</h3>
-                    <ul className="list-disc pl-5 font-['Inter'] text-[14px] leading-[160%] text-[#756F80] flex flex-col gap-2">
+                 <div className="flex flex-col items-start p-5 sm:p-[24px] gap-[16px] w-full max-w-[438px] bg-[rgba(255,255,255,0.3)] border border-[#E4DFE9] rounded-[16px] mt-2 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+                    <h3 className="font-['Inter'] font-semibold text-[15px] sm:text-[16px] text-[#292333]">Troubleshooting tips</h3>
+                    <ul className="list-disc pl-5 font-['Inter'] text-[13px] sm:text-[14px] leading-[160%] text-[#756F80] flex flex-col gap-2">
                       <li>Ensure you have typed the ID correctly.</li>
                       <li>Check if the credential was issued recently.</li>
                       <li>Contact the issuing institution if the problem persists.</li>
@@ -614,8 +703,8 @@ const PublicVerify = () => {
               </div>
 
               {/* Right Column: frosted-glass container */}
-              <div className="flex flex-col items-end gap-[16px] w-[810px] flex-1">
-                <div className="flex flex-col items-center justify-center w-[706px] h-[552px] rounded-[28px] relative overflow-hidden isolate"
+              <div className="flex flex-col items-center lg:items-end gap-[16px] w-full lg:w-[810px] flex-1">
+                <div className="flex flex-col items-center justify-center w-full max-w-[706px] min-h-[360px] sm:min-h-[460px] p-4 sm:p-8 rounded-[24px] sm:rounded-[28px] relative overflow-hidden isolate"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%)',
                     backdropFilter: 'blur(40px) saturate(120%)',
@@ -625,28 +714,28 @@ const PublicVerify = () => {
                   }}
                 >
                    {/* Background ambient orbs */}
-                   <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] bg-red-500/10 rounded-full blur-[80px] pointer-events-none z-0"></div>
+                   <div className="absolute top-[-10%] right-[-10%] w-[250px] sm:w-[350px] h-[250px] sm:h-[350px] bg-red-500/10 rounded-full blur-[80px] pointer-events-none z-0"></div>
                    
                    {/* Verification inquiry card */}
-                   <div className="flex flex-col items-start p-[32px] gap-[24px] w-[440px] bg-white rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] z-10 border border-[#E4DFE9]/50">
+                   <div className="flex flex-col items-start p-5 sm:p-[32px] gap-4 sm:gap-[24px] w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] z-10 border border-[#E4DFE9]/50">
                       <div className="flex items-center gap-[12px]">
                         <div className="flex items-center justify-center w-10 h-10 bg-[#F5F1FA] rounded-[10px]">
                           <Icons.Eye />
                         </div>
-                        <h3 className="font-['Inter'] font-semibold text-[18px] text-[#292333]">Verification inquiry</h3>
+                        <h3 className="font-['Inter'] font-semibold text-[17px] sm:text-[18px] text-[#292333]">Verification inquiry</h3>
                       </div>
-                      <div className="flex flex-col gap-[8px] w-full border-t border-[#E4DFE9] pt-[16px]">
-                        <span className="font-['Inter'] text-[14px] text-[#756F80]">Submitted ID</span>
-                        <span className="font-['IBM_Plex_Mono'] text-[16px] text-[#292333] break-all">{tokenId}</span>
+                      <div className="flex flex-col gap-[6px] sm:gap-[8px] w-full border-t border-[#E4DFE9] pt-[14px] sm:pt-[16px]">
+                        <span className="font-['Inter'] text-[13px] sm:text-[14px] text-[#756F80]">Submitted ID</span>
+                        <span className="font-['IBM_Plex_Mono'] text-[15px] sm:text-[16px] text-[#292333] break-all">{tokenId}</span>
                       </div>
-                      <div className="flex flex-col gap-[8px] w-full border-t border-[#E4DFE9] pt-[16px]">
-                        <span className="font-['Inter'] text-[14px] text-[#756F80]">Status</span>
+                      <div className="flex flex-col gap-[6px] sm:gap-[8px] w-full border-t border-[#E4DFE9] pt-[14px] sm:pt-[16px]">
+                        <span className="font-['Inter'] text-[13px] sm:text-[14px] text-[#756F80]">Status</span>
                         <div className="flex items-center gap-2">
-                           <div className="w-[12px] h-[12px] rounded-full bg-[#D92D20]"></div>
-                           <span className="font-['Inter'] font-medium text-[15px] text-[#D92D20]">{error || 'Credential not found in the issuer’s registry.'}</span>
+                           <div className="w-[12px] h-[12px] rounded-full bg-[#D92D20] shrink-0"></div>
+                           <span className="font-['Inter'] font-medium text-[14px] sm:text-[15px] text-[#D92D20]">{error || 'Credential not found in the issuer’s registry.'}</span>
                         </div>
                       </div>
-                      <p className="font-['Inter'] text-[12px] text-[#9C95A5] mt-[8px]">
+                      <p className="font-['Inter'] text-[11px] sm:text-[12px] text-[#9C95A5] mt-[6px]">
                         Your search has been logged securely in accordance with our privacy policy.
                       </p>
                    </div>
@@ -655,7 +744,7 @@ const PublicVerify = () => {
             </div>
             
             {/* Full-width bottom feature panel */}
-            <div className="flex flex-row items-center p-[28px] gap-8 w-full max-w-[1312px] bg-white/20 border border-white/40 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-lg mt-[32px]">
+            <div className="flex flex-col md:flex-row items-start md:items-center p-5 sm:p-[28px] gap-6 sm:gap-8 w-full max-w-[1312px] bg-white/20 border border-white/40 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-lg mt-[24px] sm:mt-[32px]">
                 <div className="flex gap-3 flex-1">
                   <div className="flex items-center justify-center w-9 h-9 bg-[#F5F1FA] rounded-[10px] shrink-0">
                     <Icons.Fingerprint />
@@ -689,7 +778,7 @@ const PublicVerify = () => {
           /* Result State */
           <div className="flex flex-col items-start gap-[24px] w-full max-w-[1312px]">
             {/* Result navigation */}
-            <button onClick={resetVerification} className="flex items-center gap-[8px] font-['Inter'] text-[20px] text-[#1A1A1A] hover:text-[#7053AD] transition-colors h-[24px]">
+            <button onClick={resetVerification} className="flex items-center gap-[8px] font-['Inter'] text-[17px] sm:text-[20px] text-[#1A1A1A] hover:text-[#7053AD] transition-colors h-[24px]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -697,61 +786,96 @@ const PublicVerify = () => {
             </button>
 
             {/* Verification workspace */}
-            <div className="flex flex-row items-start gap-[64px] w-full">
+            <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-[64px] w-full">
               
               {/* Verified record summary (Left Column) */}
-              <div className="flex flex-col items-start gap-[22px] w-[438px] shrink-0">
+              <div className="flex flex-col items-start gap-[18px] sm:gap-[22px] w-full lg:w-[438px] shrink-0">
                 
                 {/* Status badge */}
-                <div className="flex items-center gap-[7px] px-[12px] py-[7px] bg-[rgba(52,199,89,0.41)] rounded-full h-[39px]">
-                  <div className="w-[15px] h-[15px] rounded-full border-[1.6px] border-[#326956] flex items-center justify-center">
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#326956" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                {isRevoked ? (
+                  <div className="flex items-center gap-[7px] px-[12px] py-[7px] bg-[rgba(255,59,48,0.14)] border border-[rgba(255,59,48,0.32)] rounded-full h-[39px]">
+                    <div className="w-[15px] h-[15px] rounded-full border-[1.6px] border-[#D92D20] flex items-center justify-center">
+                      <X className="w-2.5 h-2.5 text-[#D92D20]" strokeWidth={3} />
+                    </div>
+                    <span className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] leading-[18px] text-[#D92D20]">
+                      Revoked by issuer
+                    </span>
                   </div>
-                  <span className="font-['Inter'] font-semibold text-[15px] leading-[18px] text-[#1F1F1F]">
-                    Verified by issuer
-                  </span>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-[7px] px-[12px] py-[7px] bg-[rgba(52,199,89,0.41)] rounded-full h-[39px]">
+                    <div className="w-[15px] h-[15px] rounded-full border-[1.6px] border-[#326956] flex items-center justify-center">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#326956" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <span className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] leading-[18px] text-[#1F1F1F]">
+                      Verified by issuer
+                    </span>
+                  </div>
+                )}
 
                 {/* Headline */}
-                <h1 className="font-['Cormorant_Garamond'] font-medium text-[64px] leading-[102%] tracking-[-1.5px] text-[#292333]">
-                  An authentic<br/>achievement.
-                </h1>
+                {isRevoked ? (
+                  <h1 className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[52px] lg:text-[64px] leading-[102%] tracking-[-1.5px] text-[#D92D20]">
+                    Credential<br/>revoked.
+                  </h1>
+                ) : (
+                  <h1 className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[52px] lg:text-[64px] leading-[102%] tracking-[-1.5px] text-[#292333]">
+                    An authentic<br/>achievement.
+                  </h1>
+                )}
 
                 {/* Verification explanation */}
-                <p className="font-['Inter'] text-[15px] leading-[170%] text-[#756F80]">
-                  This credential matches {metadata?.institution || 'the issuing authority'}'s official record. The issuer's digital signature is intact.
-                </p>
+                {isRevoked ? (
+                  <p className="font-['Inter'] text-[14px] sm:text-[15px] leading-[170%] text-[#9C3834]">
+                    This credential was officially invalidated and revoked on-chain by {metadata?.institution || 'the issuing institution'}. It is no longer valid proof of claim within the registry.
+                  </p>
+                ) : (
+                  <p className="font-['Inter'] text-[14px] sm:text-[15px] leading-[170%] text-[#756F80]">
+                    This credential matches {metadata?.institution || 'the issuing authority'}'s official record. The issuer's digital signature is intact.
+                  </p>
+                )}
 
                 {/* Credential details */}
-                <div className="flex flex-col items-start p-[28px] gap-[20px] w-[438px] bg-[rgba(255,255,255,0.1)] border border-[#E4DFE9] rounded-[16px]">
+                <div className="flex flex-col items-start p-5 sm:p-[28px] gap-[16px] sm:gap-[20px] w-full max-w-[438px] bg-[rgba(255,255,255,0.1)] border border-[#E4DFE9] rounded-[16px]">
                   
                   {/* Section heading */}
                   <div className="flex flex-row items-center gap-[6px] h-[33px]">
-                    <h3 className="font-['Cormorant_Garamond'] text-[27px] leading-[33px] text-[#292333]">The issuer's record</h3>
+                    <h3 className="font-['Cormorant_Garamond'] text-[24px] sm:text-[27px] leading-[33px] text-[#292333]">The issuer's record</h3>
                     <Icons.FileText className="text-[#7053AD]" />
                   </div>
 
                   {/* Award details */}
-                  <div className="flex flex-row items-start gap-[20px] w-full">
-                    <div className="flex flex-col gap-[6px] flex-1">
-                      <span className="font-['Inter'] text-[14px] leading-[17px] text-[#756F80]">Recipient</span>
-                      <span className="font-['Inter'] font-medium text-[16px] leading-[140%] text-[#292333]">{metadata?.studentName || (credential?.student ? `${credential.student.slice(0, 6)}...${credential.student.slice(-4)}` : 'Recipient')}</span>
+                  <div className="flex flex-row items-start gap-[16px] sm:gap-[20px] w-full">
+                    <div className="flex flex-col gap-[4px] sm:gap-[6px] flex-1">
+                      <span className="font-['Inter'] text-[13px] sm:text-[14px] leading-[17px] text-[#756F80]">Recipient</span>
+                      <span className="font-['Inter'] font-medium text-[15px] sm:text-[16px] leading-[140%] text-[#292333] break-words">{metadata?.studentName || (credential?.student ? `${credential.student.slice(0, 6)}...${credential.student.slice(-4)}` : 'Recipient')}</span>
                     </div>
-                    <div className="flex flex-col gap-[6px] flex-1">
-                      <span className="font-['Inter'] text-[14px] leading-[17px] text-[#756F80]">Award</span>
-                      <span className="font-['Inter'] font-medium text-[16px] leading-[140%] text-[#292333]">{metadata?.degree || 'Academic Credential'}</span>
+                    <div className="flex flex-col gap-[4px] sm:gap-[6px] flex-1">
+                      <span className="font-['Inter'] text-[13px] sm:text-[14px] leading-[17px] text-[#756F80]">Award</span>
+                      <span className="font-['Inter'] font-medium text-[15px] sm:text-[16px] leading-[140%] text-[#292333]">{metadata?.degree || 'Academic Credential'}</span>
                     </div>
                   </div>
 
                   {/* Academic details */}
-                  <div className="flex flex-row items-start gap-[20px] w-full">
-                    <div className="flex flex-col gap-[6px] flex-1">
-                      <span className="font-['Inter'] text-[14px] leading-[17px] text-[#756F80]">Branch / Field</span>
-                      <span className="font-['Inter'] font-medium text-[16px] leading-[140%] text-[#292333] pr-[30px]">{metadata?.branch || metadata?.fieldOfStudy || metadata?.field || 'Academic Program'}</span>
+                  <div className="flex flex-row items-start gap-[16px] sm:gap-[20px] w-full">
+                    <div className="flex flex-col gap-[4px] sm:gap-[6px] flex-1">
+                      <span className="font-['Inter'] text-[13px] sm:text-[14px] leading-[17px] text-[#756F80]">Branch / Field</span>
+                      <span className="font-['Inter'] font-medium text-[15px] sm:text-[16px] leading-[140%] text-[#292333]">{metadata?.branch || metadata?.fieldOfStudy || metadata?.field || 'Academic Program'}</span>
                     </div>
-                    <div className="flex flex-col gap-[6px] flex-1">
+                    <div className="flex flex-col gap-[4px] sm:gap-[6px] flex-1">
                       <span className="font-['Inter'] text-[11px] leading-[13px] text-[#756F80]">Issued on</span>
-                      <span className="font-['Inter'] font-medium text-[16px] leading-[140%] text-[#292333]">{formatDate(credential.issueTimestamp)}</span>
+                      <span className="font-['Inter'] font-medium text-[15px] sm:text-[16px] leading-[140%] text-[#292333]">{formatDate(credential.issueTimestamp)}</span>
+                    </div>
+                  </div>
+
+                  {/* Status row */}
+                  <div className="w-full h-[1px] bg-[#E4DFE9]"></div>
+                  <div className="flex flex-col gap-[4px] sm:gap-[6px] w-full">
+                    <span className="font-['Inter'] text-[13px] sm:text-[14px] leading-[17px] text-[#756F80]">Registry Status</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full ${isRevoked ? 'bg-[#D92D20]' : 'bg-[#34C759]'}`}></div>
+                      <span className={`font-['Inter'] font-semibold text-[14px] sm:text-[15px] ${isRevoked ? 'text-[#D92D20]' : 'text-[#326956]'}`}>
+                        {isRevoked ? 'Revoked (Permanently Invalidated)' : 'Valid · Cryptographically Authenticated'}
+                      </span>
                     </div>
                   </div>
 
@@ -759,19 +883,21 @@ const PublicVerify = () => {
                   <div className="w-full h-[1px] bg-[#E4DFE9]"></div>
 
                   {/* Credential detail */}
-                  <div className="flex flex-col gap-[6px] w-full">
-                    <span className="font-['Inter'] text-[14px] leading-[17px] text-[#756F80]">Credential ID</span>
-                    <span className="font-['IBM_Plex_Mono'] text-[14px] leading-[140%] text-[#292333]">TC-RU-2026-{tokenId.toString().padStart(5, '0')}</span>
+                  <div className="flex flex-col gap-[4px] sm:gap-[6px] w-full">
+                    <span className="font-['Inter'] text-[13px] sm:text-[14px] leading-[17px] text-[#756F80]">Credential ID</span>
+                    <span className="font-['IBM_Plex_Mono'] text-[13px] sm:text-[14px] leading-[140%] text-[#292333]">TC-RU-2026-{tokenId.toString().padStart(5, '0')}</span>
                   </div>
 
                   {/* Issuer provenance */}
-                  <div className="flex flex-row items-center gap-[10px] w-full h-[38px]">
-                    <div className="w-[20px] h-[20px] text-[#7053AD]">
+                  <div className="flex flex-row items-center gap-[10px] w-full min-h-[38px]">
+                    <div className={`w-[20px] h-[20px] shrink-0 ${isRevoked ? 'text-[#D92D20]' : 'text-[#7053AD]'}`}>
                       <Icons.Landmark />
                     </div>
-                    <div className="flex flex-col gap-[4px]">
-                      <span className="font-['Inter'] font-semibold text-[15px] leading-[18px] text-[#292333]">{metadata?.institution || (credential?.issuer ? `Issuer (${credential.issuer.slice(0, 6)}...${credential.issuer.slice(-4)})` : 'Issuing Authority')}</span>
-                      <span className="font-['Inter'] text-[13px] leading-[16px] text-[#756F80]">Cryptographically verified on-chain</span>
+                    <div className="flex flex-col gap-[2px]">
+                      <span className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] leading-[18px] text-[#292333]">{metadata?.institution || (credential?.issuer ? `Issuer (${credential.issuer.slice(0, 6)}...${credential.issuer.slice(-4)})` : 'Issuing Authority')}</span>
+                      <span className={`font-['Inter'] text-[12px] sm:text-[13px] leading-[16px] ${isRevoked ? 'text-[#D92D20]' : 'text-[#756F80]'}`}>
+                        {isRevoked ? 'Revocation recorded on-chain' : 'Cryptographically verified on-chain'}
+                      </span>
                     </div>
                   </div>
 
@@ -782,17 +908,17 @@ const PublicVerify = () => {
                   id="blockchain-details-trigger"
                   type="button"
                   onClick={() => setShowBlockchainModal(true)}
-                  className="w-[438px] flex items-center justify-between p-[18px_24px] bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.22)] border border-[#E4DFE9] rounded-[16px] backdrop-blur-md shadow-sm transition-all group cursor-pointer text-left"
+                  className="w-full max-w-[438px] flex items-center justify-between p-[14px_18px] sm:p-[18px_24px] bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.22)] border border-[#E4DFE9] rounded-[16px] backdrop-blur-md shadow-sm transition-all group cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-white/40 border border-[#E4DFE9] flex items-center justify-center text-[#513582] group-hover:scale-105 transition-transform shrink-0 shadow-sm">
-                      <Link2 className="w-5 h-5" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/40 border border-[#E4DFE9] flex items-center justify-center text-[#513582] group-hover:scale-105 transition-transform shrink-0 shadow-sm">
+                      <Link2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <span className="font-['Inter'] font-semibold text-[16px] text-[#292333] group-hover:text-[#513582] transition-colors">
+                    <span className="font-['Inter'] font-semibold text-[15px] sm:text-[16px] text-[#292333] group-hover:text-[#513582] transition-colors">
                       Blockchain details
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/40 border border-[#E4DFE9] text-[12px] font-['Inter'] font-medium text-[#513582] group-hover:bg-[#513582] group-hover:text-white transition-all shrink-0 shadow-sm">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/40 border border-[#E4DFE9] text-[12px] font-['Inter'] font-medium text-[#513582] group-hover:bg-[#513582] group-hover:text-white transition-all shrink-0 shadow-sm">
                     <span>View</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </div>
@@ -800,60 +926,88 @@ const PublicVerify = () => {
               </div>
 
               {/* Authenticated credential (Right Column) */}
-              <div className="flex flex-col items-end gap-[16px] w-[810px] flex-1">
+              <div className="flex flex-col items-center lg:items-end gap-[16px] w-full lg:w-[810px] flex-1">
                 
                 {/* Credential presentation */}
-                <div className="flex flex-col items-center justify-center w-[706px] h-[552px] bg-[rgba(198,198,200,0.2)] rounded-[28px] relative overflow-hidden">
-                  <div className="absolute top-[-140px] left-[350px] w-[450px] h-[450px] bg-[rgba(255,255,255,0.22)] rounded-full blur-[40px] pointer-events-none z-0"></div>
-                  <div className="z-10 relative">
-                    <CertificatePreview isResult={true} />
-                  </div>
+                <div className="w-full max-w-[706px] flex justify-center">
+                  <CertificatePreview isResult={true} />
                 </div>
 
                 {/* Record actions and provenance */}
-                <div className="flex flex-col items-start gap-[16px] w-[706px]">
+                <div className="flex flex-col items-start gap-[16px] w-full max-w-[706px]">
                   
                   {/* Verification provenance */}
-                  <div className="flex flex-col items-start p-[16px_20px] gap-[10px] w-full bg-[rgba(233,243,238,0.2)] rounded-[10px]">
-                    <div className="flex flex-row items-center gap-[8px] h-[17px]">
-                      <div className="w-[16px] h-[16px] rounded-full border-[1.6px] border-[#326956] flex items-center justify-center">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#326956" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  {isRevoked ? (
+                    <div className="flex flex-col items-start p-[14px_16px] sm:p-[16px_20px] gap-[8px] sm:gap-[10px] w-full bg-[rgba(254,242,242,0.7)] border border-red-200/80 rounded-[10px]">
+                      <div className="flex flex-row items-center gap-[8px]">
+                        <div className="w-[16px] h-[16px] rounded-full border-[1.6px] border-[#D92D20] flex items-center justify-center shrink-0">
+                          <X className="w-2.5 h-2.5 text-[#D92D20]" strokeWidth={3} />
+                        </div>
+                        <span className="font-['Inter'] font-semibold text-[13px] sm:text-[14px] leading-[17px] text-[#D92D20]">
+                          Revocation permanently anchored on Sepolia
+                        </span>
                       </div>
-                      <span className="font-['Inter'] font-semibold text-[14px] leading-[17px] text-[#326956]">
-                        Issuer record matched · signature intact
+                      <span className="font-['Inter'] text-[11px] sm:text-[13px] leading-[150%] text-[#9C3834]">
+                        Checked {new Date().toUTCString().replace('GMT', 'UTC')} · Reference VFY-{Math.random().toString(16).substr(2, 6).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-['Inter'] text-[13px] leading-[150%] text-[#326956] h-[20px]">
-                      Checked {new Date().toUTCString().replace('GMT', 'UTC')} · Reference VFY-{Math.random().toString(16).substr(2, 6).toUpperCase()}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-start p-[14px_16px] sm:p-[16px_20px] gap-[8px] sm:gap-[10px] w-full bg-[rgba(233,243,238,0.2)] rounded-[10px]">
+                      <div className="flex flex-row items-center gap-[8px]">
+                        <div className="w-[16px] h-[16px] rounded-full border-[1.6px] border-[#326956] flex items-center justify-center shrink-0">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#326956" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span className="font-['Inter'] font-semibold text-[13px] sm:text-[14px] leading-[17px] text-[#326956]">
+                          Issuer record matched · signature intact
+                        </span>
+                      </div>
+                      <span className="font-['Inter'] text-[11px] sm:text-[13px] leading-[150%] text-[#326956]">
+                        Checked {new Date().toUTCString().replace('GMT', 'UTC')} · Reference VFY-{Math.random().toString(16).substr(2, 6).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Record actions */}
-                  <div className="flex flex-row items-start gap-[12px] w-full">
-                    <button 
-                      id="download-certificate-button"
-                      type="button"
-                      onClick={handleDownloadCertificate}
-                      disabled={downloading}
-                      className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#513582] rounded-[10px] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer shadow-sm"
-                    >
-                      <span className="font-['Inter'] font-semibold text-[16px] leading-[19px] text-white">
-                        {downloading ? 'Generating PDF...' : 'Download certificate'}
-                      </span>
-                      {downloading ? (
-                        <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
-                      ) : (
-                        <Icons.Download className="text-white w-[17px] h-[17px]" />
-                      )}
-                    </button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+                    {isRevoked ? (
+                      <button 
+                        id="download-certificate-button"
+                        type="button"
+                        disabled={true}
+                        title="Certificate download is disabled because this credential has been revoked."
+                        className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-[#E8E4EB] border border-[#D5D0DC] rounded-[10px] cursor-not-allowed shadow-none"
+                      >
+                        <span className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] leading-[19px] text-[#8C827A]">
+                          Download disabled · Revoked
+                        </span>
+                        <Lock className="w-4 h-4 text-[#8C827A]" />
+                      </button>
+                    ) : (
+                      <button 
+                        id="download-certificate-button"
+                        type="button"
+                        onClick={handleDownloadCertificate}
+                        disabled={downloading}
+                        className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#513582] rounded-[10px] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer shadow-sm"
+                      >
+                        <span className="font-['Inter'] font-semibold text-[15px] sm:text-[16px] leading-[19px] text-white">
+                          {downloading ? 'Generating PDF...' : 'Download certificate'}
+                        </span>
+                        {downloading ? (
+                          <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
+                        ) : (
+                          <Icons.Download className="text-white w-[17px] h-[17px]" />
+                        )}
+                      </button>
+                    )}
                     <button 
                       onClick={handleCopy}
-                      className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-gradient-to-r from-[#FFFFFF] to-[#999999] border border-[#E4DFE9] rounded-[10px] hover:opacity-90 transition-opacity"
+                      className="flex flex-row justify-center items-center px-[20px] gap-[10px] sm:w-[160px] h-[50px] bg-white/40 hover:bg-white/60 border border-white/60 rounded-[10px] active:scale-[0.98] transition-all cursor-pointer shadow-sm"
                     >
-                      <span className="font-['Inter'] font-semibold text-[16px] leading-[19px] text-[#292333]">
-                        {copied ? 'Copied to clipboard' : 'Copy verification link'}
+                      <span className="font-['Inter'] font-medium text-[14px] sm:text-[15px] text-[#292333]">
+                        {copied ? 'Copied link!' : 'Share link'}
                       </span>
-                      {copied ? <Icons.CheckCircle className="text-[#7053AD] w-[17px] h-[17px]" /> : <Icons.LinkIcon className="text-[#7053AD] w-[17px] h-[17px]" />}
+                      {copied ? <Icons.CheckCircle className="text-[#513582] w-[16px] h-[16px]" /> : <Icons.LinkIcon className="text-[#513582] w-[16px] h-[16px]" />}
                     </button>
                   </div>
 
@@ -1001,15 +1155,30 @@ const PublicVerify = () => {
                 </div>
               </div>
 
-              {/* 4. Sepolia Etherscan Link */}
+              {/* 4. On-Chain Status */}
+              <div className="flex flex-col gap-1.5 p-3.5 bg-[rgba(255,255,255,0.35)] border border-[rgba(255,255,255,0.65)] backdrop-blur-md rounded-[14px] shadow-sm">
+                <span className="font-['Inter'] text-[12px] font-medium text-[#756F80]">
+                  On-Chain Status
+                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`font-['Inter'] text-[14px] font-semibold ${isRevoked ? 'text-[#D92D20]' : 'text-[#326956]'}`}>
+                    {isRevoked ? 'Revoked (Officially Invalidated)' : 'Valid · Cryptographically Active'}
+                  </span>
+                  <span className={`font-['IBM_Plex_Mono'] text-[11px] px-2.5 py-0.5 rounded-full font-medium ${isRevoked ? 'text-[#D92D20] bg-red-100' : 'text-emerald-700 bg-emerald-100'}`}>
+                    {isRevoked ? 'revoked: true' : 'revoked: false'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 5. Sepolia Etherscan Link */}
               <div className="flex flex-col gap-2.5 p-3.5 bg-[rgba(255,255,255,0.35)] border border-[rgba(255,255,255,0.65)] backdrop-blur-md rounded-[14px] shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-['Inter'] text-[12px] font-medium text-[#756F80]">
                     Sepolia Etherscan Links
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-['Inter'] font-medium text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                    Verified on Sepolia
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-['Inter'] font-medium px-2 py-0.5 rounded-full ${isRevoked ? 'text-red-700 bg-red-100/90' : 'text-emerald-700 bg-emerald-100/90'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isRevoked ? 'bg-red-600' : 'bg-emerald-600 animate-pulse'}`}></span>
+                    {isRevoked ? 'Revoked on Sepolia' : 'Verified on Sepolia'}
                   </span>
                 </div>
 
