@@ -75,9 +75,8 @@ const Footer = () => {
         <div className="w-full max-w-[1440px] mx-auto flex flex-col sm:flex-row justify-between items-center px-8 py-6 text-white/70 text-[14px] font-medium">
           <div>© TokCred {new Date().getFullYear()}</div>
           <div className="flex gap-6 mt-3 sm:mt-0">
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <button className="hover:text-white transition-colors">Cookie Preferences</button>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
           </div>
         </div>
       </footer>

@@ -52,6 +52,10 @@ const AppLayout = () => {
   const currentPath = location.pathname.endsWith('/') && location.pathname !== '/' ? location.pathname.slice(0, -1) : location.pathname;
   const isCustomNavRoute = ['/', '/dashboard', '/student-dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history', '/privacy', '/terms'].includes(currentPath);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
   return (
     <div className="flex flex-col min-h-screen w-full relative">
       {!isCustomNavRoute && <Navbar />}

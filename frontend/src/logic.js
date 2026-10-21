@@ -342,11 +342,21 @@ export const loadAllCredentials = async (contract) => {
   }
 
   const allCreds = [];
+  const seenIds = new Set();
+
   for (let i = 0; i < Number(totalCredentials); i++) {
     try {
       const details = await contract.getCredentialDetails(i);
-      let metadata = null;
+      const tid = (details.tokenId !== undefined && details.tokenId !== null)
+        ? details.tokenId.toString()
+        : String(i);
 
+      if (seenIds.has(tid)) {
+        continue;
+      }
+      seenIds.add(tid);
+
+      let metadata = null;
       try {
         metadata = await fetchMetadata(details.metadataURI);
       } catch {
@@ -355,6 +365,7 @@ export const loadAllCredentials = async (contract) => {
 
       allCreds.push({
         ...mapCredentialData(details),
+        tokenId: tid,
         metadata,
       });
     } catch {

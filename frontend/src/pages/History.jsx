@@ -50,8 +50,23 @@ const History = () => {
   // Real blockchain records mapped directly from smart contract
   const allRecords = useMemo(() => {
     if (chainRows && chainRows.length > 0) {
-      return chainRows.map((item, idx) => {
-        const tokenIdStr = item.tokenId ? item.tokenId.toString() : String(idx + 1);
+      // Deduplicate by unique tokenId to ensure no accidental duplicate items
+      const seenTokenIds = new Set();
+      const uniqueRows = chainRows.filter(item => {
+        const id = (item.tokenId !== undefined && item.tokenId !== null) 
+          ? item.tokenId.toString() 
+          : null;
+        if (id !== null) {
+          if (seenTokenIds.has(id)) return false;
+          seenTokenIds.add(id);
+        }
+        return true;
+      });
+
+      return uniqueRows.map((item, idx) => {
+        const tokenIdStr = (item.tokenId !== undefined && item.tokenId !== null)
+          ? item.tokenId.toString()
+          : String(idx);
         const padId = tokenIdStr.padStart(5, '0');
         const formattedId = `TC-RU-2026-${padId}`;
         const prov = `VFY-${(item.student || tokenIdStr).slice(2, 8).toUpperCase()}`;
@@ -468,7 +483,7 @@ const History = () => {
               </div>
             ) : (
               paginatedRecords.map((row, idx) => (
-                <div key={row.tokenId || idx} className="w-full flex flex-col">
+                <div key={`cred-${row.tokenId}-${selectedFilter}-${currentPage}-${idx}`} className="w-full flex flex-col">
                   {/* Row Divider */}
                   <div className="w-full h-[1px] bg-[rgba(125,101,154,0.141176)] my-3" />
 
