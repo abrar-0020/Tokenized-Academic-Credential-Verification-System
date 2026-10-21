@@ -139,8 +139,7 @@ const StudentDashboard = () => {
               {account ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="hidden xs:inline">Connected</span>
-                  <span className="xs:hidden">✓</span>
+                  <span>Connected</span>
                 </>
               ) : (
                 <span>Connect</span>

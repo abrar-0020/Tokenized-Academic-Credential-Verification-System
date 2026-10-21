@@ -450,13 +450,12 @@ const PublicVerify = () => {
               {account ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="hidden xs:inline">Connected</span>
-                  <span className="xs:hidden">Done</span>
+                  <span>Connected</span>
                 </>
               ) : (
                 <>
-                  <span className="hidden xs:inline">Connect Wallet</span>
-                  <span className="xs:hidden">Connect</span>
+                  <span className="hidden sm:inline">Connect Wallet</span>
+                  <span className="sm:hidden">Connect</span>
                 </>
               )}
             </button>
