@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '@/components/SettingsDropdown';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, useMotionTemplate } from 'framer-motion';
-import { Search, ShieldCheck, Download, BookOpen, ChevronDown, Lock, ArrowRight, Globe, Zap, Users, Smartphone } from 'lucide-react';
+import { Search, ShieldCheck, Download, BookOpen, ChevronDown, Lock, ArrowRight, Globe, Zap, Users, Smartphone, Menu, X } from 'lucide-react';
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import QRCodeStyling from 'qr-code-styling';
@@ -76,6 +76,7 @@ const Home = () => {
   const video1Ref = useRef(null);
   const video2Ref = useRef(null);
   const [isNavDark, setIsNavDark] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const darkSectionRef = useRef(null);
 
   // Scroll animations for Credentials Headline
@@ -231,38 +232,103 @@ const Home = () => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-[16px]">
+          <div className="flex items-center gap-[8px] sm:gap-[16px]">
+            <div>
+              <SettingsDropdown 
+                account={account}
+                isAdmin={isAdmin}
+                isIssuer={isIssuer}
+                networkId={networkId}
+                connectWallet={connectWallet}
+                disconnectWallet={disconnectWallet}
+                loading={loading}
+                error={error}
+                buttonClassName={`w-[44px] h-[44px] sm:w-[56px] sm:h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] ${isNavDark ? 'bg-[#241C40] text-white' : 'bg-white text-[#101014]'}`}
+                iconSize={20}
+              />
+            </div>
 
-          <div>
-            <SettingsDropdown 
-              account={account}
-              isAdmin={isAdmin}
-              isIssuer={isIssuer}
-              networkId={networkId}
-              connectWallet={connectWallet}
-              disconnectWallet={disconnectWallet}
-              loading={loading}
-              error={error}
-              buttonClassName={`w-[56px] h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] ${isNavDark ? 'bg-[#241C40] text-white' : 'bg-white text-[#101014]'}`}
-              iconSize={22}
-            />
+            <button 
+              onClick={account ? disconnectWallet : connectWallet} 
+              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
+              className={`h-[44px] px-[16px] sm:h-[56px] sm:px-[28px] text-[13px] sm:text-[16px] font-[400] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] ${isNavDark ? 'bg-[#EAE4FF] text-[#101014] hover:bg-white' : 'bg-[#2D264B] text-white hover:bg-[#3C315B]'}`}
+            >
+              {account ? (
+                <>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="hidden xs:inline">Connected</span>
+                  <span className="xs:hidden">✓</span>
+                </>
+              ) : (
+                <span>Connect</span>
+              )}
+            </button>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`w-[44px] h-[44px] rounded-full flex md:hidden items-center justify-center transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] ${isNavDark ? 'bg-[#241C40] text-white' : 'bg-white text-[#101014]'}`}
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
 
-          <button 
-            onClick={account ? disconnectWallet : connectWallet} 
-            title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-            className={`h-[56px] px-[28px] text-[16px] font-[400] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] ${isNavDark ? 'bg-[#EAE4FF] text-[#101014] hover:bg-white' : 'bg-[#2D264B] text-white hover:bg-[#3C315B]'}`}
-          >
-            {account ? (
-              <>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Connected</span>
-              </>
-            ) : (
-              <span>Connect Wallet</span>
-            )}
-          </button>
-        </div>
+          {/* Mobile Navigation Drawer */}
+          {mobileMenuOpen && (
+            <div className="absolute top-[68px] left-0 right-0 p-4 bg-[#101014]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl flex flex-col gap-2 text-white z-50 md:hidden animate-in fade-in slide-in-from-top-3 duration-200">
+              <button 
+                onClick={() => { navigate('/'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-[15px] font-semibold flex items-center justify-between"
+              >
+                <span>Home</span>
+                <span className="text-white/40">●</span>
+              </button>
+              <button 
+                onClick={() => { navigate('/features'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-[15px] text-white/80"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => { navigate('/developers'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-[15px] text-white/80"
+              >
+                Developers
+              </button>
+              <button 
+                onClick={() => { navigate('/support'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-[15px] text-white/80"
+              >
+                Support
+              </button>
+              <button 
+                onClick={() => { navigate('/public-verify'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl bg-[#EAE4FF]/10 text-[#C4B9F5] text-[15px] font-medium flex items-center justify-between"
+              >
+                <span>Public Verifier</span>
+                <span>↗</span>
+              </button>
+              {Boolean(account && (isAdmin || isIssuer)) && (
+                <button 
+                  onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }} 
+                  className="text-left px-4 py-3 rounded-2xl bg-[#7053AD]/30 text-[#EAE4FF] text-[15px] font-semibold flex items-center justify-between"
+                >
+                  <span>Admin Dashboard</span>
+                  <span>→</span>
+                </button>
+              )}
+              {Boolean(account && !isAdmin && !isIssuer) && (
+                <button 
+                  onClick={() => { navigate('/student-dashboard'); setMobileMenuOpen(false); }} 
+                  className="text-left px-4 py-3 rounded-2xl bg-[#7053AD]/30 text-[#EAE4FF] text-[15px] font-semibold flex items-center justify-between"
+                >
+                  <span>Student Dashboard</span>
+                  <span>→</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

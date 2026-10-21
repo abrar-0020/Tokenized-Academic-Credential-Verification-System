@@ -11,7 +11,9 @@ import {
   ScanLine, 
   XCircle, 
   CheckCircle,
-  ExternalLink 
+  ExternalLink,
+  Menu,
+  X
 } from 'lucide-react';
 import { loadAllCredentials, loadStudentCredentials, revokeCredential } from '../logic';
 
@@ -19,6 +21,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { account, contract, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [credentials, setCredentials] = useState([]);
   const [allCredentials, setAllCredentials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -135,15 +138,15 @@ const Dashboard = () => {
       `}</style>
 
       {/* ── TOP NAVIGATION (Standard TokCred Floating Pill Navbar) ────────────────── */}
-      <div className="w-full pt-[24px] flex justify-center px-6 lg:px-16 z-[100] mb-4 shrink-0">
+      <div className="w-full pt-[16px] sm:pt-[24px] flex justify-center px-4 sm:px-6 lg:px-16 z-[100] mb-4 shrink-0">
         <div className="w-full max-w-[1312px] flex items-center justify-between relative">
           
           {/* Left: Logo */}
-          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity h-[56px] -ml-6" onClick={() => navigate('/')}>
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity h-[48px] sm:h-[56px] -ml-2 sm:-ml-6" onClick={() => navigate('/')}>
             <img 
               src="/tokcred_logo-removebg-preview.png" 
               alt="TokCred" 
-              className="h-[90px] lg:h-[120px] max-w-none object-contain relative transition-all duration-300" 
+              className="h-[75px] sm:h-[90px] lg:h-[120px] max-w-none object-contain relative transition-all duration-300" 
               style={{ filter: 'none' }}
             />
           </div>
@@ -162,7 +165,7 @@ const Dashboard = () => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-[16px]">
+          <div className="flex items-center gap-2 sm:gap-[16px]">
             <div>
               <SettingsDropdown 
                 account={account}
@@ -173,26 +176,78 @@ const Dashboard = () => {
                 disconnectWallet={disconnectWallet}
                 loading={web3Loading}
                 error={web3Error}
-                buttonClassName="w-[56px] h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]"
-                iconSize={22}
+                buttonClassName="w-[44px] h-[44px] sm:w-[56px] sm:h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]"
+                iconSize={20}
               />
             </div>
 
             <button 
               onClick={account ? disconnectWallet : connectWallet} 
               title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[56px] px-[24px] text-[15px] font-[500] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
             >
               {account ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
+                  <span className="hidden xs:inline">Connected</span>
+                  <span className="xs:hidden">✓</span>
                 </>
               ) : (
-                <span>Connect Wallet</span>
+                <span>Connect</span>
               )}
             </button>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-[44px] h-[44px] rounded-full flex md:hidden items-center justify-center transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
+
+          {/* Mobile Navigation Drawer */}
+          {mobileMenuOpen && (
+            <div className="absolute top-[68px] left-0 right-0 p-4 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl flex flex-col gap-2 text-[#292333] z-50 md:hidden animate-in fade-in slide-in-from-top-3 duration-200">
+              <button 
+                onClick={() => { navigate('/'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-black/5 text-[15px]"
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl bg-[#513582]/10 text-[#513582] text-[15px] font-semibold flex items-center justify-between"
+              >
+                <span>Dashboard</span>
+                <span>●</span>
+              </button>
+              {Boolean(account && (isAdmin || isIssuer)) && (
+                <>
+                  <button 
+                    onClick={() => { navigate('/issue'); setMobileMenuOpen(false); }} 
+                    className="text-left px-4 py-3 rounded-2xl hover:bg-black/5 text-[15px] text-[#292333]"
+                  >
+                    Issue Credential
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/history'); setMobileMenuOpen(false); }} 
+                    className="text-left px-4 py-3 rounded-2xl hover:bg-black/5 text-[15px] text-[#292333]"
+                  >
+                    History
+                  </button>
+                </>
+              )}
+              <button 
+                onClick={() => { navigate('/public-verify'); setMobileMenuOpen(false); }} 
+                className="text-left px-4 py-3 rounded-2xl hover:bg-black/5 text-[15px] text-[#7053AD] font-medium flex items-center justify-between"
+              >
+                <span>Public Verify</span>
+                <span>↗</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -368,9 +423,9 @@ const Dashboard = () => {
             </div>
 
             {/* Credential Presentation Glass Card */}
-            <div className="relative flex flex-col items-center">
+            <div className="relative flex flex-col items-center w-full max-w-[706px]">
               <div 
-                className="relative flex flex-col items-center justify-center w-full max-w-[706px] h-[552px] rounded-[28px] isolate overflow-hidden"
+                className="relative flex flex-col items-center justify-center w-full h-[360px] sm:h-[450px] md:h-[520px] lg:h-[552px] rounded-[20px] sm:rounded-[28px] isolate overflow-hidden"
                 style={{
                   background: 'rgba(198, 198, 200, 0.22)',
                   backdropFilter: 'blur(12px)',
@@ -382,8 +437,10 @@ const Dashboard = () => {
                 {/* Ambient glow */}
                 <div className="absolute -top-32 -right-20 w-[400px] h-[400px] bg-white/20 rounded-full blur-2xl pointer-events-none" />
 
-                {/* Container for the paper stack */}
-                <div className="relative w-[608px] h-[452px] -mt-8">
+                {/* Responsive Scaled Container for the paper stack */}
+                <div className="w-full flex items-center justify-center -mt-6 sm:-mt-8">
+                  <div className="transform scale-[0.46] xs:scale-[0.54] sm:scale-[0.72] md:scale-[0.88] lg:scale-100 origin-center transition-transform duration-200">
+                    <div className="relative w-[608px] h-[452px]">
                   
                   {/* Layer 1 (Bottom paper, shifted right and rotated right) */}
                   <div className="absolute inset-0 bg-[#E8E2D2] shadow-[0px_16px_28px_rgba(68,50,84,0.1)] rounded-[3px] rotate-[4deg] translate-x-[20px] -translate-y-[6px] z-10 pointer-events-none"></div>
@@ -499,18 +556,20 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Presentation caption */}
-                <div className="absolute bottom-[24px] flex items-center gap-2 px-[18px] py-[10px] bg-white/95 border border-white rounded-full z-30 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
-                  <div className="text-[#7053AD]">
-                    <Icons.Eye />
-                  </div>
-                  <span className="font-['Inter'] text-[12px] text-[#292333] font-medium tracking-[0.2px]">
-                    Latest issuance · official academic record
-                  </span>
-                </div>
               </div>
             </div>
+
+            {/* Presentation caption */}
+              <div className="absolute bottom-[14px] sm:bottom-[24px] flex items-center gap-2 px-3 sm:px-[18px] py-1.5 sm:py-[10px] bg-white/95 border border-white rounded-full z-30 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md max-w-[90%]">
+                <div className="text-[#7053AD] shrink-0">
+                  <Icons.Eye />
+                </div>
+                <span className="font-['Inter'] text-[10px] sm:text-[12px] text-[#292333] font-medium tracking-[0.2px] truncate">
+                  Latest issuance · official academic record
+                </span>
+              </div>
+            </div>
+          </div>
 
             {/* Institutional assurance tag */}
             <div className="w-full flex items-center gap-2 text-[#756F80] text-[13px] pt-1">
