@@ -20,8 +20,7 @@ html,body{width:297mm;height:210mm;background:#FFFEFC;-webkit-print-color-adjust
 .ttl{margin-top:6mm;font:500 33pt/1 var(--serif);letter-spacing:.03em}
 .orn{display:flex;align-items:center;gap:2.4mm;margin:4mm 0 5.5mm;color:var(--gold)}.orn i{display:block;width:30mm;height:.5pt;background:var(--gold)}.orn u{display:block;width:1.9mm;height:1.9mm;background:var(--gold);transform:rotate(45deg)}
 .it{font:italic 400 13pt var(--serif);color:var(--mut)}
-.nm{margin-top:2.6mm;font:500 48pt/1.05 var(--serif)}
-.nl{width:104mm;height:.6pt;background:var(--ink);opacity:.55;margin:2.2mm 0 4.4mm}
+.nm{margin-top:3.5mm;margin-bottom:4mm;font:500 48pt/1.15 var(--serif);letter-spacing:0.01em}
 .dg{margin-top:2.6mm;font:700 27pt/1.1 var(--serif)}
 .pr{margin-top:1.6mm;font:500 14.5pt var(--serif);color:var(--blue);letter-spacing:.02em}
 .gr{margin-top:4mm;font:400 11.5pt var(--serif);color:var(--mut)}.gr b{color:var(--ink);font-weight:600}
@@ -38,7 +37,7 @@ html,body{width:297mm;height:210mm;background:#FFFEFC;-webkit-print-color-adjust
 <div class="ttl">Degree Certificate</div>
 <div class="orn"><i></i><u></u><i></i></div>
 <div class="it">This is to certify that</div>
-<div class="nm">{{studentName}}</div><div class="nl"></div>
+<div class="nm">{{studentName}}</div>
 <div class="it">having fulfilled all the requirements prescribed by the university, is hereby awarded the degree of</div>
 <div class="dg">{{degree}}</div><div class="pr">{{program}}</div>
 <div class="gr">with a Cumulative Grade of <b>{{grade}}</b> &nbsp;&middot;&nbsp; Conferred in <b>{{issueYear}}</b></div>
