@@ -7,7 +7,10 @@ import { ChevronDown, Link2, ExternalLink, Copy, Check, X } from 'lucide-react';
 import Alert from '../components/Alert';
 import { formatDate } from '../utils/helpers';
 import { verifyCredentialPublic, ipfsToHttp } from '../logic';
-import { CONTRACT_ADDRESS } from '../config/contract';const PUBLIC_RPC =
+import { CONTRACT_ADDRESS } from '../config/contract';
+import { downloadCertificatePdf } from '../services/certificateGenerator';
+
+const PUBLIC_RPC =
   import.meta.env.VITE_PUBLIC_RPC_URL ||
   'https://ethereum-sepolia-rpc.publicnode.com';
 
@@ -19,6 +22,7 @@ const PublicVerify = () => {
   const [credential, setCredential] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
@@ -84,6 +88,19 @@ const PublicVerify = () => {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
+    }
+  };
+
+  const handleDownloadCertificate = async () => {
+    if (!credential) return;
+    try {
+      setDownloading(true);
+      await downloadCertificatePdf(credential, metadata);
+    } catch (err) {
+      console.error('Failed to generate certificate PDF:', err);
+      alert('Failed to generate certificate PDF. Please check your browser permissions.');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -813,9 +830,21 @@ const PublicVerify = () => {
 
                   {/* Record actions */}
                   <div className="flex flex-row items-start gap-[12px] w-full">
-                    <button className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#513582] rounded-[10px] hover:opacity-90 transition-opacity">
-                      <span className="font-['Inter'] font-semibold text-[16px] leading-[19px] text-white">Download certificate</span>
-                      <Icons.Download className="text-white w-[17px] h-[17px]" />
+                    <button 
+                      id="download-certificate-button"
+                      type="button"
+                      onClick={handleDownloadCertificate}
+                      disabled={downloading}
+                      className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#513582] rounded-[10px] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 cursor-pointer shadow-sm"
+                    >
+                      <span className="font-['Inter'] font-semibold text-[16px] leading-[19px] text-white">
+                        {downloading ? 'Generating PDF...' : 'Download certificate'}
+                      </span>
+                      {downloading ? (
+                        <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
+                      ) : (
+                        <Icons.Download className="text-white w-[17px] h-[17px]" />
+                      )}
                     </button>
                     <button 
                       onClick={handleCopy}
