@@ -162,17 +162,9 @@ export const Web3Provider = ({ children }) => {
         web3Signer
       );
 
-      // Check roles — with known admin fallback and on-chain check
-      const KNOWN_ADMINS = [
-        '0xc5f2b450f599e5277cb264d38c03f8c958068c60',
-        '0x9054cd70d75e604a3bc6eccd1c6cd80552d266db',
-        '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
-      ];
-      const isKnownAdmin = accounts[0] && KNOWN_ADMINS.includes(accounts[0].toLowerCase());
-
-      let hasIssuerRole = isKnownAdmin;
-      let hasAdminRole = isKnownAdmin;
-      let contractReachable = true;
+      // Check roles directly from smart contract on-chain
+      let hasIssuerRole = false;
+      let hasAdminRole = false;
 
       try {
         const issuerRole = await contractInstance.ISSUER_ROLE();
@@ -182,8 +174,7 @@ export const Web3Provider = ({ children }) => {
         if (onChainIssuer) hasIssuerRole = true;
         if (onChainAdmin) hasAdminRole = true;
       } catch (roleErr) {
-        contractReachable = false;
-        console.error('Contract unreachable — role check fallback used:', roleErr);
+        console.error('Contract role check error:', roleErr);
       }
 
       setAccount(accounts[0]);
