@@ -13,8 +13,12 @@ export type VerificationResult = {
  * This is the same as verifyCredentialPublic in the web app's logic.js.
  */
 export async function verifyCredential(tokenId: string | number): Promise<VerificationResult> {
+  const cleanId = String(tokenId).trim();
+  if (!cleanId || !/^\d+$/.test(cleanId)) {
+    throw new Error(`Invalid token ID format: ${tokenId}`);
+  }
   const contract = getPublicContract();
-  const data = await contract.verifyCredential(parseInt(String(tokenId)));
+  const data = await contract.verifyCredential(BigInt(cleanId));
 
   const credential: CredentialData = {
     tokenId: data.tokenId,

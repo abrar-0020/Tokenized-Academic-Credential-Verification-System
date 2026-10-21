@@ -1,7 +1,16 @@
-﻿import { useWeb3 } from '../context/Web3Context';
+import { useLocation } from 'react-router-dom';
+import { useWeb3 } from '../context/Web3Context';
 import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
+  const location = useLocation();
+  const hideOn = ['/', '/dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history'];
+  const currentPath = location.pathname.endsWith('/') && location.pathname !== '/' ? location.pathname.slice(0, -1) : location.pathname;
+
+  if (hideOn.includes(currentPath)) {
+    return null;
+  }
+
   const { account, isIssuer, isAdmin, connectWallet, disconnectWallet, loading } = useWeb3();
   const { isDark, toggleTheme } = useTheme();
 
@@ -33,19 +42,29 @@ const Navbar = () => {
             <a href="/" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
               Home
             </a>
-            {account && (
-              <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                Dashboard
-              </a>
-            )}
-            {isIssuer && (
-              <a href="/issue" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                Issue
-              </a>
-            )}
-            <a href="/verify" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-              Verify
+            <a href="/features" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+              Features
             </a>
+            <a href="/developers" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+              Developers
+            </a>
+            <a href="/support" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+              Support
+            </a>
+            {Boolean(account && (isAdmin || isIssuer)) && (
+              <>
+                <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                  Dashboard
+                </a>
+                <a href="/issue" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                  Issue
+                </a>
+                <a href="/history" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                  History
+                </a>
+              </>
+            )}
+
             <a href="/public-verify" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
               Public Verify
             </a>
@@ -101,15 +120,19 @@ const Navbar = () => {
         {/* Mobile Navigation Row */}
         <div className="md:hidden pb-2.5 flex flex-col gap-1.5" style={{ overflowX: 'hidden', width: '100%' }}>
           {/* Nav links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <a href="/" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Home</a>
-            {account && (
-              <a href="/dashboard" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Dashboard</a>
+            <a href="/features" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Features</a>
+            <a href="/developers" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Developers</a>
+            <a href="/support" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Support</a>
+            {Boolean(account && (isAdmin || isIssuer)) && (
+              <>
+                <a href="/dashboard" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Dashboard</a>
+                <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
+                <a href="/history" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">History</a>
+              </>
             )}
-            {isIssuer && (
-              <a href="/issue" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Issue</a>
-            )}
-            <a href="/verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Verify</a>
+
             <a href="/public-verify" className="text-xs font-medium text-slate-600 hover:text-primary-600 whitespace-nowrap">Public</a>
             <button onClick={toggleTheme} className="flex items-center justify-center w-5 h-5 text-slate-600" title="Toggle theme">
               {isDark ? (

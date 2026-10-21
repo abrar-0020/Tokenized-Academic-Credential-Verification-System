@@ -35,6 +35,13 @@ web-build/
 *.tsbuildinfo
 
 # Sub-projects / UI Drafts
+frontend-backup/
+frontend-v2/
+*.cjs
+cards/
+/*.mp4
+/*.gif
+/*.png
 mobile app ui screens/
 landing page/tokcred-landing/
 

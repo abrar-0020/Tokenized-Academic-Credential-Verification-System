@@ -103,18 +103,22 @@ export const fetchMetadata = async (uri) => {
  * Create metadata payload matching the existing issue flow.
  */
 export const buildCredentialMetadata = (formData) => {
+  const branchValue = formData.branch || formData.fieldOfStudy || '';
   return {
-    name: `${formData.degree} - ${formData.studentName}`,
+    name: `${formData.degree}${branchValue ? ' in ' + branchValue : ''} - ${formData.studentName}`,
     description: formData.description || `Academic credential issued by ${formData.institution}`,
     institution: formData.institution,
     studentName: formData.studentName,
     degree: formData.degree,
+    branch: branchValue,
+    fieldOfStudy: branchValue,
     grade: formData.grade,
     issueDate: formData.issueDate,
     image: '',
     attributes: [
       { trait_type: 'Institution', value: formData.institution },
       { trait_type: 'Degree', value: formData.degree },
+      ...(branchValue ? [{ trait_type: 'Branch', value: branchValue }] : []),
       { trait_type: 'Grade', value: formData.grade },
       { trait_type: 'Issue Date', value: formData.issueDate },
     ],

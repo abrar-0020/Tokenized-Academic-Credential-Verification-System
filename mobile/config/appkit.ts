@@ -3,35 +3,43 @@ import { createAppKit } from '@reown/appkit-react-native';
 import { EthersAdapter } from '@reown/appkit-ethers-react-native';
 
 const storage = {
-  getItem: async (key) => {
+  getItem: async (key: string) => {
     try {
       const val = await AsyncStorage.getItem(key);
       if (val === null || val === 'null' || val === undefined) return undefined;
       try { return JSON.parse(val); } catch { return val; }
     } catch { return undefined; }
   },
-  setItem: async (key, value) => {
+  setItem: async (key: string, value: any) => {
     try { await AsyncStorage.setItem(key, JSON.stringify(value)); } catch {}
   },
-  removeItem: async (key) => {
+  removeItem: async (key: string) => {
     try { await AsyncStorage.removeItem(key); } catch {}
   },
-  getKeys: async () => {
-    try { return await AsyncStorage.getAllKeys(); } catch { return []; }
+  getKeys: async (): Promise<string[]> => {
+    try { return [...(await AsyncStorage.getAllKeys())]; } catch { return []; }
   },
-  getEntries: async () => {
+  getEntries: async (): Promise<[string, any][]> => {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const pairs = await AsyncStorage.multiGet(keys);
-      return pairs.map(([k, v]) => {
-        if (v === null || v === 'null') return [k, undefined];
-        try { return [k, JSON.parse(v)]; } catch { return [k, v]; }
-      }).filter(([, v]) => v !== undefined);
-    } catch { return []; }
+      return pairs
+        .map(([k, v]) => {
+          if (v === null || v === 'null') return [k, undefined] as [string, any];
+          try {
+            return [k, JSON.parse(v)] as [string, any];
+          } catch {
+            return [k, v] as [string, any];
+          }
+        })
+        .filter(([, v]) => v !== undefined);
+    } catch {
+      return [];
+    }
   },
 };
 
-const PROJECT_ID = process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo-project-id';
+const PROJECT_ID = process.env.EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID || '08005cbbce870098a0727ec7bfad4adf';
 
 const metadata = {
   name: 'TokCred',
@@ -69,7 +77,7 @@ export const appKitInstance = createAppKit({
   features: {
     email: false,
     socials: [],
-  },
+  } as any,
 });
 
 export { PROJECT_ID };

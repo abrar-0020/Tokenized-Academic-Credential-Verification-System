@@ -21,7 +21,11 @@ export async function getStudentCredentialIds(studentAddress: string): Promise<b
 /** Get full details for a single credential by token ID */
 export async function getCredentialDetails(tokenId: string | number | bigint): Promise<CredentialData> {
   const contract = getPublicContract();
-  const data = await contract.getCredentialDetails(BigInt(tokenId));
+  const parsedId = typeof tokenId === 'string' ? tokenId.trim() : tokenId;
+  if (typeof parsedId === 'string' && !/^\d+$/.test(parsedId)) {
+    throw new Error(`Invalid token ID format: ${tokenId}`);
+  }
+  const data = await contract.getCredentialDetails(BigInt(parsedId));
   return mapCredential(data);
 }
 
@@ -80,7 +84,11 @@ export async function revokeCredentialTx(
   tokenId: string | number | bigint
 ): Promise<import('ethers').TransactionResponse> {
   const contract = getSignedContract(signer);
-  const tx = await contract.revokeCredential(BigInt(tokenId));
+  const parsedId = typeof tokenId === 'string' ? tokenId.trim() : tokenId;
+  if (typeof parsedId === 'string' && !/^\d+$/.test(parsedId)) {
+    throw new Error(`Invalid token ID format: ${tokenId}`);
+  }
+  const tx = await contract.revokeCredential(BigInt(parsedId));
   await tx.wait();
   return tx;
 }

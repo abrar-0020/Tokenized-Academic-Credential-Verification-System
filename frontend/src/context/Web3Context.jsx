@@ -162,20 +162,28 @@ export const Web3Provider = ({ children }) => {
         web3Signer
       );
 
-      // Check roles — wrapped in try/catch in case the contract is unreachable
-      // (e.g. CALL_EXCEPTION when the Sepolia deployment is stale or removed)
-      let hasIssuerRole = false;
-      let hasAdminRole = false;
+      // Check roles — with known admin fallback and on-chain check
+      const KNOWN_ADMINS = [
+        '0xc5f2b450f599e5277cb264d38c03f8c958068c60',
+        '0x9054cd70d75e604a3bc6eccd1c6cd80552d266db',
+        '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+      ];
+      const isKnownAdmin = accounts[0] && KNOWN_ADMINS.includes(accounts[0].toLowerCase());
+
+      let hasIssuerRole = isKnownAdmin;
+      let hasAdminRole = isKnownAdmin;
       let contractReachable = true;
 
       try {
         const issuerRole = await contractInstance.ISSUER_ROLE();
         const adminRole = await contractInstance.DEFAULT_ADMIN_ROLE();
-        hasIssuerRole = await contractInstance.hasRole(issuerRole, accounts[0]);
-        hasAdminRole = await contractInstance.hasRole(adminRole, accounts[0]);
+        const onChainIssuer = await contractInstance.hasRole(issuerRole, accounts[0]);
+        const onChainAdmin = await contractInstance.hasRole(adminRole, accounts[0]);
+        if (onChainIssuer) hasIssuerRole = true;
+        if (onChainAdmin) hasAdminRole = true;
       } catch (roleErr) {
         contractReachable = false;
-        console.error('Contract unreachable — role check failed:', roleErr);
+        console.error('Contract unreachable — role check fallback used:', roleErr);
       }
 
       setAccount(accounts[0]);

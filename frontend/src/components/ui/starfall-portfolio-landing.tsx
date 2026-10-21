@@ -105,7 +105,7 @@ const AuroraBackground: React.FC = () => {
 };
 
 const defaultData = {
-  logo: { initials: 'SL', name: 'TokCred' },
+  logo: { initials: 'SL', name: 'Scholar Ledger' },
   navLinks: [
     { label: 'About', href: '#about' },
     { label: 'Credentials', href: '#projects' },

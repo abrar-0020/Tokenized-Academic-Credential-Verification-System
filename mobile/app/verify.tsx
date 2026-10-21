@@ -24,7 +24,7 @@ export default function PublicVerifier() {
 
   const handleVerify = () => {
     const id = tokenId.trim();
-    if (!id || isNaN(Number(id))) {
+    if (!id || !/^\d+$/.test(id)) {
       Alert.alert('Invalid ID', 'Please enter a valid numeric Credential ID.');
       return;
     }

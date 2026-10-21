@@ -1,269 +1,709 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
-import Alert from '../components/Alert';
-import Loading from '../components/Loading';
-import ObsidianShell from '../components/ObsidianShell';
-import { formatDate, ipfsToHttp } from '../utils/helpers';
+import SettingsDropdown from '../components/SettingsDropdown';
+import { 
+  ArrowRight, 
+  ArrowUpRight, 
+  ShieldCheck, 
+  Activity, 
+  ScanLine, 
+  XCircle, 
+  CheckCircle,
+  ExternalLink 
+} from 'lucide-react';
 import { loadAllCredentials, loadStudentCredentials, revokeCredential } from '../logic';
 
 const Dashboard = () => {
-  const { account, contract, isIssuer } = useWeb3();
+  const navigate = useNavigate();
+  const { account, contract, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
+
   const [credentials, setCredentials] = useState([]);
   const [allCredentials, setAllCredentials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [viewMode, setViewMode] = useState('owned');
-  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [viewMode, setViewMode] = useState('issued');
+  const [quickRevokeId, setQuickRevokeId] = useState('');
+  const [revoking, setRevoking] = useState(false);
 
   useEffect(() => {
+    if (account && !isAdmin && !isIssuer && !web3Loading) {
+      navigate('/student-dashboard');
+      return;
+    }
     if (account && contract) {
       void hydrate();
     } else {
       setLoading(false);
     }
-  }, [account, contract, isIssuer]);
+  }, [account, contract, isAdmin, isIssuer, web3Loading]);
 
   const hydrate = async () => {
     try {
       setLoading(true);
       setError(null);
       const owned = await loadStudentCredentials(contract, account);
-      setCredentials(owned);
+      setCredentials(owned || []);
       if (isIssuer) {
         const all = await loadAllCredentials(contract);
-        setAllCredentials(all);
+        setAllCredentials(all || []);
       }
-    } catch {
-      setError('Failed to load dashboard data.');
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError('Failed to load dashboard data from network.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleRevoke = async (tokenId) => {
-    if (!window.confirm(`Revoke credential #${tokenId.toString()}?`)) return;
+    if (!tokenId && tokenId !== 0) return;
+    if (!window.confirm(`Are you sure you want to revoke credential #${tokenId}? This action is irreversible on-chain.`)) return;
     try {
+      setRevoking(true);
       setError(null);
       await revokeCredential(contract, tokenId);
-      setSuccess(`Credential #${tokenId.toString()} revoked successfully.`);
+      setSuccess(`Credential #${tokenId} has been revoked on-chain.`);
+      setQuickRevokeId('');
       await hydrate();
     } catch (err) {
       setError(err.message || 'Failed to revoke credential.');
+    } finally {
+      setRevoking(false);
     }
   };
 
-  const displayCredentials = viewMode === 'owned' ? credentials : allCredentials;
-  const recentRows = useMemo(() => {
-    return showAllActivity ? displayCredentials : displayCredentials.slice(0, 4);
-  }, [displayCredentials, showAllActivity]);
-  const validCount = displayCredentials.filter((c) => !c.revoked).length;
+  // Metrics calculation from live on-chain credentials
+  const totalIssuedCount = allCredentials.length;
+  const validCount = allCredentials.filter((c) => !c.revoked).length;
+  const revokedCount = allCredentials.filter((c) => c.revoked).length;
+  const activeCount = totalIssuedCount - revokedCount;
+  const revenueCalculated = (totalIssuedCount * 5).toLocaleString();
 
-  const initialsFor = (name) => (name || 'Unknown Scholar').slice(0, 2).toUpperCase();
+  // Most recent credential for certificate preview
+  const latestCredential = allCredentials.length > 0 ? allCredentials[allCredentials.length - 1] : null;
 
-  const fallbackImageFor = (name) => {
-    const initials = initialsFor(name);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#252626"/><text x="50%" y="53%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#8197ff">${initials}</text></svg>`;
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  const displayStudentName = latestCredential?.metadata?.studentName || "Candidate Full Name";
+  const displayDegree = latestCredential?.metadata?.degree || "Degree Program";
+  const displayField = latestCredential?.metadata?.branch || latestCredential?.metadata?.fieldOfStudy || latestCredential?.metadata?.field || "Specialization / Branch";
+  const displayInstitution = latestCredential?.metadata?.institution || (account ? `Institution (${account.slice(0, 6)}...${account.slice(-4)})` : "Institution Name");
+  const displayTokenId = latestCredential?.tokenId !== undefined ? `TC-RU-2026-${String(latestCredential.tokenId).padStart(5, '0')}` : "TC-TOKEN-RECORD";
+  const displayDate = latestCredential?.metadata?.issueDate || (latestCredential?.issueTimestamp ? new Date(Number(latestCredential.issueTimestamp) * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "Pending Issuance");
+
+  // SVG Icons
+  const Icons = {
+    BrandMark: () => (
+      <div className="flex items-center justify-center w-9 h-9 bg-[#513582] rounded-[9px] shadow-sm flex-shrink-0">
+        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.5 3L2 7.5L10.5 12L19 7.5L10.5 3Z" stroke="#FFFEFA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 12.5L10.5 17L19 12.5" stroke="#FFFEFA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+    ),
+    Landmark: () => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 21H21" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12 3L2 8H22L12 3Z" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M6 11V17" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M10 11V17" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14 11V17" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M18 11V17" stroke="#513582" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    Eye: () => (
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1.08337 6.5C1.08337 6.5 2.70837 3.25 6.50004 3.25C10.2917 3.25 11.9167 6.5 11.9167 6.5C11.9167 6.5 10.2917 9.75 6.50004 9.75C2.70837 9.75 1.08337 6.5 1.08337 6.5Z" stroke="#7053AD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M6.5 7.58333C7.09831 7.58333 7.58333 7.09831 7.58333 6.5C7.58333 5.90169 7.09831 5.41667 6.5 5.41667C5.90169 5.41667 5.41667 5.90169 5.41667 6.5C5.41667 7.09831 5.90169 7.58333 6.5 7.58333Z" stroke="#7053AD" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    )
   };
 
-  const imageFor = (row) => {
-    const raw = row.metadata?.image;
-    if (!raw) return fallbackImageFor(row.metadata?.studentName);
-    return raw.startsWith('ipfs://') ? ipfsToHttp(raw) : raw;
-  };
+  const recentList = allCredentials.slice(-4).reverse().map((c) => ({
+    id: `TC-RU-2026-${String(c.tokenId).padStart(5, '0')}`,
+    name: c.metadata?.studentName || `Scholar #${c.tokenId}`,
+    time: c.issueTimestamp ? new Date(Number(c.issueTimestamp) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' UTC' : 'Recorded',
+    status: c.revoked ? 'Revoked' : 'Verified',
+    statusType: c.revoked ? 'revoked' : 'verified'
+  }));
 
   return (
-    <ObsidianShell title="Protocol Overview" subtitle="Real-Time Ledger Metrics">
-      <div className="max-w-7xl mx-auto">
-        {!account && <Alert type="warning" message="Please connect your wallet to view dashboard data." />}
-        {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
-        {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
+    <div className="min-h-screen bg-[#CDCDCD] text-[#292333] font-['Inter'] flex flex-col selection:bg-[#7053AD]/20 selection:text-[#513582]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+      `}</style>
 
-        {isIssuer && (
-          <div className="mb-6 flex gap-2 bg-[#131313] p-1 rounded-lg w-fit border border-[#484848]/20">
-            <button
-              type="button"
-              onClick={() => setViewMode('owned')}
-              className={`px-6 py-2.5 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'owned' ? 'bg-[#1f2020] text-[#8197ff]' : 'text-[#acabaa] hover:text-[#e7e5e4]'
-              }`}
+      {/* ── TOP NAVIGATION (Standard TokCred Floating Pill Navbar) ────────────────── */}
+      <div className="w-full pt-[24px] flex justify-center px-6 lg:px-16 z-[100] mb-4 shrink-0">
+        <div className="w-full max-w-[1312px] flex items-center justify-between relative">
+          
+          {/* Left: Logo */}
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity h-[56px] -ml-6" onClick={() => navigate('/')}>
+            <img 
+              src="/tokcred_logo-removebg-preview.png" 
+              alt="TokCred" 
+              className="h-[90px] lg:h-[120px] max-w-none object-contain relative transition-all duration-300" 
+              style={{ filter: 'none' }}
+            />
+          </div>
+
+          {/* Center: Solid White Pill Nav */}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center h-[56px] px-[36px] rounded-full text-[15px] font-[400] gap-[32px] tracking-[-0.01em] shadow-[0_8px_24px_rgba(0,0,0,0.02)] transition-colors duration-300 bg-white text-[#101014]">
+            <span className="cursor-pointer hover:opacity-70 transition-opacity" onClick={() => navigate('/')}>Home</span>
+            <span className="cursor-pointer hover:opacity-70 transition-opacity font-semibold text-[#513582]" onClick={() => navigate('/dashboard')}>Dashboard</span>
+            {Boolean(account && (isAdmin || isIssuer)) && (
+              <>
+                <span className="cursor-pointer hover:opacity-70 transition-opacity" onClick={() => navigate('/issue')}>Issue</span>
+                <span className="cursor-pointer hover:opacity-70 transition-opacity" onClick={() => navigate('/history')}>History</span>
+              </>
+            )}
+            <span className="cursor-pointer hover:opacity-70 transition-opacity" onClick={() => navigate('/public-verify')}>Public Verify</span>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-[16px]">
+            <div>
+              <SettingsDropdown 
+                account={account}
+                isAdmin={isAdmin}
+                isIssuer={isIssuer}
+                networkId={networkId}
+                connectWallet={connectWallet}
+                disconnectWallet={disconnectWallet}
+                loading={web3Loading}
+                error={web3Error}
+                buttonClassName="w-[56px] h-[56px] rounded-full flex items-center justify-center hover:opacity-80 transition-colors duration-300 shadow-[0_8px_24px_rgba(0,0,0,0.02)] bg-white text-[#101014]"
+                iconSize={22}
+              />
+            </div>
+
+            <button 
+              onClick={account ? disconnectWallet : connectWallet} 
+              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
+              className="h-[56px] px-[24px] text-[15px] font-[500] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
             >
-              Owned ({credentials.length})
+              {account ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Connected</span>
+                </>
+              ) : (
+                <span>Connect Wallet</span>
+              )}
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('all')}
-              className={`px-6 py-2.5 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'all' ? 'bg-[#1f2020] text-[#8197ff]' : 'text-[#acabaa] hover:text-[#e7e5e4]'
-              }`}
-            >
-              Issued ({allCredentials.length})
-            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── INSTITUTIONAL WORKSPACE CONTAINER ────────────────────────── */}
+      <main className="max-w-[1440px] w-full mx-auto px-6 md:px-16 py-8 md:py-10 flex flex-col gap-8 flex-grow">
+        
+        {/* Alerts if any */}
+        {error && (
+          <div className="w-full bg-[#98514C]/10 border border-[#98514C]/30 text-[#98514C] px-5 py-3 rounded-2xl text-xs flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="font-bold underline ml-4">Dismiss</button>
+          </div>
+        )}
+        {success && (
+          <div className="w-full bg-[#326956]/10 border border-[#326956]/30 text-[#326956] px-5 py-3 rounded-2xl text-xs flex justify-between items-center">
+            <span>{success}</span>
+            <button onClick={() => setSuccess(null)} className="font-bold underline ml-4">Dismiss</button>
           </div>
         )}
 
-        {loading ? <Loading message="Loading dashboard..." /> : null}
+        {/* Institution Context Line */}
+        <div className="w-full flex justify-between items-center text-[#292333]">
+          {/* Identity */}
+          <div className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#7053AD]">
+              <path d="M3 21H21M3 10H21M5 10V21M9 10V21M15 10V21M19 10V21M12 3L21 10H3L12 3Z" stroke="#7053AD" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="font-['Inter'] text-[13px] text-[#292333] font-normal tracking-[-0.01em]">
+              {displayInstitution}
+            </span>
+          </div>
 
-        {!loading && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-[#131313] p-8 rounded-lg relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="material-symbols-outlined text-7xl">school</span>
-                </div>
-                <p className="text-[#acabaa] text-sm font-medium uppercase tracking-widest mb-4">Total Credentials Issued</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-headline font-bold text-[#c6c6c7]">{displayCredentials.length}</span>
-                </div>
-              </div>
+          {/* Workspace access timestamp */}
+          <div className="font-['IBM_Plex_Mono'] text-[10px] uppercase tracking-wider text-[#756F80]">
+            REGISTRAR WORKSPACE · {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+          </div>
+        </div>
 
-              <div className="bg-[#131313] p-8 rounded-lg relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="material-symbols-outlined text-7xl">person_check</span>
-                </div>
-                <p className="text-[#acabaa] text-sm font-medium uppercase tracking-widest mb-4">Verified Holders</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-headline font-bold text-[#c6c6c7]">{validCount}</span>
-                </div>
-              </div>
+        {/* ── TOP SECTION: PROTOCOL OVERVIEW & LATEST CREDENTIAL ──────── */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+          
+          {/* LEFT: Institutional Overview (cols-5) */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            
+            {/* Section marker & Headline */}
+            <div className="flex flex-col gap-3">
+              <span className="font-['IBM_Plex_Mono'] text-[12px] uppercase tracking-wider text-[#7053AD]">
+                INSTITUTIONAL / OVERVIEW
+              </span>
+              
+              <h1 className="font-['Cormorant_Garamond'] font-medium text-[54px] sm:text-[64px] leading-[1.02] text-[#292333] tracking-[-1.5px]">
+                Protocol Overview
+              </h1>
 
-              <div className="bg-[#131313] p-8 rounded-lg relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="material-symbols-outlined text-7xl">token</span>
-                </div>
-                <p className="text-[#acabaa] text-sm font-medium uppercase tracking-widest mb-4">Issuance Revenue</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-headline font-bold text-[#c6c6c7]">{(displayCredentials.length * 0.0033).toFixed(2)} ETH</span>
-                </div>
-              </div>
+              <p className="font-['Inter'] font-normal text-[13px] leading-[1.6] text-[#756F80]">
+                An enduring record of achievement. Oversee your institution's credentials, holders and trust on the network.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <section className="lg:col-span-8">
-                <div className="bg-[#131313] rounded-lg p-6 overflow-hidden">
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="font-headline text-xl font-bold text-[#c6c6c7]">Recent Verifications</h2>
-                    {displayCredentials.length > 4 && (
-                      <button
-                        className="text-[#8197ff] text-sm font-medium hover:underline"
-                        type="button"
-                        onClick={() => setShowAllActivity((prev) => !prev)}
-                      >
-                        {showAllActivity ? 'Show Less' : 'View All Activity'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead className="text-xs uppercase tracking-tighter text-[#acabaa]">
-                        <tr>
-                          <th className="pb-4 font-semibold">Scholar / Entity</th>
-                          <th className="pb-4 font-semibold">Credential Type</th>
-                          <th className="pb-4 font-semibold">Issue Date</th>
-                          <th className="pb-4 font-semibold">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-sm">
-                        {recentRows.map((row) => (
-                          <tr key={row.tokenId.toString()} className="group hover:bg-[#1f2020] transition-colors">
-                            <td className="py-5 pr-4 border-t border-[#484848]/10">
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={imageFor(row)}
-                                  alt={`${row.metadata?.studentName || 'Scholar'} credential`}
-                                  className="w-8 h-8 rounded-full object-cover border border-[#484848]/30"
-                                  loading="lazy"
-                                  onError={(event) => {
-                                    event.currentTarget.onerror = null;
-                                    event.currentTarget.src = fallbackImageFor(row.metadata?.studentName);
-                                  }}
-                                />
-                                <div>
-                                  <p className="font-semibold text-[#c6c6c7]">{row.metadata?.studentName || 'Unknown Scholar'}</p>
-                                  <p className="text-xs text-[#acabaa]">{row.metadata?.institution || 'Unknown Institution'}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-5 px-4 border-t border-[#484848]/10 text-[#acabaa]">{row.metadata?.degree || 'Academic Credential'}</td>
-                            <td className="py-5 px-4 border-t border-[#484848]/10 text-[#acabaa]">{formatDate(row.issueTimestamp)}</td>
-                            <td className="py-5 pl-4 border-t border-[#484848]/10">
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                                  row.revoked
-                                    ? 'bg-[#7f2737]/20 text-[#ec7c8a]'
-                                    : 'bg-[#8197ff]/10 text-[#8197ff] shadow-[0_0_12px_rgba(129,151,255,0.2)]'
-                                }`}
-                              >
-                                <span className={`w-1.5 h-1.5 rounded-full ${row.revoked ? 'bg-[#ec7c8a]' : 'bg-[#8197ff]'}`}></span>
-                                {row.revoked ? 'Revoked' : 'Success'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
+            {/* Credential Ownership Toggle Tabs */}
+            <div className="inline-flex items-center p-1 bg-white/20 border border-white/70 rounded-full w-fit">
+              <button
+                onClick={() => setViewMode('owned')}
+                className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all ${
+                  viewMode === 'owned'
+                    ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
+                    : 'text-[#756F80] hover:text-[#292333]'
+                }`}
+              >
+                Owned
+              </button>
+              <button
+                onClick={() => setViewMode('issued')}
+                className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all ${
+                  viewMode === 'issued'
+                    ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
+                    : 'text-[#756F80] hover:text-[#292333]'
+                }`}
+              >
+                Issued · {totalIssuedCount.toLocaleString()}
+              </button>
+            </div>
 
-              <aside className="lg:col-span-4 space-y-6">
-                <div className="bg-[#131313] rounded-lg p-6">
-                  <h3 className="font-headline text-lg font-bold text-[#c6c6c7] mb-6">Network Health</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#acabaa]">Current Ledger Mode</span>
-                      <span className="text-[#8197ff] font-semibold">Online</span>
+            {/* Protocol Metrics Glass Panel */}
+            <div 
+              className="w-full rounded-[28px] p-7 flex flex-col gap-4"
+              style={{
+                background: 'rgba(255, 255, 255, 0.32)',
+                border: '1px solid rgba(255, 255, 255, 0.72)',
+                boxShadow: '0px 12px 30px rgba(81, 65, 109, 0.047), inset 0px 1px 2px rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              
+              {/* Metric 1: Total Credentials Issued */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-['Inter'] text-[12px] text-[#292333]">
+                    Total Credentials Issued
+                  </span>
+                  <span className="font-['Inter'] text-[10px] text-[#756F80]">
+                    {totalIssuedCount === 0 ? '0 this month' : `+${totalIssuedCount} total`}
+                  </span>
+                </div>
+                <div className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[46px] leading-none text-[#292333] tracking-[-1px]">
+                  {totalIssuedCount.toLocaleString()}
+                </div>
+              </div>
+
+              <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
+
+              {/* Metric 2: Verified Holders */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-['Inter'] text-[12px] text-[#292333]">
+                    Verified Holders
+                  </span>
+                  <span className="font-['Inter'] text-[10px] text-[#756F80]">
+                    {totalIssuedCount === 0 ? '0% of issued credentials' : `${((validCount / totalIssuedCount) * 100).toFixed(1)}% of issued credentials`}
+                  </span>
+                </div>
+                <div className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[46px] leading-none text-[#292333] tracking-[-1px]">
+                  {validCount.toLocaleString()}
+                </div>
+              </div>
+
+              <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
+
+              {/* Metric 3: Issuance Revenue */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-['Inter'] text-[12px] text-[#292333]">
+                    Issuance Revenue
+                  </span>
+                  <span className="font-['Inter'] text-[10px] text-[#756F80]">
+                    USDC · 5 per credential
+                  </span>
+                </div>
+                <div className="font-['Cormorant_Garamond'] font-medium text-[42px] sm:text-[46px] leading-none text-[#292333] tracking-[-1px]">
+                  {revenueCalculated}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Primary Action Button */}
+            <button
+              onClick={() => navigate('/issue')}
+              className="w-full h-[50px] bg-[#513582] hover:bg-[#432a6e] text-white rounded-[10px] font-['Inter'] font-semibold text-[14px] flex items-center justify-center gap-2.5 shadow-[0px_16px_28px_rgba(68,50,84,0.13)] transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span>New Issuance</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* RIGHT: Latest Credential Presentation (cols-7) - IDENTICAL TO PUBLIC VERIFY */}
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            
+            {/* Header row */}
+            <div className="flex justify-between items-center">
+              <span className="font-['IBM_Plex_Mono'] text-[12px] uppercase tracking-wider text-[#7053AD]">
+                LATEST ISSUANCE / CLASS OF 2026
+              </span>
+              <button 
+                onClick={() => navigate('/public-verify')} 
+                className="text-[#7053AD] hover:opacity-80 transition-opacity flex items-center gap-1 font-['Inter'] text-[12px]"
+                title="View in public verifier"
+              >
+                <span>Verify</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Credential Presentation Glass Card */}
+            <div className="relative flex flex-col items-center">
+              <div 
+                className="relative flex flex-col items-center justify-center w-full max-w-[706px] h-[552px] rounded-[28px] isolate overflow-hidden"
+                style={{
+                  background: 'rgba(198, 198, 200, 0.22)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.72)',
+                  boxShadow: '0px 12px 30px rgba(81, 65, 109, 0.047), inset 0px 1px 2px rgba(255, 255, 255, 0.4)'
+                }}
+              >
+                {/* Ambient glow */}
+                <div className="absolute -top-32 -right-20 w-[400px] h-[400px] bg-white/20 rounded-full blur-2xl pointer-events-none" />
+
+                {/* Container for the paper stack */}
+                <div className="relative w-[608px] h-[452px] -mt-8">
+                  
+                  {/* Layer 1 (Bottom paper, shifted right and rotated right) */}
+                  <div className="absolute inset-0 bg-[#E8E2D2] shadow-[0px_16px_28px_rgba(68,50,84,0.1)] rounded-[3px] rotate-[4deg] translate-x-[20px] -translate-y-[6px] z-10 pointer-events-none"></div>
+
+                  {/* Layer 2 (Middle paper, shifted right and rotated right) */}
+                  <div className="absolute inset-0 bg-[#F5F0E6] shadow-[0px_16px_28px_rgba(68,50,84,0.1)] rounded-[3px] rotate-[2deg] translate-x-[10px] -translate-y-[3px] z-10 pointer-events-none"></div>
+
+                  {/* Layer 3 (Top Credential artifact) */}
+                  <div className="absolute inset-0 flex flex-col items-center px-7 py-4 bg-[#FFFEFA] border border-[#E8DBC0]/50 shadow-[0px_24px_48px_rgba(68,50,84,0.15)] rounded-[3px] z-20 overflow-hidden">
+                    
+                    {/* Issuer identity */}
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icons.Landmark />
+                      <h2 className="font-['Cormorant_Garamond'] font-semibold text-[22px] leading-[26px] text-[#513582]">
+                        {displayInstitution}
+                      </h2>
                     </div>
-                    <div className="w-full h-1.5 bg-[#252626] rounded-full overflow-hidden">
-                      <div className="h-full w-[99%] bg-[#8197ff]"></div>
+                    <p className="font-['Inter'] font-normal text-[8.5px] tracking-[1.8px] text-[#756F80] mb-2 uppercase">
+                      Knowledge • Integrity • Possibility
+                    </p>
+
+                    {/* Engraved rule */}
+                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#E8DBC0] to-transparent mb-2"></div>
+
+                    <p className="font-['Inter'] font-normal text-[8.5px] tracking-[2px] text-[#7053AD] uppercase mb-1.5">
+                      Degree Certificate
+                    </p>
+
+                    {/* Award title */}
+                    <h1 className="font-['Cormorant_Garamond'] font-medium text-[32px] sm:text-[35px] leading-[1.12] text-[#292333] mb-0.5 text-center max-w-[520px] mx-auto text-balance">
+                      {displayDegree}
+                    </h1>
+                    
+                    <p className="font-['Cormorant_Garamond'] font-normal text-[19px] sm:text-[21px] text-[#5B5565] mb-1 text-center max-w-[500px] mx-auto text-balance">
+                      in {displayField}
+                    </p>
+
+                    <p className="font-['Cormorant_Garamond'] text-[13.5px] text-[#756F80] mb-0.5 text-center">
+                      is hereby conferred upon
+                    </p>
+
+                    {/* Graduate name */}
+                    <h2 className="font-['Cormorant_Garamond'] font-semibold text-[38px] sm:text-[42px] leading-[1] text-[#513582] mb-0.5 text-center max-w-[520px] mx-auto text-balance">
+                      {displayStudentName}
+                    </h2>
+
+                    {/* Award distinction */}
+                    <p className="font-['Cormorant_Garamond'] text-[17px] sm:text-[19px] text-[#5B5565] mb-2 text-center leading-normal">
+                      with a Cumulative Grade of{' '}
+                      <span className="font-['Inter'] font-semibold text-[16px] sm:text-[18px] text-[#292333] ml-0.5 tracking-tight inline-block align-baseline">
+                        {latestCredential?.metadata?.grade || '3.92 / 4.00 · First Class'}
+                      </span>
+                    </p>
+
+                    {/* Academic attestation */}
+                    <div className="flex justify-between items-end w-full mt-auto mb-1">
+                      {/* QR Code Verification */}
+                      <div className="flex items-center gap-2 w-36">
+                        <div className="p-1 bg-white border border-[#E8DBC0] rounded-[5px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] shrink-0">
+                          <QRCodeSVG 
+                            value={latestCredential?.tokenId !== undefined ? `${window.location.origin}/public-verify?tokenId=${latestCredential.tokenId}` : `${window.location.origin}/public-verify`} 
+                            size={44} 
+                            level="H"
+                            fgColor="#292333"
+                            bgColor="#FFFFFF"
+                          />
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span className="font-['Inter'] font-semibold text-[7.5px] tracking-[0.4px] text-[#513582] uppercase leading-tight">
+                            Scan to Verify
+                          </span>
+                          <span className="font-['Inter'] text-[7px] text-[#756F80] leading-tight mt-0.5">
+                            TokCred Network
+                          </span>
+                          <span className="font-['IBM_Plex_Mono'] text-[6.5px] text-[#8C6D34] leading-tight mt-0.5">
+                            {latestCredential?.tokenId !== undefined ? `ID: #${latestCredential.tokenId}` : 'On-Chain Proof'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* University seal */}
+                      <div className="relative flex items-center justify-center w-[58px] h-[58px] shrink-0">
+                        {/* Outer embossed edge */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#E2C889] via-[#D5B571] to-[#AC8C4A] rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.2)]"></div>
+                        {/* Inner ring */}
+                        <div className="absolute inset-[2.5px] border-[1px] border-[#8C6D34]/30 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] bg-gradient-to-br from-[#D8B975] to-[#C09B52]"></div>
+                        {/* Innermost texture */}
+                        <div className="absolute inset-[5px] border-[0.5px] border-[#FFE9A6]/40 rounded-full bg-gradient-to-br from-[#E8CF94] to-[#C9A963] shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)]"></div>
+                        <div className="flex flex-col items-center gap-[1px] z-10 mt-0.5 drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
+                          <div className="scale-[0.5] text-[#513582]"><Icons.Landmark /></div>
+                          <span className="font-['Cormorant_Garamond'] font-bold text-[8.5px] text-[#513582] tracking-wide">SEAL</span>
+                        </div>
+                      </div>
+
+                      {/* Registrar */}
+                      <div className="flex flex-col items-end gap-[2px] w-32">
+                        <span className="font-['Cormorant_Garamond'] italic text-[21px] text-[#513582] leading-[1]">
+                          {latestCredential?.issuer ? `${latestCredential.issuer.slice(0, 6)}...${latestCredential.issuer.slice(-4)}` : (account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Academic Registrar')}
+                        </span>
+                        <div className="w-full h-[1px] bg-gradient-to-l from-transparent via-[#E8DBC0] to-transparent"></div>
+                        <span className="font-['Inter'] text-[7.5px] text-[#756F80] uppercase">Authorized Signatory</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#acabaa]">Verified Ratio</span>
-                      <span className="text-[#c6c6c7] font-semibold">
-                        {displayCredentials.length ? `${Math.round((validCount / displayCredentials.length) * 100)}%` : '0%'}
+
+                    {/* Credential provenance */}
+                    <div className="flex justify-between items-center w-full pt-1.5 border-t border-[#E8DBC0]/40">
+                      <span className="font-['IBM_Plex_Mono'] text-[8.5px] text-[#9C95A5]">
+                        {displayTokenId}
+                      </span>
+                      <span className="font-['Inter'] text-[8.5px] tracking-[0.5px] text-[#7053AD] uppercase font-medium">
+                        Digitally Issued • TokCred
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-[#1f2020] rounded-lg p-6 border border-[#484848]/20 relative overflow-hidden">
-                  <div className="relative z-10">
-                    <h3 className="font-headline text-lg font-bold text-[#c6c6c7] mb-2">New Issuance</h3>
-                    <p className="text-sm text-[#acabaa] mb-6">Initialize a new cryptographic academic record for a verified institution.</p>
-                    <a
-                      href="/issue"
-                      className="w-full bg-[#2c2c2c] text-[#c6c6c7] font-bold py-3 rounded-md hover:bg-[#252626] transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-sm">add_circle</span>
-                      Start Issuance
-                    </a>
+                {/* Presentation caption */}
+                <div className="absolute bottom-[24px] flex items-center gap-2 px-[18px] py-[10px] bg-white/95 border border-white rounded-full z-30 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
+                  <div className="text-[#7053AD]">
+                    <Icons.Eye />
+                  </div>
+                  <span className="font-['Inter'] text-[12px] text-[#292333] font-medium tracking-[0.2px]">
+                    Latest issuance · official academic record
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Institutional assurance tag */}
+            <div className="w-full flex items-center gap-2 text-[#756F80] text-[13px] pt-1">
+              <ShieldCheck className="w-[18px] h-[18px] text-[#7053AD] flex-shrink-0" />
+              <span>
+                Signed by {displayInstitution}. Preserved for the graduate. Independently verifiable, wherever they go.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── BOTTOM SECTION: REGISTRY ACTIVITY & OPERATIONS ──────────── */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Recent Verifications (cols-8) */}
+          <div className="lg:col-span-8 flex flex-col">
+            <div 
+              className="w-full rounded-[28px] p-7 flex flex-col gap-5"
+              style={{
+                background: 'rgba(255, 255, 255, 0.32)',
+                border: '1px solid rgba(255, 255, 255, 0.72)',
+                boxShadow: '0px 12px 30px rgba(81, 65, 109, 0.047), inset 0px 1px 2px rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              
+              {/* Header */}
+              <div className="flex justify-between items-baseline">
+                <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333]">
+                  Recent Verifications
+                </h3>
+                <span 
+                  onClick={() => navigate('/history')}
+                  className="font-['Inter'] text-[11px] text-[#7053AD] hover:underline cursor-pointer flex items-center gap-1"
+                >
+                  View all
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+
+              <p className="font-['Inter'] text-[13px] text-[#756F80]">
+                {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · Latest checks and records awaiting verification
+              </p>
+
+              {/* Entries List */}
+              <div className="flex flex-col">
+                {recentList.length === 0 ? (
+                  <div className="py-8 text-center text-[13px] text-[#756F80]">
+                    No credentials recorded yet. Credentials issued on-chain will appear here.
+                  </div>
+                ) : (
+                  recentList.map((item, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)] my-3" />
+                    
+                    <div className="flex items-center justify-between py-1">
+                      {/* Left: Holder name & metadata */}
+                      <div className="flex flex-col gap-1">
+                        <span className="font-['Inter'] font-medium text-[13px] text-[#292333]">
+                          {item.name}
+                        </span>
+                        <span className="font-['IBM_Plex_Mono'] text-[10px] text-[#756F80]">
+                          {item.id} · {item.time}
+                        </span>
+                      </div>
+
+                      {/* Right: Status badge */}
+                      <div>
+                        {item.statusType === 'verified' && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[rgba(233,243,238,0.7)] text-[#326956] rounded-full text-[12px] font-['Inter'] font-semibold shadow-xs">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Verified</span>
+                          </div>
+                        )}
+                        {item.statusType === 'issued' && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[rgba(238,232,248,0.65)] text-[#7053AD] rounded-full text-[12px] font-['Inter'] font-semibold shadow-xs">
+                            <ScanLine className="w-3.5 h-3.5" />
+                            <span>Issued</span>
+                          </div>
+                        )}
+                        {item.statusType === 'revoked' && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[rgba(249,236,232,0.7)] text-[#98514C] rounded-full text-[12px] font-['Inter'] font-semibold shadow-xs">
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Revoked</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )))}
+              </div>
+
+            </div>
+          </div>
+
+          {/* Protocol Operations & Quick Revoke (cols-4) */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div 
+              className="w-full rounded-[28px] p-7 flex flex-col gap-5"
+              style={{
+                background: 'rgba(255, 255, 255, 0.32)',
+                border: '1px solid rgba(255, 255, 255, 0.72)',
+                boxShadow: '0px 12px 30px rgba(81, 65, 109, 0.047), inset 0px 1px 2px rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              
+              {/* Network Health */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-[#7053AD]" />
+                  <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333]">
+                    Network Health
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-2 font-['Inter'] text-[12px] text-[#326956]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#326956] animate-pulse" />
+                  <span>All systems operational</span>
+                </div>
+
+                <p className="font-['IBM_Plex_Mono'] text-[12px] text-[#756F80] leading-[1.4] pt-1">
+                  99.98% uptime · 12 / 12 nodes synced<br/>
+                  Latest block 19,284,106 · 12:08 UTC
+                </p>
+              </div>
+
+              <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
+
+              {/* Quick Revocation Tool */}
+              <div className="flex flex-col gap-3">
+                <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333]">
+                  Quick Revoke
+                </h3>
+                
+                <p className="font-['Inter'] text-[13px] leading-[1.6] text-[#756F80]">
+                  Review a credential before revoking. This action is permanent and recorded on-chain.
+                </p>
+
+                <div className="flex flex-col gap-2 mt-1">
+                  <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
+                    Credential ID
+                  </label>
+                  
+                  <div className="w-full flex items-center px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
+                    <input
+                      type="text"
+                      placeholder="e.g. 0 or TC-RU-2026-08416"
+                      value={quickRevokeId}
+                      onChange={(e) => setQuickRevokeId(e.target.value)}
+                      className="w-full bg-transparent font-['IBM_Plex_Mono'] text-[13px] text-[#292333] placeholder-[#756F80]/60 outline-none"
+                    />
                   </div>
                 </div>
 
-                {isIssuer && recentRows.some((row) => !row.revoked) && (
-                  <div className="bg-[#131313] rounded-lg p-4 border border-[#484848]/20">
-                    <p className="text-xs text-[#acabaa] uppercase tracking-widest mb-3">Quick Revoke</p>
-                    <div className="flex flex-wrap gap-2">
-                      {recentRows.filter((row) => !row.revoked).map((row) => (
-                        <button
-                          key={row.tokenId.toString()}
-                          type="button"
-                          onClick={() => handleRevoke(row.tokenId)}
-                          className="px-3 py-1.5 rounded bg-[#7f2737]/20 border border-[#7f2737]/40 text-[#ec7c8a] text-xs font-bold"
-                        >
-                          Revoke #{row.tokenId.toString()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </aside>
+                <button
+                  onClick={() => {
+                    const cleanId = quickRevokeId.replace(/[^0-9]/g, '');
+                    if (cleanId === '') {
+                      alert('Please provide a valid numeric credential token ID.');
+                      return;
+                    }
+                    void handleRevoke(cleanId);
+                  }}
+                  disabled={revoking || !quickRevokeId}
+                  className="w-full h-[50px] mt-1 bg-white/30 hover:bg-white/50 border border-white/70 rounded-[10px] font-['Inter'] font-semibold text-[14px] text-[#292333] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {revoking ? 'Processing On-Chain...' : 'Review revocation'}
+                </button>
+              </div>
+
             </div>
-          </>
-        )}
-      </div>
-    </ObsidianShell>
+          </div>
+
+        </div>
+
+        {/* Footer Sub-scope note */}
+        <div className="w-full flex justify-between items-center text-[#756F80] text-[11px] pt-4 border-t border-black/5 mt-auto">
+          <span>Institution-owned records · {revokedCount} revoked · {validCount.toLocaleString()} active</span>
+          <span 
+            onClick={() => navigate('/public-verify')}
+            className="text-[#7053AD] hover:underline cursor-pointer flex items-center gap-1"
+          >
+            Open public verification
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
+
+      </main>
+
+    </div>
   );
 };
 

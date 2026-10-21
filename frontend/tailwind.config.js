@@ -8,26 +8,59 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-        },
+        phantom: {
+          bg: '#F5F2FF',      // color-4
+          surface: '#E2DFFE', // color-3
+          text: '#3C315B',    // color-1
+          dark: '#AB9FF2',    // color-2
+          light: '#FFFDF8',   // color-5
+        }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        cormorant: ['Cormorant Garamond', 'Georgia', 'serif'],
+        inter: ['Inter', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
       },
-      boxShadow: {
-        card: '0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05)',
-        'card-hover': '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.08)',
+      spacing: {
+        '1': '4px',
+        '2': '8px',
+        '3': '10px',
+        '4': '12px',
+        '5': '16px',
+        '6': '20px',
+        '7': '24px',
+        '8': '32px',
+        '9': '48px',
+        '10': '64px',
+        '11': '76px',
+        '12': '96px',
+        '13': '120px',
+        '14': '128px',
+        '15': '395px',
       },
+      borderRadius: {
+        'sm': '24px',
+        'md': '32px',
+        'xl': '96px',
+        'full': '100px',
+        'circle': '50%',
+      },
+      fontSize: {
+        'xs': '13px',
+        'sm': '16px',
+        'base': '20px',
+        'lg': '24px',
+        'xl': '85px',
+        '2xl': '96px',
+      },
+      transitionDuration: {
+        'fast': '150ms', 
+        'slow': '400ms',
+      },
+      transitionTimingFunction: {
+        'phantom': 'cubic-bezier(0.22, 1, 0.36, 1)',
+      }
     },
   },
   plugins: [],

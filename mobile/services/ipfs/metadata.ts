@@ -71,19 +71,22 @@ export async function fetchMetadata(uri: string): Promise<CredentialMetadata> {
 const memoryCache: Record<string, CredentialMetadata> = {};
 
 export async function uploadToIPFS(metadata: object): Promise<string> {
-  try {
-    // Server-side proxy first (avoids CORS and keeps secrets safe)
-    const resp = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/pinata`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(metadata),
-    });
-    if (resp.ok) {
-      const data = await resp.json();
-      return `ipfs://${data.IpfsHash}`;
+  const proxyUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (proxyUrl) {
+    try {
+      // Server-side proxy first (avoids CORS and keeps secrets safe)
+      const resp = await fetch(`${proxyUrl}/api/pinata`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metadata),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return `ipfs://${data.IpfsHash}`;
+      }
+    } catch {
+      // proxy unavailable
     }
-  } catch {
-    // proxy unavailable
   }
 
   // Fallback: client-side direct Pinata upload

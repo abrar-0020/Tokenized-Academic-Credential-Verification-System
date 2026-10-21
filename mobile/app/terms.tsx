@@ -28,6 +28,6 @@ export default function Page() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.lg },
-  title: { ...Typography.headlineMd, color: Colors.onSurface, marginBottom: Spacing.md },
+  title: { ...Typography.headlineLg, color: Colors.onSurface, marginBottom: Spacing.md },
   body: { ...Typography.bodyLg, color: Colors.onSurfaceVariant, lineHeight: 24, marginBottom: Spacing.md },
 });

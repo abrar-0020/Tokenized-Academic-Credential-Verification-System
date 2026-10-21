@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Settings, LogOut } from 'lucide-react';
 import { formatAddress } from '../utils/helpers';
 
-const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading, error }) => {
+const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading, error, buttonClassName, iconSize }) => {
   const [showSettings, setShowSettings] = useState(false);
   const networkLabel =
     networkId == null ? 'Not connected' : networkId === 11155111 ? 'Sepolia Testnet' : `Network ID: ${networkId}`;
@@ -11,9 +11,9 @@ const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet
     <div className="relative">
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="p-2 rounded-lg hover:bg-[#1f2020] transition-colors text-[#e7e5e4] hover:text-[#8197ff]"
+        className={buttonClassName || "p-2 rounded-lg hover:bg-[#1f2020] transition-colors text-[#e7e5e4] hover:text-[#8197ff]"}
       >
-        <Settings className="w-5 h-5" />
+        <Settings size={iconSize || 20} className={!iconSize ? "w-5 h-5" : ""} />
       </button>
       
       {showSettings && (
@@ -48,7 +48,7 @@ const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet
                 <div className="space-y-1">
                   {isAdmin && <span className="inline-block px-2 py-1 text-xs bg-[#8197ff]/10 text-[#8197ff] rounded border border-[#8197ff]/20">Admin</span>}
                   {isIssuer && <span className="inline-block px-2 py-1 text-xs bg-[#8197ff]/10 text-[#8197ff] rounded border border-[#8197ff]/20 ml-1">Issuer</span>}
-                  {!isAdmin && !isIssuer && <span className="inline-block px-2 py-1 text-xs bg-[#484848]/20 text-[#c6c6c7] rounded border border-[#484848]/30">Viewer</span>}
+                  {!isAdmin && !isIssuer && <span className="inline-block px-2 py-1 text-xs bg-[#7053AD]/20 text-[#AB9FF2] rounded border border-[#7053AD]/30 font-medium">Student</span>}
                 </div>
               </div>
             )}

@@ -28,7 +28,7 @@ export default function WalletConnect() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        router.replace('/(tabs)');
+        router.replace('/');
       }
     }
   }, [account, signer, isIssuer, isAdmin, router, type]);

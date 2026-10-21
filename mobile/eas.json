@@ -11,9 +11,25 @@
       "distribution": "internal",
       "channel": "preview",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -PreactNativeArchitectures=arm64-v8a"
+      },
+      "env": {
+        "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID": "08005cbbce870098a0727ec7bfad4adf",
+        "EXPO_PUBLIC_CONTRACT_ADDRESS": "0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1",
+        "EXPO_PUBLIC_RPC_URL": "https://ethereum-sepolia-rpc.publicnode.com",
+        "EXPO_PUBLIC_IPFS_GATEWAY": "https://gateway.pinata.cloud/ipfs/",
+        "EXPO_PUBLIC_NETWORK_ID": "11155111"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID": "08005cbbce870098a0727ec7bfad4adf",
+        "EXPO_PUBLIC_CONTRACT_ADDRESS": "0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1",
+        "EXPO_PUBLIC_RPC_URL": "https://ethereum-sepolia-rpc.publicnode.com",
+        "EXPO_PUBLIC_IPFS_GATEWAY": "https://gateway.pinata.cloud/ipfs/",
+        "EXPO_PUBLIC_NETWORK_ID": "11155111"
+      }
+    }
   }
 }

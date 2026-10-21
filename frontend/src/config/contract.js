@@ -1,5 +1,5 @@
-const rawContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
-const rawNetworkId = parseInt(import.meta.env.VITE_NETWORK_ID || '31337', 10);
+const defaultNetworkId = import.meta.env.PROD ? 11155111 : 31337;
+const rawNetworkId = parseInt(import.meta.env.VITE_NETWORK_ID || String(defaultNetworkId), 10);
 
 const normalizeContractAddress = (value) => {
   if (typeof value !== 'string') return null;
@@ -9,14 +9,14 @@ const normalizeContractAddress = (value) => {
 
 const isValidEvmAddress = (value) => /^0x[a-fA-F0-9]{40}$/.test(value || '');
 
-export const NETWORK_ID = Number.isInteger(rawNetworkId) ? rawNetworkId : 31337;
+export const NETWORK_ID = Number.isInteger(rawNetworkId) ? rawNetworkId : (import.meta.env.PROD ? 11155111 : 31337);
 
 const DEFAULT_CONTRACT_ADDRESSES = {
   31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
   11155111: '0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1',
 };
 
-const fallbackContractAddress = DEFAULT_CONTRACT_ADDRESSES[NETWORK_ID] || null;
+const fallbackContractAddress = DEFAULT_CONTRACT_ADDRESSES[NETWORK_ID] || DEFAULT_CONTRACT_ADDRESSES[11155111];
 
 export const CONTRACT_ADDRESS = normalizeContractAddress(rawContractAddress) || fallbackContractAddress;
 export const IS_CONTRACT_ADDRESS_VALID = isValidEvmAddress(CONTRACT_ADDRESS);
@@ -25,7 +25,7 @@ export const CONTRACT_CONFIG_ERROR = !CONTRACT_ADDRESS
   : !IS_CONTRACT_ADDRESS_VALID
     ? `Invalid VITE_CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`
     : null;
-export const NETWORK_NAME = import.meta.env.VITE_NETWORK_NAME || 'localhost';
+export const NETWORK_NAME = import.meta.env.VITE_NETWORK_NAME || (NETWORK_ID === 11155111 ? 'sepolia' : 'localhost');
 export const IPFS_GATEWAY = import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
 
 export const NETWORKS = {

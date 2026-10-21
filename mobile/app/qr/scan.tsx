@@ -62,7 +62,7 @@ export default function ScanQR() {
       extractedId = data.trim();
     }
 
-    if (extractedId && !isNaN(Number(extractedId))) {
+    if (extractedId && /^\d+$/.test(extractedId)) {
       router.replace({ pathname: '/verifying', params: { tokenId: extractedId } });
     } else {
       // Invalid QR, wait a bit and allow scanning again
@@ -73,7 +73,7 @@ export default function ScanQR() {
   return (
     <View style={styles.screen}>
       <CameraView
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
         barcodeScannerSettings={{
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   backLabel: { ...Typography.labelLg, color: Colors.outline },
   
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
