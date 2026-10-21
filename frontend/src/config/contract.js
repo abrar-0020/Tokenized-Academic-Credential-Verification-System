@@ -1,3 +1,4 @@
+const rawContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
 const defaultNetworkId = import.meta.env.PROD ? 11155111 : 31337;
 const rawNetworkId = parseInt(import.meta.env.VITE_NETWORK_ID || String(defaultNetworkId), 10);
 
