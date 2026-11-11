@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
@@ -8,27 +8,31 @@ import {
   ScanLine, 
   CheckCircle,
   ExternalLink,
+  Lock,
+  RefreshCw,
   Menu,
   X
 } from 'lucide-react';
 import { isValidAddress } from '../utils/helpers';
-import { issueCredential as issueCredentialAction } from '../logic';
+import { issueCredential as issueCredentialAction, generateUniqueCredentialId } from '../logic';
 
 const IssueCredential = () => {
   const navigate = useNavigate();
   const { account, contract, isIssuer, isAdmin, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     studentName: '',
+    enrollmentNumber: '',
     studentAddress: '',
+    credentialId: generateUniqueCredentialId(),
     degree: '',
     branch: '',
     grade: '',
     completionDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     institution: '',
     description: ''
-  });
+  }));
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
@@ -36,18 +40,21 @@ const IssueCredential = () => {
   const [draftSavedTime, setDraftSavedTime] = useState(null);
   const [txHash, setTxHash] = useState(null);
   const [issuedTokenId, setIssuedTokenId] = useState(null);
-
-  useEffect(() => {
-    if (account && !isAdmin && !isIssuer && !web3Loading) {
-      navigate('/student-dashboard');
-    }
-  }, [account, isAdmin, isIssuer, web3Loading, navigate]);
+  const [payloadDigest, setPayloadDigest] = useState(null);
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleRegenerateId = () => {
+    setFormData((prev) => ({
+      ...prev,
+      credentialId: generateUniqueCredentialId(),
+    }));
   };
 
   const handleSaveDraft = () => {
@@ -67,49 +74,61 @@ const IssueCredential = () => {
     setError(null);
     setSuccess(null);
 
-    if (!account) {
+    if (!account || (!isIssuer && !isAdmin)) {
       setError('Please connect an authorized issuer wallet first.');
       return;
     }
 
     if (!isValidAddress(formData.studentAddress)) {
-      setError('Please enter a valid Ethereum wallet address (0x...)');
+      setError('Please enter a valid student Ethereum wallet address (0x...) to bind this Soulbound token.');
       return;
     }
 
-    if (!formData.studentName || !formData.institution || !formData.degree) {
-      setError('Please complete all required fields.');
+    if (!formData.studentName.trim() || !formData.enrollmentNumber.trim()) {
+      setError('Please enter both the student legal name and enrollment / registration number.');
+      return;
+    }
+
+    if (!formData.credentialId.trim() || !formData.institution.trim() || !formData.degree.trim()) {
+      setError('Please complete all required fields (Credential ID, Institution, Degree).');
+      return;
+    }
+
+    if (!consentAccepted) {
+      setError('Please confirm the student privacy & consent notice before issuing this credential.');
       return;
     }
 
     try {
       setLoading(true);
-      const pinataKey = import.meta.env.VITE_PINATA_API_KEY;
-      const pinataSecret = import.meta.env.VITE_PINATA_API_SECRET;
 
       const result = await issueCredentialAction({
         contract,
         studentAddress: formData.studentAddress,
         formData: {
-          studentName: formData.studentName,
-          institution: formData.institution,
-          degree: formData.degree,
-          branch: formData.branch,
-          fieldOfStudy: formData.branch || formData.description || '',
-          grade: formData.grade,
-          issueDate: formData.completionDate,
-          description: formData.description
-        },
-        pinataKey,
-        pinataSecret
+          credentialId: formData.credentialId.trim(),
+          studentName: formData.studentName.trim(),
+          enrollmentNumber: formData.enrollmentNumber.trim(),
+          institution: formData.institution.trim(),
+          degree: formData.degree.trim(),
+          branch: formData.branch.trim(),
+          fieldOfStudy: formData.branch.trim() || formData.description.trim() || '',
+          grade: formData.grade.trim(),
+          issueDate: formData.completionDate.trim(),
+          description: formData.description.trim()
+        }
       });
 
       const tokenId = result?.tokenId !== undefined ? result.tokenId : null;
       setIssuedTokenId(tokenId);
-      if (result?.txHash) {
-        setTxHash(result.txHash);
+      const hash = result?.tx?.hash || result?.receipt?.hash || result?.txHash || null;
+      if (hash) {
+        setTxHash(hash);
       }
-      setSuccess(`Credential #${tokenId} has been officially signed and issued on-chain!`);
+      if (result?.metadata?.encryptedData?.payloadHash) {
+        setPayloadDigest(result.metadata.encryptedData.payloadHash);
+      }
+      setSuccess(`Credential #${tokenId} (${result?.credentialId || formData.credentialId}) encrypted and issued on-chain!`);
     } catch (err) {
       console.error('Issuance error:', err);
       setError(err.reason || err.message || 'Failed to issue credential.');
@@ -150,6 +169,10 @@ const IssueCredential = () => {
     : (formData.degree.includes(' in ') 
         ? formData.degree.split(' in ')[1] 
         : (formData.description || 'Specialization / Branch'));
+
+  const shortStudentWallet = isValidAddress(formData.studentAddress)
+    ? `${formData.studentAddress.slice(0, 6)}...${formData.studentAddress.slice(-4)}`
+    : '0x••••...••••';
 
   return (
     <div className="min-h-screen bg-[#CDCDCD] text-[#292333] font-['Inter'] flex flex-col selection:bg-[#7053AD]/20 selection:text-[#513582]">
@@ -198,7 +221,7 @@ const IssueCredential = () => {
             </div>
 
             <button 
-              onClick={account ? disconnectWallet : connectWallet} 
+              onClick={account ? disconnectWallet : () => connectWallet(false)} 
               title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
               className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
             >
@@ -263,9 +286,9 @@ const IssueCredential = () => {
       </div>
 
       {/* ── INSTITUTIONAL WORKSPACE CONTAINER ────────────────────────── */}
-      <main className="max-w-[1440px] w-full mx-auto px-6 md:px-16 py-6 md:py-8 flex flex-col gap-8 flex-grow">
+      <main className="max-w-[1440px] w-full mx-auto px-6 md:px-16 py-6 md:py-8 flex flex-col gap-6 flex-grow">
         
-        {/* Alerts */}
+        {/* Alerts if any */}
         {error && (
           <div className="w-full bg-[#98514C]/10 border border-[#98514C]/30 text-[#98514C] px-5 py-3 rounded-2xl text-xs flex justify-between items-center">
             <span>{error}</span>
@@ -314,20 +337,20 @@ const IssueCredential = () => {
             Issue Credential
           </h1>
           <p className="font-['Inter'] font-normal text-[13px] leading-[1.6] text-[#756F80]">
-            Give academic achievement a permanent, independently verifiable record.
+            Bind an academic achievement to the student’s Soulbound wallet with AES-256-GCM confidential IPFS storage.
           </p>
         </div>
 
         {/* Issuance Progress Workflow bar */}
         <div className="w-full flex items-center gap-7 py-4 border-y border-[rgba(125,101,154,0.14)]">
           <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#7053AD] font-medium">
-            01 Compose
+            01 Compose &amp; Bind Identity
           </span>
           <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#756F80]">
-            02 Preview
+            02 Encrypt Sensitive Payload
           </span>
           <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#756F80]">
-            03 Sign & issue
+            03 Sign &amp; Mint Soulbound Token
           </span>
         </div>
 
@@ -347,10 +370,10 @@ const IssueCredential = () => {
               }}
             >
               
-              {/* SECTION 1: Student Identity */}
+              {/* SECTION 1: Student Identity & Wallet Binding */}
               <div className="flex flex-col gap-5">
                 <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#7053AD] tracking-wider uppercase">
-                  01 / STUDENT IDENTITY
+                  01 / STUDENT IDENTITY &amp; WALLET BINDING
                 </span>
                 
                 <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333] leading-tight">
@@ -360,7 +383,7 @@ const IssueCredential = () => {
                 {/* Field: Full Legal Name */}
                 <div className="flex flex-col gap-2">
                   <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
-                    Full Legal Name
+                    Full Legal Name *
                   </label>
                   <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
                     <input
@@ -374,10 +397,27 @@ const IssueCredential = () => {
                   </div>
                 </div>
 
+                {/* Field: Enrollment / Registration Number */}
+                <div className="flex flex-col gap-2">
+                  <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
+                    Enrollment / Registration Number *
+                  </label>
+                  <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
+                    <input
+                      type="text"
+                      name="enrollmentNumber"
+                      value={formData.enrollmentNumber}
+                      onChange={handleChange}
+                      placeholder="e.g. ENR-2026-CS-0412"
+                      className="w-full bg-transparent font-['IBM_Plex_Mono'] text-[13px] text-[#292333] outline-none placeholder-[#756F80]/60"
+                    />
+                  </div>
+                </div>
+
                 {/* Field: Student Wallet Address */}
                 <div className="flex flex-col gap-2">
                   <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
-                    Student Wallet Address
+                    Student Soulbound Wallet Address *
                   </label>
                   <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
                     <input
@@ -392,7 +432,7 @@ const IssueCredential = () => {
                 </div>
 
                 <p className="font-['Inter'] text-[13px] leading-[1.6] text-[#756F80]">
-                  Confirm this address with the student. The credential will be assigned to this wallet after issuance.
+                  The Soulbound token is minted directly to this wallet and cannot be transferred. Both this wallet address and enrollment number bind identity beyond a name string.
                 </p>
               </div>
 
@@ -401,17 +441,44 @@ const IssueCredential = () => {
               {/* SECTION 2: Academic Record */}
               <div className="flex flex-col gap-5">
                 <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#7053AD] tracking-wider uppercase">
-                  02 / ACADEMIC RECORD
+                  02 / ACADEMIC RECORD &amp; CERTIFICATE IDENTIFIER
                 </span>
 
                 <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333] leading-tight">
                   Academic Record
                 </h3>
 
+                {/* Field: Unique Credential ID */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
+                      Unique Credential ID *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRegenerateId}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-[#513582] hover:underline"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Regenerate</span>
+                    </button>
+                  </div>
+                  <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
+                    <input
+                      type="text"
+                      name="credentialId"
+                      value={formData.credentialId}
+                      onChange={handleChange}
+                      placeholder="TC-2026-A7C91E04"
+                      className="w-full bg-transparent font-['IBM_Plex_Mono'] text-[13px] text-[#292333] outline-none placeholder-[#756F80]/60"
+                    />
+                  </div>
+                </div>
+
                 {/* Field: Degree/Certification */}
                 <div className="flex flex-col gap-2">
                   <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
-                    Degree/Certification
+                    Degree/Certification *
                   </label>
                   <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
                     <input
@@ -428,7 +495,7 @@ const IssueCredential = () => {
                 {/* Field: Branch */}
                 <div className="flex flex-col gap-2">
                   <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
-                    Branch
+                    Branch / Field of Study
                   </label>
                   <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
                     <input
@@ -482,7 +549,7 @@ const IssueCredential = () => {
                 {/* Institution */}
                 <div className="flex flex-col gap-2">
                   <label className="font-['Inter'] font-semibold text-[13px] text-[#292333]">
-                    Institution
+                    Institution *
                   </label>
                   <div className="w-full px-4 py-3 bg-white/30 border border-white/70 rounded-[10px] focus-within:border-[#7053AD] transition-colors">
                     <input
@@ -517,10 +584,32 @@ const IssueCredential = () => {
 
               <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
 
-              {/* Draft Actions Section */}
+              {/* Privacy & Consent Notice */}
+              <div className="p-4 rounded-xl bg-purple-950/5 border border-[#7053AD]/25 flex flex-col gap-3 text-[12px] text-[#513582]">
+                <div className="flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Privacy &amp; Encryption Policy:</strong> Student name, enrollment number, degree, grade, field of study, and institution are encrypted via <strong>AES-256-GCM</strong> server-side before pinning to IPFS through <code>/api/pinata</code>. Plaintext PII is never written to IPFS or bundled in browser code.
+                  </span>
+                </div>
+
+                <label className="flex items-start gap-2.5 cursor-pointer select-none pt-1 border-t border-[#7053AD]/15 text-[#292333]">
+                  <input
+                    type="checkbox"
+                    checked={consentAccepted}
+                    onChange={(e) => setConsentAccepted(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 accent-[#513582] rounded cursor-pointer shrink-0"
+                  />
+                  <span className="leading-relaxed">
+                    I confirm institutional authorization and student consent to mint this non-transferable Soulbound credential to the holder&apos;s wallet. I understand the on-chain token record and encrypted IPFS pointer are permanent and cannot be deleted later.
+                  </span>
+                </label>
+              </div>
+
+              {/* Draft & Issue Actions Section */}
               <div className="flex flex-col gap-3.5">
                 <p className="font-['Inter'] text-[13px] leading-[1.6] text-[#756F80]">
-                  Review the certificate before signing. Generating a preview does not issue a credential or submit a transaction.
+                  Review the certificate preview on the right before signing. Issuing encrypts sensitive metadata, pins it to IPFS, and mints the Soulbound NFT on-chain.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -538,14 +627,16 @@ const IssueCredential = () => {
                     disabled={loading}
                     className="h-[50px] bg-[#513582] hover:bg-[#432a6e] text-white rounded-[10px] font-['Inter'] font-semibold text-[14px] flex items-center justify-center gap-2.5 shadow-[0px_16px_28px_rgba(68,50,84,0.13)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <span>{loading ? 'Submitting to Network...' : 'Generate Preview'}</span>
+                    <span>{loading ? 'Encrypting & Signing...' : 'Sign & Issue Credential'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
-                <span className="font-['Inter'] text-[10px] text-[#756F80]">
-                  Draft saved · {draftSavedTime}
-                </span>
+                {draftSavedTime && (
+                  <span className="font-['Inter'] text-[10px] text-[#756F80]">
+                    Draft saved · {draftSavedTime}
+                  </span>
+                )}
               </div>
 
             </div>
@@ -562,11 +653,11 @@ const IssueCredential = () => {
               
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[rgba(238,232,248,0.65)] text-[#7053AD] rounded-full text-[12px] font-['Inter'] font-semibold">
                 <ScanLine className="w-3.5 h-3.5" />
-                <span>Draft</span>
+                <span>{issuedTokenId ? `Issued #${issuedTokenId}` : 'Draft'}</span>
               </div>
             </div>
 
-            {/* Certificate Presentation Card (Exact Paper Stack from PublicVerify) */}
+            {/* Certificate Presentation Card */}
             <div className="relative flex flex-col items-center w-full max-w-[644px]">
               <div 
                 className="relative flex flex-col items-center justify-center w-full h-[360px] sm:h-[450px] md:h-[517px] rounded-[20px] sm:rounded-[28px] isolate overflow-hidden"
@@ -601,52 +692,59 @@ const IssueCredential = () => {
                       </h2>
                     </div>
 
-                    <p className="font-['Inter'] text-[7px] tracking-[1.5px] text-[#756F80] mb-2 uppercase">
+                    <p className="font-['Inter'] text-[7px] tracking-[1.5px] text-[#756F80] mb-1.5 uppercase">
                       Knowledge • Integrity • Possibility
                     </p>
 
                     {/* Engraved Rule */}
-                    <div className="w-full h-[1px] bg-[#E8DBC0] mb-2" />
+                    <div className="w-full h-[1px] bg-[#E8DBC0] mb-1.5" />
 
                     <p className="font-['Inter'] text-[8px] tracking-[1.7px] text-[#7053AD] uppercase mb-1 font-medium">
                       Degree Certificate
                     </p>
 
                     {/* Award Title */}
-                    <h1 className="font-['Cormorant_Garamond'] font-medium text-[28px] sm:text-[32px] leading-[1.12] text-[#292333] text-center max-w-[460px] mx-auto text-balance mb-0.5">
+                    <h1 className="font-['Cormorant_Garamond'] font-medium text-[26px] sm:text-[29px] leading-[1.1] text-[#292333] text-center max-w-[460px] mx-auto text-balance mb-0.5">
                       {degreeMainTitle || 'Degree Program'}
                     </h1>
 
-                    <p className="font-['Cormorant_Garamond'] text-[17px] sm:text-[19px] text-[#5B5565] text-center max-w-[440px] mx-auto text-balance mb-1">
+                    <p className="font-['Cormorant_Garamond'] text-[16px] sm:text-[18px] text-[#5B5565] text-center max-w-[440px] mx-auto text-balance mb-1">
                       in {fieldOfStudy || 'Specialization / Branch'}
                     </p>
 
-                    <p className="font-['Cormorant_Garamond'] text-[11px] text-[#756F80] text-center mb-1">
+                    <p className="font-['Cormorant_Garamond'] text-[11px] text-[#756F80] text-center mb-0.5">
                       is hereby conferred upon
                     </p>
 
                     {/* Graduate Name */}
-                    <h2 className="font-['Cormorant_Garamond'] font-semibold text-[32px] sm:text-[36px] leading-[1.1] text-[#513582] text-center max-w-[460px] mx-auto text-balance mb-1">
+                    <h2 className="font-['Cormorant_Garamond'] font-semibold text-[30px] sm:text-[34px] leading-[1.08] text-[#513582] text-center max-w-[460px] mx-auto text-balance mb-1">
                       {formData.studentName || 'Candidate Full Name'}
                     </h2>
 
+                    {/* Identity Binding Pill (Enrollment No + Soulbound Wallet) */}
+                    <div className="inline-flex items-center gap-2 px-3 py-0.5 mb-1.5 rounded-full bg-[#F5F0E6]/75 border border-[#E8DBC0] font-['IBM_Plex_Mono'] text-[8px] text-[#292333]">
+                      <span>Reg. No: <strong>{formData.enrollmentNumber || 'ENR-2026-••••'}</strong></span>
+                      <span>·</span>
+                      <span>Holder: <strong>{shortStudentWallet}</strong></span>
+                    </div>
+
                     {/* Award Distinction */}
-                    <p className="font-['Cormorant_Garamond'] text-[15px] sm:text-[17px] text-[#5B5565] mb-2 text-center leading-normal">
+                    <p className="font-['Cormorant_Garamond'] text-[14px] sm:text-[16px] text-[#5B5565] mb-1.5 text-center leading-normal">
                       with a Cumulative Grade of{' '}
-                      <span className="font-['Inter'] font-semibold text-[14px] sm:text-[16px] text-[#292333] ml-0.5 tracking-tight inline-block align-baseline">
+                      <span className="font-['Inter'] font-semibold text-[13px] sm:text-[15px] text-[#292333] ml-0.5 tracking-tight inline-block align-baseline">
                         {formData.grade || 'First Class'}
                       </span>
                     </p>
 
                     {/* Academic Attestation */}
-                    <div className="flex justify-between items-end w-full mt-auto pt-2 border-t border-[#E8DBC0]/40">
+                    <div className="flex justify-between items-end w-full mt-auto pt-1.5 border-t border-[#E8DBC0]/40">
                       
                       {/* QR Code Verification */}
                       <div className="flex items-center gap-2 w-32">
                         <div className="p-1 bg-white border border-[#E8DBC0] rounded-[5px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] shrink-0">
                           <QRCodeSVG 
                             value={issuedTokenId ? `${window.location.origin}/public-verify?tokenId=${issuedTokenId}` : `${window.location.origin}/public-verify?draft=true`} 
-                            size={40} 
+                            size={38} 
                             level="H"
                             fgColor="#292333"
                             bgColor="#FFFFFF"
@@ -660,39 +758,39 @@ const IssueCredential = () => {
                             {issuedTokenId ? 'Official Record' : 'Draft Preview'}
                           </span>
                           <span className="font-['IBM_Plex_Mono'] text-[6px] text-[#8C6D34] leading-tight mt-0.5">
-                            {issuedTokenId ? `ID: #${issuedTokenId}` : 'Unissued'}
+                            {issuedTokenId ? `Token #${issuedTokenId}` : 'Unissued'}
                           </span>
                         </div>
                       </div>
 
                       {/* University Gold Seal */}
-                      <div className="relative flex items-center justify-center w-[54px] h-[54px] shrink-0">
+                      <div className="relative flex items-center justify-center w-[50px] h-[50px] shrink-0">
                         <div className="absolute inset-0 bg-[#E8DBC0] border border-[#A68C57] rounded-full shadow-xs"></div>
                         <div className="absolute inset-[3px] border border-[#A68C57]/70 rounded-full flex flex-col items-center justify-center">
-                          <div className="scale-[0.5] text-[#513582]"><Icons.Landmark /></div>
-                          <span className="font-['Cormorant_Garamond'] font-semibold text-[9px] text-[#513582] leading-none">SEAL</span>
+                          <div className="scale-[0.45] text-[#513582]"><Icons.Landmark /></div>
+                          <span className="font-['Cormorant_Garamond'] font-semibold text-[8.5px] text-[#513582] leading-none">SEAL</span>
                         </div>
                       </div>
 
                       {/* Registrar Attestation */}
                       <div className="flex flex-col items-end gap-0.5 w-28">
-                        <span className="font-['Cormorant_Garamond'] italic text-[18px] text-[#513582] leading-none">
+                        <span className="font-['Cormorant_Garamond'] italic text-[17px] text-[#513582] leading-none">
                           {issuedTokenId ? (account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Authorized Registrar') : 'Unsigned'}
                         </span>
                         <div className="w-full h-[1px] bg-[#E8DBC0]" />
-                        <span className="font-['Inter'] text-[7.5px] text-[#756F80] uppercase">
+                        <span className="font-['Inter'] text-[7px] text-[#756F80] uppercase">
                           {issuedTokenId ? 'Authorized Signatory' : 'DRAFT · NOT ISSUED'}
                         </span>
                       </div>
                     </div>
 
                     {/* Credential Provenance */}
-                    <div className="flex justify-between items-center w-full mt-auto pt-1.5 border-t border-[#E8DBC0]/30">
+                    <div className="flex justify-between items-center w-full mt-1 pt-1 border-t border-[#E8DBC0]/30">
                       <span className="font-['IBM_Plex_Mono'] text-[8px] text-[#756F80]">
-                        {issuedTokenId ? `TC-RU-2026-${String(issuedTokenId).padStart(5, '0')}` : 'TC-DRAFT-PREVIEW'}
+                        {formData.credentialId || 'TC-DRAFT-PREVIEW'}
                       </span>
                       <span className="font-['Inter'] text-[8px] tracking-[0.5px] text-[#7053AD] uppercase font-medium">
-                        {issuedTokenId ? 'Digitally Issued • TokCred' : 'Draft · Unissued'}
+                        {issuedTokenId ? 'Digitally Issued • Soulbound' : 'AES-256-GCM Draft'}
                       </span>
                     </div>
 
@@ -707,14 +805,14 @@ const IssueCredential = () => {
                 <Icons.Eye />
               </div>
               <span className="font-['Inter'] text-[10px] sm:text-[11px] text-[#292333] truncate">
-                {issuedTokenId ? 'Official verified academic record' : 'Preview only · not signed or issued'}
+                {issuedTokenId ? 'Official Soulbound record · AES-256-GCM encrypted on IPFS' : 'Preview only · not signed or issued'}
               </span>
             </div>
           </div>
         </div>
 
             <p className="font-['Inter'] text-[13px] leading-[1.6] text-[#756F80]">
-              Reserved ID {issuedTokenId ? `TC-RU-2026-${String(issuedTokenId).padStart(5, '0')}` : 'TC-DRAFT-PREVIEW'} · Preview generated from this draft.
+              Credential ID <span className="font-['IBM_Plex_Mono'] text-[#513582]">{formData.credentialId}</span> · Bound to Soulbound Wallet <span className="font-['IBM_Plex_Mono']">{shortStudentWallet}</span>.
             </p>
 
             {/* Cryptographic Verification Glass Panel */}
@@ -729,16 +827,16 @@ const IssueCredential = () => {
               }}
             >
               <h3 className="font-['Cormorant_Garamond'] text-[24px] text-[#292333]">
-                Cryptographic Verification
+                Cryptographic Verification &amp; Privacy
               </h3>
 
               <p className="font-['Inter'] text-[13px] leading-[1.6] text-[#756F80]">
-                The preview is an unsigned draft. Authenticity becomes verifiable only after institutional signing and network confirmation.
+                The preview is an unsigned draft. Issuance encrypts confidential attributes via AES-256-GCM before uploading to IPFS and mints a non-transferable ERC-721 token owned exclusively by the student wallet.
               </p>
 
               {/* Inset Box */}
               <div 
-                className="w-full rounded-[10px] p-4 flex flex-col gap-2.5"
+                className="w-full rounded-[10px] p-4 flex flex-col gap-2"
                 style={{
                   background: 'rgba(255, 255, 255, 0.22)',
                   border: '1px solid rgba(255, 255, 255, 0.72)',
@@ -748,13 +846,13 @@ const IssueCredential = () => {
               >
                 <div className="flex items-center gap-2">
                   <span className="font-['Inter'] font-semibold text-[12px] text-[#7053AD]">
-                    {issuedTokenId ? 'Payload Anchored · Confirmed' : 'Draft payload · unsigned'}
+                    {issuedTokenId ? 'Encrypted & Anchored · Confirmed' : 'Draft payload · unsigned'}
                   </span>
                 </div>
 
-                <div className="font-['Inter'] text-[11px] leading-[1.5] text-[#756F80]">
-                  <span>SHA-256 · 0x8b4e...6d92</span><br/>
-                  <span>Preview generated {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} UTC</span>
+                <div className="font-['IBM_Plex_Mono'] text-[11px] leading-[1.5] text-[#756F80] break-all">
+                  <span>{payloadDigest ? `Keccak-256 · ${payloadDigest.slice(0, 14)}...${payloadDigest.slice(-8)}` : 'Keccak-256 · Computed on encryption'}</span><br/>
+                  <span>IPFS Storage: AES-256-GCM Ciphertext Only (Zero Plaintext PII)</span>
                 </div>
               </div>
 
@@ -774,8 +872,8 @@ const IssueCredential = () => {
 
                 <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
                 <div className="flex justify-between items-center text-[11px]">
-                  <span className="text-[#756F80]">Protocol Zero</span>
-                  <span className="text-[#292333] font-medium">{issuedTokenId ? 'Anchored on Sepolia' : 'Not yet anchored'}</span>
+                  <span className="text-[#756F80]">Soulbound Binding</span>
+                  <span className="text-[#292333] font-medium">{shortStudentWallet}</span>
                 </div>
               </div>
 

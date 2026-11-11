@@ -5,22 +5,33 @@ import Loading from '../components/Loading';
 import Alert from '../components/Alert';
 import ObsidianShell from '../components/ObsidianShell';
 import { copyToClipboard, formatDate } from '../utils/helpers';
-import { ipfsToHttp, verifyCredential as verifyCredentialAction } from '../logic';
+import {
+  ipfsToHttp,
+  verifyCredential as verifyCredentialAction,
+  decryptCredentialPayload
+} from '../logic';
 
 const VerifyCredential = () => {
-  const { contract } = useWeb3();
+  const { contract, account, signer } = useWeb3();
   const [searchParams] = useSearchParams();
   
   const [tokenId, setTokenId] = useState('');
   const [credential, setCredential] = useState(null);
   const [metadata, setMetadata] = useState(null);
+  const [decryptedData, setDecryptedData] = useState(null);
+  const [decrypting, setDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  const isEncryptedRecord = Boolean(metadata?.isEncrypted && metadata?.encryptedData?.ciphertext);
+  const isLockedEncrypted = Boolean(credential && isEncryptedRecord && !decryptedData);
+  const effectiveMeta = isEncryptedRecord ? decryptedData : (metadata?.unavailable ? null : metadata);
+
   useEffect(() => {
     const urlTokenId = searchParams.get('tokenId');
-    if (urlTokenId && contract && !loading && !credential) {
+    if (urlTokenId !== null && String(urlTokenId).trim() !== '' && contract && !loading && !credential) {
       setTokenId(urlTokenId);
       void handleVerify(null, urlTokenId);
     }
@@ -29,15 +40,21 @@ const VerifyCredential = () => {
   const handleVerify = async (e, autoTokenId = null) => {
     if (e) e.preventDefault();
     
-    const idToVerify = autoTokenId || tokenId;
-    
-    if (!contract) {
-      setError('Please connect your wallet first');
+    const rawId = autoTokenId !== null ? autoTokenId : tokenId;
+    const trimmed = String(rawId ?? '').trim();
+
+    if (trimmed === '') {
+      setError('Please enter a token ID');
       return;
     }
 
-    if (!idToVerify || isNaN(idToVerify) || parseInt(idToVerify) < 0) {
-      setError('Please enter a valid token ID');
+    if (!/^\d+$/.test(trimmed)) {
+      setError('Please enter a valid numeric token ID');
+      return;
+    }
+
+    if (!contract) {
+      setError('Please connect your wallet first');
       return;
     }
 
@@ -46,18 +63,42 @@ const VerifyCredential = () => {
       setError(null);
       setCredential(null);
       setMetadata(null);
+      setDecryptedData(null);
+      setDecryptionError(null);
 
-      const result = await verifyCredentialAction(contract, idToVerify);
+      const result = await verifyCredentialAction(contract, trimmed);
       setCredential(result.credential);
       setMetadata(result.metadata);
     } catch (err) {
-      if (err.message.includes('Credential does not exist')) {
+      const msg = err?.reason || err?.message || '';
+      if (msg.includes('Credential does not exist') || msg.includes('ERC721NonexistentToken')) {
         setError('Credential not found. Please check the token ID.');
       } else {
-        setError(err.message || 'Failed to verify credential');
+        setError(msg || 'Failed to verify credential');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!isEncryptedRecord || !metadata?.encryptedData || !account || !signer) return;
+    try {
+      setDecrypting(true);
+      setDecryptionError(null);
+      const { decryptedData: unlocked } = await decryptCredentialPayload({
+        encryptedPayload: metadata.encryptedData,
+        credentialId: metadata.credentialId || `TC-TOKEN-${credential?.tokenId?.toString()}`,
+        tokenId: credential?.tokenId?.toString(),
+        studentAddress: credential?.student || metadata?.holder,
+        account,
+        signer,
+      });
+      setDecryptedData(unlocked);
+    } catch (err) {
+      setDecryptionError(err?.message || 'Decryption denied by authorization check.');
+    } finally {
+      setDecrypting(false);
     }
   };
 
@@ -69,8 +110,19 @@ const VerifyCredential = () => {
     }
   };
 
+  const holderWallet =
+    effectiveMeta?.holderWallet ||
+    credential?.holderWallet ||
+    credential?.student ||
+    '';
+
+  const resolvedCredentialId =
+    effectiveMeta?.credentialId ||
+    metadata?.credentialId ||
+    (credential?.tokenId !== undefined ? `TC-TOKEN-${credential.tokenId.toString()}` : 'N/A');
+
   return (
-    <ObsidianShell title="Verify Credential" subtitle="Public Validation">
+    <ObsidianShell title="Verify Credential" subtitle="On-Chain Validation">
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12">
         <section className="lg:col-span-7 flex flex-col gap-10">
           <header>
@@ -79,7 +131,7 @@ const VerifyCredential = () => {
               <span className="text-[#8197ff] italic">Authenticity</span>
             </h2>
             <p className="text-[#acabaa] max-w-md leading-relaxed">
-              Enter a credential token ID to retrieve a permanent on-chain record from the Scholar Ledger.
+              Enter a credential token ID to confirm Soulbound wallet ownership and decrypt confidential fields if authorized.
             </p>
           </header>
 
@@ -90,10 +142,13 @@ const VerifyCredential = () => {
                 <span className="material-symbols-outlined text-[#767575] mr-3">fingerprint</span>
                 <input
                   className="bg-transparent border-none focus:ring-0 text-2xl font-headline tracking-tight text-[#c6c6c7] w-full py-2 placeholder:text-[#767575]"
-                  placeholder="Ex: SCH-882-991-LX"
+                  placeholder="Ex: 0 or 1"
                   type="text"
                   value={tokenId}
-                  onChange={(e) => setTokenId(e.target.value)}
+                  onChange={(e) => {
+                    setTokenId(e.target.value);
+                    if (error) setError(null);
+                  }}
                 />
               </div>
               <div className="absolute bottom-0 left-0 h-[2px] bg-[#8197ff] w-0 group-focus-within:w-full transition-all duration-700"></div>
@@ -101,7 +156,7 @@ const VerifyCredential = () => {
 
             <button
               type="submit"
-              disabled={loading || !contract}
+              disabled={loading}
               className="w-full lg:w-fit px-12 py-5 bg-gradient-to-r from-[#8197ff] to-[#002ca3] text-[#001661] font-bold text-sm tracking-widest uppercase rounded-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
             >
               {loading ? 'Verifying...' : 'Initiate Verification'}
@@ -125,7 +180,7 @@ const VerifyCredential = () => {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-start justify-between mb-10">
+                  <div className="flex items-start justify-between mb-8">
                     <div>
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 ${
@@ -133,39 +188,78 @@ const VerifyCredential = () => {
                         }`}
                       >
                         <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: '"FILL" 1' }}>verified</span>
-                        {credential.revoked ? 'Revoked Record' : 'Verified Record'}
+                        {credential.revoked ? 'Revoked Record' : 'Verified Soulbound Record'}
                       </span>
-                      <h3 className="text-2xl font-headline font-bold text-[#c6c6c7] tracking-tight">#{credential.tokenId.toString()}</h3>
+                      <h3 className="text-2xl font-headline font-bold text-[#c6c6c7] tracking-tight">
+                        Token #{credential.tokenId.toString()} · {resolvedCredentialId}
+                      </h3>
                     </div>
                     <button type="button" onClick={handleCopy} className="w-12 h-12 bg-[#252626] rounded-lg flex items-center justify-center border border-[#484848]/20 text-[#8197ff]">
                       <span className="material-symbols-outlined">{copied ? 'check' : 'share'}</span>
                     </button>
                   </div>
 
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Recipient</p>
-                        <p className="text-[#c6c6c7] font-medium text-sm">{metadata?.studentName || 'Unknown Student'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Type</p>
-                        <p className="text-[#c6c6c7] font-medium text-sm">{metadata?.degree || 'Credential'}</p>
-                      </div>
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">
+                        Soulbound Holder Wallet {credential.ownerMatchesStudent ? '(Verified Owner)' : ''}
+                      </p>
+                      <p className="text-[#8197ff] font-mono text-xs break-all">{holderWallet}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Institution</p>
-                        <p className="text-[#c6c6c7] font-medium text-sm">{metadata?.institution || 'Unknown Institution'}</p>
+
+                    {isLockedEncrypted ? (
+                      <div className="p-4 rounded-lg bg-[#141518] border border-[#484848]/30 space-y-3">
+                        <p className="text-xs text-[#acabaa] leading-relaxed">
+                          Holder name, enrollment number, degree, grade, field, and institution are AES-256-GCM encrypted on IPFS. Only the bound student wallet or an authorized issuer can decrypt them.
+                        </p>
+                        {decryptionError && <p className="text-xs text-[#ec7c8a]">{decryptionError}</p>}
+                        <button
+                          type="button"
+                          onClick={handleUnlock}
+                          disabled={decrypting || !account}
+                          className="w-full py-2.5 px-4 bg-[#8197ff] text-[#001661] text-xs font-bold uppercase tracking-wider rounded hover:brightness-110 transition disabled:opacity-50"
+                        >
+                          {decrypting ? 'Decrypting...' : 'Unlock with Connected Wallet'}
+                        </button>
                       </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Issue Date</p>
-                        <p className="text-[#c6c6c7] font-medium text-sm">{formatDate(credential.issueTimestamp)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Grade</p>
-                        <p className="text-[#c6c6c7] font-medium text-sm">{metadata?.grade || 'Not Provided'}</p>
-                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Recipient</p>
+                            <p className="text-[#c6c6c7] font-medium text-sm">{effectiveMeta?.studentName || 'Unknown Student'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Enrollment / Reg. No.</p>
+                            <p className="text-[#c6c6c7] font-mono text-xs">{effectiveMeta?.enrollmentNumber || 'Legacy Record'}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Degree</p>
+                            <p className="text-[#c6c6c7] font-medium text-sm">{effectiveMeta?.degree || 'Credential'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Branch / Field</p>
+                            <p className="text-[#c6c6c7] font-medium text-sm">{effectiveMeta?.branch || effectiveMeta?.fieldOfStudy || 'Academic Program'}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Institution</p>
+                            <p className="text-[#c6c6c7] font-medium text-sm">{effectiveMeta?.institution || 'Unknown Institution'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Grade</p>
+                            <p className="text-[#c6c6c7] font-medium text-sm">{effectiveMeta?.grade || 'Not Provided'}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#acabaa] font-bold mb-1">Issue Date</p>
+                      <p className="text-[#c6c6c7] font-medium text-sm">{formatDate(credential.issueTimestamp)}</p>
                     </div>
                   </div>
 

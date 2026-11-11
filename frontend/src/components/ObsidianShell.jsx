@@ -28,9 +28,9 @@ const ObsidianShell = ({ title, subtitle, children }) => {
   const navigate = useNavigate();
   
   const visibleNavItems = navItems.filter((item) => {
-    if (item.to === '/dashboard') return Boolean(account);
-    if (item.to === '/issue') return Boolean(account && isAdmin);
-    if (item.to === '/history') return Boolean(account && (isAdmin || isIssuer));
+    if (['/dashboard', '/issue', '/history'].includes(item.to)) {
+      return Boolean(account && (isAdmin || isIssuer));
+    }
     return true;
   });
 

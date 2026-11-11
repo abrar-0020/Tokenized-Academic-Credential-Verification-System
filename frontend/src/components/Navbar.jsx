@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   const location = useLocation();
-  const hideOn = ['/', '/dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history'];
+  const hideOn = ['/', '/dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history', '/institutions', '/for-institutions'];
   const currentPath = location.pathname.endsWith('/') && location.pathname !== '/' ? location.pathname.slice(0, -1) : location.pathname;
 
   if (hideOn.includes(currentPath)) {

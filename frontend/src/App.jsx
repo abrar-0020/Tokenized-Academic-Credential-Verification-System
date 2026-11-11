@@ -6,6 +6,7 @@ import { Web3Provider } from './context/Web3Context';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import RequireIssuer from './components/RequireIssuer';
 
 import ConnectionDebug from './components/ConnectionDebug';
 import Home from './pages/Home';
@@ -20,6 +21,7 @@ import Features from './pages/Features';
 import Developers from './pages/Developers';
 import Support from './pages/Support';
 import StudentDashboard from './pages/StudentDashboard';
+import ForInstitutions from './pages/ForInstitutions';
 
 const IntroLoader = ({ onComplete }) => {
   useEffect(() => {
@@ -45,12 +47,12 @@ const IntroLoader = ({ onComplete }) => {
   );
 };
 
-const obsidianRoutes = ['/', '/dashboard', '/student-dashboard', '/issue', '/verify', '/public-verify', '/history', '/privacy', '/terms', '/features'];
+const obsidianRoutes = ['/', '/dashboard', '/student-dashboard', '/issue', '/verify', '/public-verify', '/history', '/privacy', '/terms', '/features', '/institutions', '/for-institutions'];
 
 const AppLayout = () => {
   const location = useLocation();
   const currentPath = location.pathname.endsWith('/') && location.pathname !== '/' ? location.pathname.slice(0, -1) : location.pathname;
-  const isCustomNavRoute = ['/', '/dashboard', '/student-dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history', '/privacy', '/terms'].includes(currentPath);
+  const isCustomNavRoute = ['/', '/dashboard', '/student-dashboard', '/issue', '/features', '/public-verify', '/developers', '/support', '/history', '/privacy', '/terms', '/institutions', '/for-institutions'].includes(currentPath);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -62,12 +64,35 @@ const AppLayout = () => {
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/issue" element={<IssueCredential />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/issue"
+            element={
+              <RequireIssuer>
+                <IssueCredential />
+              </RequireIssuer>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireIssuer>
+                <Dashboard />
+              </RequireIssuer>
+            }
+          />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/verify" element={<VerifyCredential />} />
           <Route path="/public-verify" element={<PublicVerify />} />
-          <Route path="/history" element={<History />} />
+          <Route
+            path="/history"
+            element={
+              <RequireIssuer>
+                <History />
+              </RequireIssuer>
+            }
+          />
+          <Route path="/institutions" element={<ForInstitutions />} />
+          <Route path="/for-institutions" element={<ForInstitutions />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/features" element={<Features />} />

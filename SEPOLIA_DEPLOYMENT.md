@@ -149,9 +149,10 @@ Open `.env` in your code editor and update:
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ACTUAL_API_KEY_HERE
 PRIVATE_KEY=your_actual_private_key_without_0x_prefix
 
-# IPFS Configuration (Pinata)
+# Server-Only IPFS (Pinata) & Encryption Secrets (never prefix with VITE_)
 IPFS_API_KEY=your_pinata_api_key_here
 IPFS_SECRET_KEY=your_pinata_secret_key_here
+CREDENTIAL_MASTER_KEY=your_long_random_aes256_master_secret_here
 
 # Contract Addresses (Will be filled after deployment)
 CONTRACT_ADDRESS=
@@ -206,12 +207,9 @@ VITE_CONTRACT_ADDRESS=
 VITE_NETWORK_ID=11155111
 VITE_NETWORK_NAME=sepolia
 
-# IPFS Configuration
+# Public IPFS Gateway & RPC (Never store Pinata secrets under VITE_*)
 VITE_IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs/
-
-# Pinata API Credentials (same as backend)
-VITE_PINATA_API_KEY=your_pinata_api_key_here
-VITE_PINATA_API_SECRET=your_pinata_secret_key_here
+VITE_PUBLIC_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 ```
 
 4. **Return to project root:**
@@ -317,12 +315,11 @@ Check your deployed contract on Sepolia Etherscan:
 # Update this line with your deployed contract address
 VITE_CONTRACT_ADDRESS=0xYourDeployedContractAddressHere
 
-# These should already be set
+# These should already be set (Pinata secrets stay server-side in IPFS_API_KEY / IPFS_SECRET_KEY)
 VITE_NETWORK_ID=11155111
 VITE_NETWORK_NAME=sepolia
 VITE_IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs/
-VITE_PINATA_API_KEY=your_pinata_api_key_here
-VITE_PINATA_API_SECRET=your_pinata_secret_key_here
+VITE_PUBLIC_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 ```
 
 2. **Also update root `.env` if needed:**

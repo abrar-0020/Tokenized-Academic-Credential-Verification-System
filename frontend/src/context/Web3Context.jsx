@@ -21,6 +21,11 @@ export const Web3Provider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [networkId, setNetworkId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const { ethereum } = window;
+    return !Boolean(ethereum && (ethereum.isMetaMask || ethereum.providers?.some((p) => p.isMetaMask)));
+  });
   const [error, setError] = useState(null);
 
   // Check if MetaMask is installed (with mobile support)
@@ -77,6 +82,7 @@ export const Web3Provider = ({ children }) => {
     
     if (!skipMobileCheck && !isMetaMaskInstalled()) {
       setError('Please install MetaMask browser extension to use this application');
+      setInitialized(true);
       return;
     }
 
@@ -146,11 +152,13 @@ export const Web3Provider = ({ children }) => {
             } catch (addError) {
               setError('Please manually add Sepolia network in MetaMask app: Settings → Networks → Add Network → Sepolia');
               setLoading(false);
+              setInitialized(true);
               return;
             }
           }
           setError(`Please switch to Sepolia network in MetaMask app. Current network is incorrect.`);
           setLoading(false);
+          setInitialized(true);
           return;
         }
       }
@@ -165,6 +173,7 @@ export const Web3Provider = ({ children }) => {
       // Check roles directly from smart contract on-chain
       let hasIssuerRole = false;
       let hasAdminRole = false;
+      let contractReachable = true;
 
       try {
         const issuerRole = await contractInstance.ISSUER_ROLE();
@@ -174,6 +183,7 @@ export const Web3Provider = ({ children }) => {
         if (onChainIssuer) hasIssuerRole = true;
         if (onChainAdmin) hasAdminRole = true;
       } catch (roleErr) {
+        contractReachable = false;
         console.error('Contract role check error:', roleErr);
       }
 
@@ -185,6 +195,7 @@ export const Web3Provider = ({ children }) => {
       setIsIssuer(hasIssuerRole);
       setIsAdmin(hasAdminRole);
       setLoading(false);
+      setInitialized(true);
 
       if (!contractReachable) {
         setError(
@@ -197,8 +208,28 @@ export const Web3Provider = ({ children }) => {
       console.error('Error connecting wallet:', err);
       setError(err.message);
       setLoading(false);
+      setInitialized(true);
     }
   }, []);
+
+  // Switch account via MetaMask permissions prompt
+  const switchWallet = useCallback(async () => {
+    const prov = getProvider();
+    if (prov?.request) {
+      try {
+        await prov.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (permErr) {
+        if (permErr?.code === 4001) {
+          setError('Wallet selection cancelled.');
+          return;
+        }
+      }
+    }
+    await connectWallet(true);
+  }, [connectWallet]);
 
   // Disconnect wallet
   const disconnectWallet = useCallback(() => {
@@ -209,16 +240,23 @@ export const Web3Provider = ({ children }) => {
     setIsIssuer(false);
     setIsAdmin(false);
     setNetworkId(null);
+    setError(null);
   }, []);
 
   // Check for existing connection on mount (only once)
   useEffect(() => {
     const checkConnection = async () => {
-      if (!isMetaMaskInstalled()) return;
+      if (!isMetaMaskInstalled()) {
+        setInitialized(true);
+        return;
+      }
 
       try {
         const provider = getProvider();
-        if (!provider) return;
+        if (!provider) {
+          setInitialized(true);
+          return;
+        }
 
         // Check if already connected
         const accounts = await provider.request({
@@ -231,6 +269,8 @@ export const Web3Provider = ({ children }) => {
         }
       } catch (err) {
         console.error('Error checking connection:', err);
+      } finally {
+        setInitialized(true);
       }
     };
 
@@ -313,10 +353,13 @@ export const Web3Provider = ({ children }) => {
     contract,
     isIssuer,
     isAdmin,
+    isAuthorizedIssuer: Boolean(account && (isIssuer || isAdmin)),
     networkId,
     loading,
+    initialized,
     error,
     connectWallet,
+    switchWallet,
     disconnectWallet,
     isMetaMaskInstalled,
   };

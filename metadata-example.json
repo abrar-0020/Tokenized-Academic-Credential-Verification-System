@@ -1,38 +1,25 @@
 {
-  "name": "Bachelor of Science in Computer Science - John Doe",
-  "description": "Academic credential issued by Massachusetts Institute of Technology for completing Bachelor of Science in Computer Science with honors",
-  "institution": "Massachusetts Institute of Technology",
-  "studentName": "John Doe",
-  "degree": "Bachelor of Science in Computer Science",
-  "grade": "A (3.9/4.0 GPA)",
-  "issueDate": "2024-05-15",
-  "image": "ipfs://QmExample123.../certificate-image.png",
+  "schema": "tokcred-credential-v2",
+  "name": "TokCred Confidential Academic Credential",
+  "description": "Privacy-preserving Soulbound academic credential. Holder identity, institutional record, degree, field, and grade are encrypted via AES-256-GCM.",
+  "credentialId": "TC-2026-A7C91E04",
+  "holder": "0x0000000000000000000000000000000000000000",
+  "tokenStandard": "ERC-721-Soulbound",
+  "isEncrypted": true,
+  "encryptionStandard": "AES-256-GCM",
+  "encryptedData": {
+    "algorithm": "AES-256-GCM",
+    "version": "2",
+    "iv": "<24-char hex 12-byte IV>",
+    "tag": "<32-char hex 16-byte AEAD tag>",
+    "ciphertext": "<hex ciphertext of confidential JSON containing studentName, enrollmentNumber, degree, branch, grade, institution, issueDate>",
+    "payloadHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "keyFingerprint": "<16-char SHA-256 fingerprint>"
+  },
   "attributes": [
-    {
-      "trait_type": "Institution",
-      "value": "Massachusetts Institute of Technology"
-    },
-    {
-      "trait_type": "Degree",
-      "value": "Bachelor of Science in Computer Science"
-    },
-    {
-      "trait_type": "Grade",
-      "value": "A (3.9/4.0 GPA)"
-    },
-    {
-      "trait_type": "Issue Date",
-      "value": "2024-05-15"
-    },
-    {
-      "trait_type": "Specialization",
-      "value": "Artificial Intelligence"
-    },
-    {
-      "trait_type": "Honors",
-      "value": "Summa Cum Laude"
-    }
-  ],
-  "external_url": "https://your-institution-website.edu",
-  "background_color": "1a1a2e"
+    { "trait_type": "Schema", "value": "tokcred-credential-v2" },
+    { "trait_type": "Token Standard", "value": "ERC-721 Soulbound" },
+    { "trait_type": "Confidentiality", "value": "AES-256-GCM Encrypted" },
+    { "trait_type": "Credential ID", "value": "TC-2026-A7C91E04" }
+  ]
 }

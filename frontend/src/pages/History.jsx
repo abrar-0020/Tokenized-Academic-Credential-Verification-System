@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
-import { loadAllCredentials, revokeCredential } from '../logic';
+import { loadAllCredentials, revokeCredential, decryptCredentialsBatch } from '../logic';
 import { formatDate } from '../utils/helpers';
+import { NETWORKS } from '../config/contract';
+import { downloadCertificatePdf } from '../services/certificateGenerator';
 import SettingsDropdown from '../components/SettingsDropdown';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lock, Unlock, Download } from 'lucide-react';
 
 const History = () => {
   const navigate = useNavigate();
-  const { account, contract, isIssuer, isAdmin, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
+  const { account, contract, signer, isIssuer, isAdmin, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [chainRows, setChainRows] = useState([]);
@@ -20,19 +22,21 @@ const History = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  // Selected credential for details modal
+  // Selected credential for details modal & batch decryption state
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [revokingId, setRevokingId] = useState(null);
+  const [decryptedMap, setDecryptedMap] = useState({});
+  const [decrypting, setDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
-    if (account && !isAdmin && !isIssuer && !web3Loading) {
-      navigate('/student-dashboard');
-      return;
-    }
-    if (contract) {
+    setDecryptedMap({});
+    setDecryptionError(null);
+    if (account && contract && (isAdmin || isIssuer)) {
       void refreshRegistry();
     }
-  }, [contract, account, isAdmin, isIssuer, web3Loading, navigate]);
+  }, [contract, account, isAdmin, isIssuer]);
 
   const refreshRegistry = async () => {
     try {
@@ -44,6 +48,36 @@ const History = () => {
       console.warn('Failed to load on-chain registry:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUnlockRecords = async () => {
+    const encryptedItems = (chainRows || [])
+      .filter((item) => item.metadata?.isEncrypted && item.metadata?.encryptedData && !decryptedMap[String(item.tokenId)])
+      .map((item) => ({
+        tokenId: String(item.tokenId),
+        credentialId: item.metadata?.credentialId || '',
+        studentAddress: item.holderWallet || item.student || '',
+        encryptedPayload: item.metadata.encryptedData,
+      }));
+
+    if (encryptedItems.length === 0) return;
+
+    try {
+      setDecrypting(true);
+      setDecryptionError(null);
+      const decoded = await decryptCredentialsBatch({
+        items: encryptedItems,
+        account,
+        signer,
+        ...(networkId === 31337 ? { rpcUrl: NETWORKS[31337].rpcUrl } : {}),
+      });
+      setDecryptedMap((prev) => ({ ...prev, ...decoded }));
+    } catch (err) {
+      console.error('Failed to unlock encrypted registry records:', err);
+      setDecryptionError(err?.message || 'Authorized issuer signature rejected or unauthorized.');
+    } finally {
+      setDecrypting(false);
     }
   };
 
@@ -67,13 +101,27 @@ const History = () => {
         const tokenIdStr = (item.tokenId !== undefined && item.tokenId !== null)
           ? item.tokenId.toString()
           : String(idx);
+        const rawMeta = item.metadata || {};
+        const unlocked = decryptedMap[tokenIdStr] || null;
+        const effectiveMeta = unlocked
+          ? { ...rawMeta, ...unlocked, isEncrypted: true, decrypted: true }
+          : rawMeta;
+        const isEncrypted = Boolean(rawMeta?.isEncrypted);
+        const isUnavailable = Boolean(rawMeta?.unavailable);
+        const isLocked = isEncrypted && !unlocked && !effectiveMeta?.studentName;
+
         const padId = tokenIdStr.padStart(5, '0');
-        const formattedId = `TC-RU-2026-${padId}`;
-        const prov = `VFY-${(item.student || tokenIdStr).slice(2, 8).toUpperCase()}`;
-        const issueDate = item.issueTimestamp
-          ? formatDate(item.issueTimestamp)
-          : 'Pending';
-        
+        const holderWallet = item.holderWallet || item.student || '';
+        const shortHolder = holderWallet ? `${holderWallet.slice(0, 6)}...${holderWallet.slice(-4)}` : 'Unbound';
+        const credentialId = effectiveMeta.credentialId || `TC-TOKEN-${padId}`;
+        const formattedId = `Token #${tokenIdStr}`;
+        const prov = item.integrityHash
+          ? `HASH-${item.integrityHash.slice(2, 10).toUpperCase()}`
+          : `VFY-${(holderWallet || tokenIdStr).slice(2, 8).toUpperCase()}`;
+        const issueDate = (!isLocked && effectiveMeta.issueDate)
+          ? effectiveMeta.issueDate
+          : (item.issueTimestamp ? formatDate(item.issueTimestamp) : 'Pending');
+
         let status = 'Issued';
         if (item.revoked) {
           status = 'Revoked';
@@ -83,21 +131,57 @@ const History = () => {
 
         return {
           tokenId: tokenIdStr,
+          credentialId,
           formattedId,
+          holderWallet,
+          shortHolder,
           provenance: prov,
-          studentName: item.metadata?.studentName || item.studentName || `Scholar #${tokenIdStr}`,
-          degree: item.metadata?.degree || item.degree || 'Degree Program',
-          field: item.metadata?.field || item.metadata?.major || item.metadata?.fieldOfStudy || item.fieldOfStudy || 'Academic Discipline',
+          enrollmentNumber: isLocked
+            ? 'Encrypted (Locked)'
+            : (effectiveMeta.enrollmentNumber || 'Legacy Unspecified'),
+          studentName: isLocked
+            ? `Confidential Holder (${shortHolder})`
+            : (effectiveMeta.studentName || item.studentName || `Scholar (${shortHolder})`),
+          degree: isLocked
+            ? 'Encrypted Credential (AES-256-GCM)'
+            : (isUnavailable ? 'Metadata Unavailable on IPFS' : (effectiveMeta.degree || item.degree || 'Degree Program')),
+          field: isLocked
+            ? 'Click Unlock Confidential Records to view'
+            : (effectiveMeta.branch || effectiveMeta.field || effectiveMeta.major || effectiveMeta.fieldOfStudy || item.fieldOfStudy || 'Academic Discipline'),
+          institution: isLocked
+            ? 'Protected Record'
+            : (effectiveMeta.institution || 'Authorized Institution'),
+          grade: isLocked ? 'Encrypted' : (effectiveMeta.grade || 'Verified'),
           issueDate,
           status,
           revoked: Boolean(item.revoked),
+          isEncrypted,
+          isLocked,
+          isUnavailable,
           ipfsHash: item.metadataURI || '',
+          effectiveMetadata: effectiveMeta,
           raw: item,
         };
       });
     }
     return [];
-  }, [chainRows]);
+  }, [chainRows, decryptedMap]);
+
+  const lockedEncryptedCount = useMemo(
+    () => allRecords.filter((r) => r.isEncrypted && r.isLocked).length,
+    [allRecords]
+  );
+
+  const visibleInstitution = useMemo(
+    () => allRecords.find((r) => !r.isLocked && r.institution && r.institution !== 'Authorized Institution')?.institution
+      || (account ? `Institution (${account.slice(0, 6)}...${account.slice(-4)})` : 'Academic Institution'),
+    [allRecords, account]
+  );
+
+  const activeModalRecord = useMemo(
+    () => (selectedRecord ? (allRecords.find((r) => r.tokenId === selectedRecord.tokenId) || selectedRecord) : null),
+    [selectedRecord, allRecords]
+  );
 
   // Counts for pills directly from live data
   const counts = useMemo(() => {
@@ -130,6 +214,9 @@ const History = () => {
     if (q) {
       result = result.filter(r => 
         (r.studentName || '').toLowerCase().includes(q) ||
+        (r.credentialId || '').toLowerCase().includes(q) ||
+        (r.enrollmentNumber || '').toLowerCase().includes(q) ||
+        (r.holderWallet || '').toLowerCase().includes(q) ||
         (r.degree || '').toLowerCase().includes(q) ||
         (r.field || '').toLowerCase().includes(q) ||
         (r.formattedId || '').toLowerCase().includes(q) ||
@@ -161,10 +248,24 @@ const History = () => {
     }
   };
 
+  const escapeCsvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
   const exportRegistryCSV = () => {
-    const headers = ['Token ID,Formatted ID,Student Name,Degree,Field of Study,Issuance Date,Status\n'];
-    const rows = filteredRecords.map(r => 
-      `"${r.tokenId}","${r.formattedId}","${r.studentName}","${r.degree}","${r.field}","${r.issueDate}","${r.status}"`
+    const headers = ['Token ID,Credential ID,Holder Wallet,Enrollment No.,Student Name,Degree,Field of Study,Grade,Institution,Issuance Date,Status\n'];
+    const rows = filteredRecords.map(r =>
+      [
+        r.tokenId,
+        r.credentialId,
+        r.holderWallet,
+        r.enrollmentNumber,
+        r.studentName,
+        r.degree,
+        r.field,
+        r.grade,
+        r.institution,
+        r.issueDate,
+        r.status,
+      ].map(escapeCsvCell).join(',')
     ).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -174,6 +275,18 @@ const History = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleModalDownloadPdf = async (record) => {
+    if (!record || record.revoked || record.isLocked || record.isUnavailable) return;
+    try {
+      setDownloadingPdf(true);
+      await downloadCertificatePdf(record.raw, record.effectiveMetadata);
+    } catch (err) {
+      setActionError(err?.message || 'Unable to generate PDF for this credential.');
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   return (
@@ -310,7 +423,7 @@ const History = () => {
               <path d="M3 21H21M3 10H21M5 10V21M9 10V21M15 10V21M19 10V21M12 3L21 10H3L12 3Z" stroke="#7053AD" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span className="font-['Inter'] text-[13px] text-[#292333] font-normal tracking-[-0.01em]">
-              {allRecords[0]?.raw?.metadata?.institution || (account ? `Institution (${account.slice(0, 6)}...${account.slice(-4)})` : 'Academic Institution')}
+              {visibleInstitution}
             </span>
           </div>
 
@@ -318,6 +431,13 @@ const History = () => {
             REGISTRAR WORKSPACE · {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
           </div>
         </div>
+
+        {decryptionError && (
+          <div className="w-full bg-[#98514C]/10 border border-[#98514C]/30 text-[#98514C] px-5 py-3 rounded-2xl text-xs flex justify-between items-center">
+            <span>{decryptionError}</span>
+            <button onClick={() => setDecryptionError(null)} className="font-bold underline ml-4">Dismiss</button>
+          </div>
+        )}
 
         {/* Registry Introduction Header */}
         <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -336,18 +456,33 @@ const History = () => {
             </p>
           </div>
 
-          {/* Secondary Action: Export registry */}
-          <button 
-            onClick={exportRegistryCSV}
-            title="Download full registry records as CSV"
-            className="h-[50px] px-[20px] rounded-[10px] flex items-center justify-center gap-[10px] text-[14px] font-semibold text-[#292333] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-sm shrink-0"
-            style={{
-              background: 'rgba(255, 255, 255, 0.321569)',
-              border: '1px solid rgba(255, 255, 255, 0.721569)',
-            }}
-          >
-            <span>Export registry</span>
-          </button>
+          {/* Registry Toolbar Actions */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {lockedEncryptedCount > 0 && (
+              <button
+                type="button"
+                onClick={handleUnlockRecords}
+                disabled={decrypting || !signer}
+                title="Sign one wallet authorization to decrypt confidential IPFS fields"
+                className="h-[50px] px-[20px] rounded-[10px] flex items-center justify-center gap-2 text-[13px] font-semibold bg-[#513582] hover:bg-[#41276b] disabled:opacity-50 text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-sm cursor-pointer"
+              >
+                <Unlock className="w-4 h-4" />
+                <span>{decrypting ? 'Signing...' : `Unlock Confidential Records (${lockedEncryptedCount})`}</span>
+              </button>
+            )}
+
+            <button 
+              onClick={exportRegistryCSV}
+              title="Download full registry records as CSV"
+              className="h-[50px] px-[20px] rounded-[10px] flex items-center justify-center gap-[10px] text-[14px] font-semibold text-[#292333] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-sm shrink-0 cursor-pointer"
+              style={{
+                background: 'rgba(255, 255, 255, 0.321569)',
+                border: '1px solid rgba(255, 255, 255, 0.721569)',
+              }}
+            >
+              <span>Export registry</span>
+            </button>
+          </div>
         </div>
 
         {/* ── MAIN GLASS PANEL: CREDENTIAL REGISTRY TABLE ─────────────── */}
@@ -382,7 +517,7 @@ const History = () => {
                     setQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Search Token ID, student name or degree..."
+                  placeholder="Search Credential ID, Token ID, Enrollment No., holder wallet, or student name..."
                   className="w-full bg-transparent border-none text-[13px] text-[#292333] placeholder:text-[#756F80]/70 focus:outline-none"
                 />
                 {query && (
@@ -399,7 +534,7 @@ const History = () => {
             {/* Scope Metadata */}
             <div className="flex flex-col items-start lg:items-end gap-1 text-left lg:text-right">
               <span className="font-['Inter'] text-[11px] text-[#756F80]">
-                {allRecords[0]?.raw?.metadata?.institution || 'Academic Registry'} · All credential records
+                {visibleInstitution} · All credential records
               </span>
               <span className="font-['IBM_Plex_Mono'] text-[10px] text-[#756F80] uppercase">
                 SNAPSHOT / {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
@@ -456,11 +591,11 @@ const History = () => {
 
           {/* Table Header */}
           <div className="w-full hidden md:flex items-center gap-[22px] px-2 pt-2 text-[10px] font-normal text-[#756F80]">
-            <div className="w-[195px] shrink-0">Token ID</div>
-            <div className="w-[175px] shrink-0">Student Name</div>
-            <div className="flex-1 min-w-[240px]">Degree</div>
+            <div className="w-[215px] shrink-0">Credential & Token ID</div>
+            <div className="w-[185px] shrink-0">Holder & Reg. No.</div>
+            <div className="flex-1 min-w-[220px]">Degree</div>
             <div className="w-[112px] shrink-0">Issuance Date</div>
-            <div className="w-[106px] shrink-0">Status</div>
+            <div className="w-[112px] shrink-0">Status</div>
             <div className="w-[100px] shrink-0 text-right">Action</div>
           </div>
 
@@ -490,20 +625,23 @@ const History = () => {
                   {/* Row Details */}
                   <div className="w-full flex flex-col md:flex-row md:items-center gap-3 md:gap-[22px] px-2 py-1">
                     
-                    {/* Token ID */}
-                    <div className="w-full md:w-[195px] flex flex-col gap-0.5 shrink-0">
-                      <span className="font-['IBM_Plex_Mono'] text-[12px] text-[#7053AD] font-normal leading-[1.4]">
-                        {row.formattedId}
+                    {/* Credential ID + Bound Wallet */}
+                    <div className="w-full md:w-[215px] flex flex-col gap-0.5 shrink-0">
+                      <span className="font-['IBM_Plex_Mono'] text-[11.5px] text-[#7053AD] font-semibold leading-[1.4] truncate" title={row.credentialId}>
+                        {row.credentialId}
                       </span>
-                      <span className="font-['IBM_Plex_Mono'] text-[9px] text-[#756F80]">
-                        {row.provenance}
+                      <span className="font-['IBM_Plex_Mono'] text-[9.5px] text-[#756F80] truncate" title={row.holderWallet}>
+                        {row.formattedId} · {row.shortHolder}
                       </span>
                     </div>
 
-                    {/* Student Name */}
-                    <div className="w-full md:w-[175px] shrink-0">
-                      <span className="font-['Inter'] text-[13px] font-medium text-[#292333]">
+                    {/* Student Name + Enrollment No. */}
+                    <div className="w-full md:w-[185px] flex flex-col gap-0.5 shrink-0">
+                      <span className="font-['Inter'] text-[13px] font-medium text-[#292333] truncate">
                         {row.studentName}
+                      </span>
+                      <span className="font-['IBM_Plex_Mono'] text-[9.5px] text-[#756F80] truncate">
+                        {row.isLocked ? 'Enrollment: Encrypted' : `Reg: ${row.enrollmentNumber}`}
                       </span>
                     </div>
 
@@ -523,7 +661,7 @@ const History = () => {
                     </div>
 
                     {/* Status Badge */}
-                    <div className="w-full md:w-[106px] shrink-0">
+                    <div className="w-full md:w-[112px] shrink-0 flex flex-col items-start gap-1">
                       {row.revoked || row.status === 'Revoked' ? (
                         <div className="inline-flex items-center gap-[7px] px-3 py-[6px] rounded-full bg-[rgba(249,236,232,0.7)] text-[#98514C]">
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#98514C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -558,6 +696,12 @@ const History = () => {
                             Verified
                           </span>
                         </div>
+                      )}
+                      {row.isLocked && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100/90 text-amber-800 text-[10px] font-['IBM_Plex_Mono']">
+                          <Lock className="w-2.5 h-2.5" />
+                          AES-256
+                        </span>
                       )}
                     </div>
 
@@ -716,10 +860,10 @@ const History = () => {
       </main>
 
       {/* ── RECORD DETAILS MODAL ────────────────────────────────────── */}
-      {selectedRecord && (
+      {activeModalRecord && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div 
-            className="w-full max-w-[560px] rounded-[28px] p-7 flex flex-col gap-5 shadow-2xl relative"
+            className="w-full max-w-[580px] rounded-[28px] p-7 flex flex-col gap-5 shadow-2xl relative max-h-[90vh] overflow-y-auto"
             style={{
               background: '#EAEAEA',
               border: '1px solid rgba(255, 255, 255, 0.8)',
@@ -729,62 +873,112 @@ const History = () => {
             <div className="flex justify-between items-start">
               <div className="flex flex-col gap-1">
                 <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#7053AD] uppercase tracking-wider">
-                  REGISTRY AUDIT RECORD
+                  REGISTRY AUDIT RECORD · {activeModalRecord.formattedId}
                 </span>
                 <h3 className="font-['Cormorant_Garamond'] text-[28px] font-medium text-[#292333] leading-none">
-                  {selectedRecord.formattedId}
+                  {activeModalRecord.credentialId}
                 </h3>
               </div>
               <button 
                 onClick={() => setSelectedRecord(null)}
-                className="w-8 h-8 rounded-full bg-white/60 hover:bg-white flex items-center justify-center text-sm font-bold text-[#292333] transition-all"
+                className="w-8 h-8 rounded-full bg-white/60 hover:bg-white flex items-center justify-center text-sm font-bold text-[#292333] transition-all cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="w-full flex flex-col gap-3 py-2 text-[13px]">
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Student Name</span>
-                <span className="font-medium text-[#292333]">{selectedRecord.studentName}</span>
+            {activeModalRecord.isLocked && (
+              <div className="p-3.5 rounded-2xl bg-amber-100/80 border border-amber-300/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2 text-[11.5px] text-amber-950">
+                  <Lock className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
+                  <span>Confidential student & degree fields are AES-256-GCM encrypted on IPFS.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUnlockRecords}
+                  disabled={decrypting || !signer}
+                  className="px-3.5 py-1.5 rounded-full bg-[#513582] hover:bg-[#41276b] disabled:opacity-50 text-white text-[11px] font-semibold inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Unlock className="w-3 h-3" />
+                  <span>{decrypting ? 'Signing...' : 'Unlock Now'}</span>
+                </button>
               </div>
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Degree Awarded</span>
-                <span className="font-medium text-[#292333]">{selectedRecord.degree}</span>
+            )}
+
+            <div className="w-full flex flex-col gap-2.5 py-1 text-[13px]">
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Credential ID</span>
+                <span className="font-['IBM_Plex_Mono'] font-semibold text-[#513582] text-right">{activeModalRecord.credentialId}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Field of Study</span>
-                <span className="font-medium text-[#292333]">{selectedRecord.field}</span>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Soulbound Holder Wallet</span>
+                <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#292333] break-all text-right">{activeModalRecord.holderWallet || 'N/A'}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Conferral Date</span>
-                <span className="font-medium text-[#292333]">{selectedRecord.issueDate}</span>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Enrollment / Reg. No.</span>
+                <span className="font-['IBM_Plex_Mono'] text-[#292333] text-right">{activeModalRecord.enrollmentNumber}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Provenance Hash</span>
-                <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#7053AD]">{selectedRecord.provenance}</span>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Student Name</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.studentName}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-black/10">
-                <span className="text-[#756F80]">Status</span>
-                <span className={`font-semibold ${selectedRecord.revoked ? 'text-[#98514C]' : 'text-[#326956]'}`}>
-                  {selectedRecord.status}
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Institution</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.institution}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Degree Awarded</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.degree}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Field of Study</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.field}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Grade / Honours</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.grade}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Conferral Date</span>
+                <span className="font-medium text-[#292333] text-right">{activeModalRecord.issueDate}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Integrity / Provenance</span>
+                <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#7053AD] text-right">{activeModalRecord.provenance}</span>
+              </div>
+              <div className="flex justify-between gap-4 py-2 border-b border-black/10">
+                <span className="text-[#756F80] shrink-0">Status</span>
+                <span className={`font-semibold ${activeModalRecord.revoked ? 'text-[#98514C]' : 'text-[#326956]'}`}>
+                  {activeModalRecord.status}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+              {!activeModalRecord.isLocked && !activeModalRecord.revoked && !activeModalRecord.isUnavailable && (
+                <button
+                  type="button"
+                  onClick={() => handleModalDownloadPdf(activeModalRecord)}
+                  disabled={downloadingPdf}
+                  className="px-4 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#513582]" />
+                  <span>{downloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+                </button>
+              )}
               <button
                 onClick={() => {
+                  const tid = activeModalRecord.tokenId;
                   setSelectedRecord(null);
-                  navigate(`/public-verify?tokenId=${selectedRecord.tokenId}`);
+                  navigate(`/public-verify?tokenId=${tid}`);
                 }}
-                className="px-4 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 transition-all"
+                className="px-4 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 transition-all cursor-pointer"
               >
                 Open in Public Verify ↗
               </button>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold bg-[#2D264B] text-white hover:bg-[#3C315B] transition-all"
+                className="px-5 py-2.5 rounded-full text-xs font-semibold bg-[#2D264B] text-white hover:bg-[#3C315B] transition-all cursor-pointer"
               >
                 Close
               </button>

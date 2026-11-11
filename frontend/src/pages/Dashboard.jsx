@@ -13,13 +13,16 @@ import {
   CheckCircle,
   ExternalLink,
   Menu,
-  X
+  X,
+  Lock,
+  Unlock
 } from 'lucide-react';
-import { loadAllCredentials, loadStudentCredentials, revokeCredential } from '../logic';
+import { loadAllCredentials, loadStudentCredentials, revokeCredential, decryptCredentialsBatch } from '../logic';
+import { NETWORKS } from '../config/contract';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { account, contract, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
+  const { account, contract, signer, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [credentials, setCredentials] = useState([]);
@@ -30,18 +33,19 @@ const Dashboard = () => {
   const [viewMode, setViewMode] = useState('issued');
   const [quickRevokeId, setQuickRevokeId] = useState('');
   const [revoking, setRevoking] = useState(false);
+  const [decryptedMap, setDecryptedMap] = useState({});
+  const [decrypting, setDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState(null);
 
   useEffect(() => {
-    if (account && !isAdmin && !isIssuer && !web3Loading) {
-      navigate('/student-dashboard');
-      return;
-    }
-    if (account && contract) {
+    setDecryptedMap({});
+    setDecryptionError(null);
+    if (account && contract && (isAdmin || isIssuer)) {
       void hydrate();
     } else {
       setLoading(false);
     }
-  }, [account, contract, isAdmin, isIssuer, web3Loading]);
+  }, [account, contract, isAdmin, isIssuer]);
 
   const hydrate = async () => {
     try {
@@ -49,7 +53,7 @@ const Dashboard = () => {
       setError(null);
       const owned = await loadStudentCredentials(contract, account);
       setCredentials(owned || []);
-      if (isIssuer) {
+      if (isIssuer || isAdmin) {
         const all = await loadAllCredentials(contract);
         setAllCredentials(all || []);
       }
@@ -78,6 +82,40 @@ const Dashboard = () => {
     }
   };
 
+  const lockedEncryptedItems = Array.from(
+    new Map(
+      [...allCredentials, ...credentials]
+        .filter((c) => c.metadata?.isEncrypted && c.metadata?.encryptedData && !decryptedMap[String(c.tokenId)])
+        .map((c) => [String(c.tokenId), c])
+    ).values()
+  );
+
+  const handleUnlockRecords = async () => {
+    if (lockedEncryptedItems.length === 0) return;
+    try {
+      setDecrypting(true);
+      setDecryptionError(null);
+      const items = lockedEncryptedItems.map((c) => ({
+        tokenId: String(c.tokenId),
+        credentialId: c.metadata?.credentialId || '',
+        studentAddress: c.holderWallet || c.student || '',
+        encryptedPayload: c.metadata.encryptedData,
+      }));
+      const decoded = await decryptCredentialsBatch({
+        items,
+        account,
+        signer,
+        ...(networkId === 31337 ? { rpcUrl: NETWORKS[31337].rpcUrl } : {}),
+      });
+      setDecryptedMap((prev) => ({ ...prev, ...decoded }));
+    } catch (err) {
+      console.error('Failed to unlock registrar records:', err);
+      setDecryptionError(err?.message || 'Authorized issuer signature rejected or unauthorized.');
+    } finally {
+      setDecrypting(false);
+    }
+  };
+
   // Metrics calculation from live on-chain credentials
   const totalIssuedCount = allCredentials.length;
   const validCount = allCredentials.filter((c) => !c.revoked).length;
@@ -86,14 +124,38 @@ const Dashboard = () => {
   const revenueCalculated = (totalIssuedCount * 5).toLocaleString();
 
   // Most recent credential for certificate preview
-  const latestCredential = allCredentials.length > 0 ? allCredentials[allCredentials.length - 1] : null;
+  const previewPool = viewMode === 'owned' ? credentials : allCredentials;
+  const latestCredential = previewPool.length > 0 ? previewPool[previewPool.length - 1] : null;
+  const latestRawMeta = latestCredential?.metadata || {};
+  const latestUnlocked = latestCredential ? decryptedMap[String(latestCredential.tokenId)] : null;
+  const latestEffectiveMeta = latestUnlocked
+    ? { ...latestRawMeta, ...latestUnlocked, isEncrypted: true, decrypted: true }
+    : latestRawMeta;
+  const latestIsEncrypted = Boolean(latestRawMeta?.isEncrypted);
+  const latestIsLocked = latestIsEncrypted && !latestUnlocked && !latestEffectiveMeta?.studentName;
 
-  const displayStudentName = latestCredential?.metadata?.studentName || "Candidate Full Name";
-  const displayDegree = latestCredential?.metadata?.degree || "Degree Program";
-  const displayField = latestCredential?.metadata?.branch || latestCredential?.metadata?.fieldOfStudy || latestCredential?.metadata?.field || "Specialization / Branch";
-  const displayInstitution = latestCredential?.metadata?.institution || (account ? `Institution (${account.slice(0, 6)}...${account.slice(-4)})` : "Institution Name");
-  const displayTokenId = latestCredential?.tokenId !== undefined ? `TC-RU-2026-${String(latestCredential.tokenId).padStart(5, '0')}` : "TC-TOKEN-RECORD";
-  const displayDate = latestCredential?.metadata?.issueDate || (latestCredential?.issueTimestamp ? new Date(Number(latestCredential.issueTimestamp) * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "Pending Issuance");
+  const displayHolderWallet = latestCredential?.holderWallet || latestCredential?.student || '';
+  const displayCredentialId = latestEffectiveMeta.credentialId || (latestCredential?.tokenId !== undefined ? `TC-TOKEN-${String(latestCredential.tokenId).padStart(5, '0')}` : 'TC-TOKEN-RECORD');
+  const displayEnrollmentNumber = latestIsLocked
+    ? 'Encrypted (Unlock with Signature)'
+    : (latestEffectiveMeta.enrollmentNumber || 'Legacy Unspecified');
+  const displayStudentName = latestIsLocked
+    ? 'Confidential Holder (Encrypted)'
+    : (latestEffectiveMeta.studentName || 'Candidate Full Name');
+  const displayDegree = latestIsLocked
+    ? 'Encrypted Academic Award'
+    : (latestEffectiveMeta.degree || 'Degree Program');
+  const displayField = latestIsLocked
+    ? 'Protected AES-256-GCM Record'
+    : (latestEffectiveMeta.branch || latestEffectiveMeta.fieldOfStudy || latestEffectiveMeta.field || 'Specialization / Branch');
+  const displayInstitution = latestIsLocked
+    ? (account ? `Registrar (${account.slice(0, 6)}...${account.slice(-4)})` : 'Authorized Institution')
+    : (latestEffectiveMeta.institution || (account ? `Institution (${account.slice(0, 6)}...${account.slice(-4)})` : 'Institution Name'));
+  const displayGrade = latestIsLocked ? 'Protected' : (latestEffectiveMeta.grade || 'Honors');
+  const displayTokenId = latestCredential?.tokenId !== undefined ? `Token #${latestCredential.tokenId} · ${displayCredentialId}` : displayCredentialId;
+  const displayDate = latestIsLocked
+    ? 'Encrypted Record'
+    : (latestEffectiveMeta.issueDate || (latestCredential?.issueTimestamp ? new Date(Number(latestCredential.issueTimestamp) * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pending Issuance'));
 
   // SVG Icons
   const Icons = {
@@ -123,13 +185,24 @@ const Dashboard = () => {
     )
   };
 
-  const recentList = allCredentials.slice(-4).reverse().map((c) => ({
-    id: `TC-RU-2026-${String(c.tokenId).padStart(5, '0')}`,
-    name: c.metadata?.studentName || `Scholar #${c.tokenId}`,
-    time: c.issueTimestamp ? new Date(Number(c.issueTimestamp) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' UTC' : 'Recorded',
-    status: c.revoked ? 'Revoked' : 'Verified',
-    statusType: c.revoked ? 'revoked' : 'verified'
-  }));
+  const recentList = allCredentials.slice(-4).reverse().map((c) => {
+    const rRaw = c.metadata || {};
+    const rUnlocked = decryptedMap[String(c.tokenId)] || null;
+    const eff = rUnlocked ? { ...rRaw, ...rUnlocked } : rRaw;
+    const isLocked = Boolean(rRaw.isEncrypted && !rUnlocked && !eff.studentName);
+    const holder = c.holderWallet || c.student || '';
+    const shortHolder = holder ? `${holder.slice(0, 6)}...${holder.slice(-4)}` : 'Unknown';
+    const credCode = eff.credentialId || `TC-TOKEN-${String(c.tokenId).padStart(5, '0')}`;
+    return {
+      id: `Token #${c.tokenId} · ${credCode}`,
+      name: isLocked
+        ? `Confidential Holder (${shortHolder})`
+        : `${eff.studentName || `Scholar (${shortHolder})`}${eff.enrollmentNumber ? ` · Reg: ${eff.enrollmentNumber}` : ''}`,
+      time: c.issueTimestamp ? new Date(Number(c.issueTimestamp) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' UTC' : 'Recorded',
+      status: c.revoked ? 'Revoked' : (isLocked ? 'Encrypted' : 'Verified'),
+      statusType: c.revoked ? 'revoked' : (isLocked ? 'locked' : 'verified')
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#CDCDCD] text-[#292333] font-['Inter'] flex flex-col selection:bg-[#7053AD]/20 selection:text-[#513582]">
@@ -306,29 +379,49 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Credential Ownership Toggle Tabs */}
-            <div className="inline-flex items-center p-1 bg-white/20 border border-white/70 rounded-full w-fit">
-              <button
-                onClick={() => setViewMode('owned')}
-                className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all ${
-                  viewMode === 'owned'
-                    ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
-                    : 'text-[#756F80] hover:text-[#292333]'
-                }`}
-              >
-                Owned
-              </button>
-              <button
-                onClick={() => setViewMode('issued')}
-                className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all ${
-                  viewMode === 'issued'
-                    ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
-                    : 'text-[#756F80] hover:text-[#292333]'
-                }`}
-              >
-                Issued · {totalIssuedCount.toLocaleString()}
-              </button>
+            {/* Credential Ownership Toggle Tabs + Decrypt Trigger */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center p-1 bg-white/20 border border-white/70 rounded-full w-fit">
+                <button
+                  onClick={() => setViewMode('owned')}
+                  className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all cursor-pointer ${
+                    viewMode === 'owned'
+                      ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
+                      : 'text-[#756F80] hover:text-[#292333]'
+                  }`}
+                >
+                  Owned
+                </button>
+                <button
+                  onClick={() => setViewMode('issued')}
+                  className={`px-5 py-2 rounded-full font-['Inter'] text-[12px] transition-all cursor-pointer ${
+                    viewMode === 'issued'
+                      ? 'bg-white/50 text-[#7053AD] font-semibold shadow-sm'
+                      : 'text-[#756F80] hover:text-[#292333]'
+                  }`}
+                >
+                  Issued · {totalIssuedCount.toLocaleString()}
+                </button>
+              </div>
+
+              {lockedEncryptedItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleUnlockRecords}
+                  disabled={decrypting || !signer}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#513582] hover:bg-[#41276b] disabled:opacity-50 text-white font-['Inter'] text-[11.5px] font-medium shadow-sm transition-all cursor-pointer"
+                >
+                  <Unlock className="w-3.5 h-3.5" />
+                  <span>{decrypting ? 'Signing...' : `Unlock Confidential Records (${lockedEncryptedItems.length})`}</span>
+                </button>
+              )}
             </div>
+
+            {decryptionError && (
+              <div className="px-4 py-2.5 rounded-2xl bg-[#98514C]/10 border border-[#98514C]/30 text-[#98514C] text-[11.5px] font-['Inter']">
+                {decryptionError}
+              </div>
+            )}
 
             {/* Protocol Metrics Glass Panel */}
             <div 
@@ -482,17 +575,30 @@ const Dashboard = () => {
                     </p>
 
                     {/* Graduate name */}
-                    <h2 className="font-['Cormorant_Garamond'] font-semibold text-[38px] sm:text-[42px] leading-[1] text-[#513582] mb-0.5 text-center max-w-[520px] mx-auto text-balance">
+                    <h2 className="font-['Cormorant_Garamond'] font-semibold text-[36px] sm:text-[40px] leading-[1] text-[#513582] mb-1 text-center max-w-[520px] mx-auto text-balance">
                       {displayStudentName}
                     </h2>
 
-                    {/* Award distinction */}
-                    <p className="font-['Cormorant_Garamond'] text-[17px] sm:text-[19px] text-[#5B5565] mb-2 text-center leading-normal">
-                      with a Cumulative Grade of{' '}
-                      <span className="font-['Inter'] font-semibold text-[16px] sm:text-[18px] text-[#292333] ml-0.5 tracking-tight inline-block align-baseline">
-                        {latestCredential?.metadata?.grade || '3.92 / 4.00 · First Class'}
-                      </span>
+                    {/* Unique Enrollment & Soulbound Holder Wallet */}
+                    <p className="font-['IBM_Plex_Mono'] text-[8.5px] text-[#756F80] mb-1 text-center tracking-tight">
+                      Reg. No.: {displayEnrollmentNumber} · Holder: {displayHolderWallet ? `${displayHolderWallet.slice(0, 6)}...${displayHolderWallet.slice(-4)}` : 'Unbound'}
                     </p>
+
+                    {latestIsLocked ? (
+                      <div className="mt-1 mb-1 px-3 py-1 rounded-full bg-amber-100/90 border border-amber-300/70 inline-flex items-center gap-1.5">
+                        <Lock className="w-3 h-3 text-amber-800" />
+                        <span className="font-['Inter'] text-[9.5px] font-medium text-amber-900">
+                          AES-256-GCM Encrypted · Click Unlock Confidential Records Above
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="font-['Cormorant_Garamond'] text-[17px] sm:text-[18px] text-[#5B5565] mb-1.5 text-center leading-normal">
+                        with a Cumulative Grade of{' '}
+                        <span className="font-['Inter'] font-semibold text-[15px] sm:text-[17px] text-[#292333] ml-0.5 tracking-tight inline-block align-baseline">
+                          {displayGrade}
+                        </span>
+                      </p>
+                    )}
 
                     {/* Academic attestation */}
                     <div className="flex justify-between items-end w-full mt-auto mb-1">
@@ -642,6 +748,12 @@ const Dashboard = () => {
                           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[rgba(233,243,238,0.7)] text-[#326956] rounded-full text-[12px] font-['Inter'] font-semibold shadow-xs">
                             <ShieldCheck className="w-3.5 h-3.5" />
                             <span>Verified</span>
+                          </div>
+                        )}
+                        {item.statusType === 'locked' && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100/80 text-amber-800 rounded-full text-[12px] font-['Inter'] font-semibold shadow-xs">
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Encrypted</span>
                           </div>
                         )}
                         {item.statusType === 'issued' && (

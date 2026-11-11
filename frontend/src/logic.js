@@ -1,6 +1,21 @@
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, IPFS_GATEWAY, CONTRACT_CONFIG_ERROR } from './config/contract';
 
+const PUBLIC_FALLBACK_RPC =
+  import.meta.env.VITE_PUBLIC_RPC_URL ||
+  'https://ethereum-sepolia-rpc.publicnode.com';
+
+const SENSITIVE_PLAINTEXT_FIELDS = [
+  'studentName',
+  'enrollmentNumber',
+  'degree',
+  'grade',
+  'branch',
+  'fieldOfStudy',
+  'field',
+  'institution',
+];
+
 /**
  * Convert IPFS URI to HTTP gateway URL.
  */
@@ -13,181 +28,345 @@ export const ipfsToHttp = (uri) => {
 };
 
 /**
- * Fetch metadata from IPFS with multiple fallbacks (localStorage, sessionStorage, alternative gateways).
+ * Canonical JSON serialization for deterministic hashing
+ */
+export const canonicalizeJson = (obj) => {
+  if (obj === null || typeof obj !== 'object') {
+    return JSON.stringify(obj);
+  }
+  if (Array.isArray(obj)) {
+    return '[' + obj.map((item) => canonicalizeJson(item)).join(',') + ']';
+  }
+  const keys = Object.keys(obj).sort();
+  return '{' + keys.map((k) => `${JSON.stringify(k)}:${canonicalizeJson(obj[k])}`).join(',') + '}';
+};
+
+export const calculateMetadataHash = (obj) => {
+  return ethers.keccak256(ethers.toUtf8Bytes(canonicalizeJson(obj)));
+};
+
+const randomHexToken = (byteLength = 4) => {
+  if (typeof crypto === 'undefined' || !crypto.getRandomValues) {
+    throw new Error('Web Crypto API is required for cryptographic randomness.');
+  }
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+};
+
+/**
+ * Generate a unique, collision-resistant Credential ID (e.g. TC-2026-A7C91E04)
+ */
+export const generateUniqueCredentialId = () => {
+  const year = new Date().getFullYear();
+  return `TC-${year}-${randomHexToken(4)}`;
+};
+
+/**
+ * Fetch metadata from IPFS with fallbacks (localStorage, sessionStorage, public gateways).
  */
 export const fetchMetadata = async (uri) => {
   try {
+    if (!uri) {
+      throw new Error('Missing metadata URI');
+    }
+
     if (uri.startsWith('ipfs://')) {
       const hash = uri.replace('ipfs://', '');
       const storageKey = `ipfs_metadata_${hash}`;
-      
-      // Try localStorage first (local testing fallback)
-      const localData = localStorage.getItem(storageKey);
-      if (localData) {
-        return JSON.parse(localData);
+
+      try {
+        const localData = localStorage.getItem(storageKey);
+        if (localData) {
+          return JSON.parse(localData);
+        }
+      } catch {
+        // Ignore storage restrictions
       }
 
-      // Try sessionStorage (session-level cache from previous fetches)
-      const sessionData = sessionStorage.getItem(storageKey);
-      if (sessionData) {
-        return JSON.parse(sessionData);
+      try {
+        const sessionData = sessionStorage.getItem(storageKey);
+        if (sessionData) {
+          return JSON.parse(sessionData);
+        }
+      } catch {
+        // Ignore storage restrictions
       }
     }
 
-    // Try primary IPFS gateway
-    let url = ipfsToHttp(uri);
+    const url = ipfsToHttp(uri);
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
       if (response.ok) {
         const data = await response.json();
-        
-        // Store in sessionStorage for session-level persistence
+
         if (uri.startsWith('ipfs://')) {
           const hash = uri.replace('ipfs://', '');
-          const storageKey = `ipfs_metadata_${hash}`;
           try {
-            sessionStorage.setItem(storageKey, JSON.stringify(data));
+            sessionStorage.setItem(`ipfs_metadata_${hash}`, JSON.stringify(data));
           } catch {
             // Ignore storage errors
           }
         }
-        
         return data;
       }
     } catch (primaryError) {
-      // Primary gateway failed, try alternative gateway as fallback
       console.warn('Primary IPFS gateway failed, trying alternative...', primaryError);
-      
+
       if (uri.startsWith('ipfs://')) {
         const hash = uri.replace('ipfs://', '');
         const altUrl = `https://ipfs.io/ipfs/${hash}`;
-        
+
         try {
           const response = await fetch(altUrl, { signal: AbortSignal.timeout(10000) });
           if (response.ok) {
             const data = await response.json();
-            
-            // Store in sessionStorage
-            const storageKey = `ipfs_metadata_${hash}`;
             try {
-              sessionStorage.setItem(storageKey, JSON.stringify(data));
+              sessionStorage.setItem(`ipfs_metadata_${hash}`, JSON.stringify(data));
             } catch {
               // Ignore storage errors
             }
-            
             return data;
           }
         } catch {
-          // Alternative gateway also failed
           console.warn('Alternative IPFS gateway also failed');
         }
       }
     }
-    
+
     throw new Error('Failed to fetch metadata from IPFS');
   } catch (error) {
-    console.warn('Metadata fetch failed, returning defaults:', error);
+    console.warn('Metadata fetch failed:', error);
     return {
-      name: 'Academic Credential',
-      description: 'Credential data unavailable',
-      institution: 'Unknown Institution',
-      studentName: 'N/A',
-      degree: 'N/A',
-      grade: 'N/A',
-      issueDate: 'N/A',
+      unavailable: true,
+      description: 'Credential metadata unavailable from IPFS gateways',
     };
   }
 };
 
 /**
- * Create metadata payload matching the existing issue flow.
+ * Assert that a metadata envelope contains zero plaintext academic/PII fields before pinning to public IPFS.
  */
-export const buildCredentialMetadata = (formData) => {
-  const branchValue = formData.branch || formData.fieldOfStudy || '';
-  return {
-    name: `${formData.degree}${branchValue ? ' in ' + branchValue : ''} - ${formData.studentName}`,
-    description: formData.description || `Academic credential issued by ${formData.institution}`,
-    institution: formData.institution,
-    studentName: formData.studentName,
-    degree: formData.degree,
+export const assertNoPlaintextLeak = (envelope) => {
+  if (!envelope || !envelope.isEncrypted || !envelope.encryptedData?.ciphertext) {
+    throw new Error('Privacy guard blocked upload: metadata must be AES-256-GCM encrypted before IPFS storage.');
+  }
+
+  for (const field of SENSITIVE_PLAINTEXT_FIELDS) {
+    const val = envelope[field];
+    if (val !== undefined && val !== null && String(val).trim() !== '') {
+      throw new Error(`Privacy guard blocked upload: plaintext field "${field}" cannot be uploaded to public IPFS.`);
+    }
+  }
+};
+
+/**
+ * Encrypt sensitive credential fields server-side via AES-256-GCM before IPFS storage.
+ * Never falls back to uploading plaintext metadata.
+ */
+export const encryptCredentialMetadata = async ({ formData, studentAddress, credentialId }) => {
+  if (!studentAddress || !ethers.isAddress(studentAddress)) {
+    throw new Error('Valid student wallet address is required to bind credential ownership.');
+  }
+
+  const normalizedHolder = ethers.getAddress(studentAddress);
+  const cleanCredentialId = String(credentialId || formData.credentialId || generateUniqueCredentialId()).trim();
+  const branchValue = String(formData.branch || formData.fieldOfStudy || '').trim();
+
+  const sensitiveData = {
+    credentialId: cleanCredentialId,
+    holderWallet: normalizedHolder,
+    studentName: String(formData.studentName || '').trim(),
+    enrollmentNumber: String(formData.enrollmentNumber || '').trim(),
+    institution: String(formData.institution || '').trim(),
+    degree: String(formData.degree || '').trim(),
     branch: branchValue,
     fieldOfStudy: branchValue,
-    grade: formData.grade,
-    issueDate: formData.issueDate,
-    image: '',
-    attributes: [
-      { trait_type: 'Institution', value: formData.institution },
-      { trait_type: 'Degree', value: formData.degree },
-      ...(branchValue ? [{ trait_type: 'Branch', value: branchValue }] : []),
-      { trait_type: 'Grade', value: formData.grade },
-      { trait_type: 'Issue Date', value: formData.issueDate },
-    ],
+    grade: String(formData.grade || '').trim(),
+    issueDate: String(formData.issueDate || formData.completionDate || '').trim(),
+    description: String(formData.description || '').trim(),
+  };
+
+  if (!sensitiveData.studentName || !sensitiveData.enrollmentNumber) {
+    throw new Error('Student legal name and enrollment/registration number are required.');
+  }
+  if (!sensitiveData.degree || !sensitiveData.institution) {
+    throw new Error('Degree and issuing institution are required.');
+  }
+
+  const response = await fetch('/api/credential-crypto?action=encrypt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sensitiveData,
+      credentialId: cleanCredentialId,
+      studentAddress: normalizedHolder,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload?.encryptedMetadata) {
+    throw new Error(
+      payload?.details ||
+      payload?.error ||
+      `Encryption service failed (HTTP ${response.status}). Plaintext IPFS fallback is disabled.`
+    );
+  }
+
+  assertNoPlaintextLeak(payload.encryptedMetadata);
+
+  return {
+    encryptedEnvelope: payload.encryptedMetadata,
+    decryptedMetadata: sensitiveData,
+    credentialId: cleanCredentialId,
+    integrityHash: payload.integrityHash,
   };
 };
 
 /**
- * Upload metadata to Pinata when credentials are provided.
- * Falls back to localStorage simulation used for local testing.
+ * Request wallet-authorized decryption for a single credential (Holder or Authorized Issuer).
  */
-export const uploadToIPFS = async (metadata, pinataKey, pinataSecret) => {
-  // Prefer server-side proxy (safer for secrets and avoids CORS issues).
-  try {
-    const proxyResp = await fetch('/api/pinata', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(metadata),
-    });
-
-    if (proxyResp.ok) {
-      const data = await proxyResp.json();
-      return `ipfs://${data.IpfsHash}`;
-    }
-  } catch (err) {
-    // Proxy may not be available in local dev — fall back to client-side attempt below
-    console.warn('Pinata proxy failed or unavailable, falling back to client upload', err);
+export const decryptCredentialPayload = async ({
+  encryptedPayload,
+  credentialId,
+  tokenId,
+  studentAddress,
+  account,
+  signer,
+  rpcUrl = PUBLIC_FALLBACK_RPC,
+}) => {
+  if (!signer || !account) {
+    throw new Error('Connect an authorized holder or issuer wallet to unlock encrypted details.');
   }
 
-  // Client-side Pinata attempt (may fail due to CORS / blocked secrets) — keep for advanced users.
-  if (pinataKey && pinataSecret) {
-    try {
-      const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          pinata_api_key: pinataKey,
-          pinata_secret_api_key: pinataSecret,
-        },
-        body: JSON.stringify({
-          pinataContent: metadata,
-          pinataMetadata: {
-            name: `credential-${metadata.studentName}-${Date.now()}`,
-          },
-        }),
-      });
+  const timestamp = Date.now();
+  const nonce =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `tokcred-${randomHexToken(8)}-${timestamp}`;
 
-      if (!response.ok) {
-        throw new Error('Pinata upload failed');
-      }
+  const message =
+    `TokCred Confidential Credential Decryption Request\n` +
+    `Credential ID: ${credentialId}\n` +
+    `Token ID: ${tokenId !== undefined && tokenId !== null ? String(tokenId) : 'N/A'}\n` +
+    `Holder Wallet: ${studentAddress}\n` +
+    `Requester Wallet: ${account}\n` +
+    `Nonce: ${nonce}\n` +
+    `Timestamp: ${timestamp}`;
 
-      const data = await response.json();
-      return `ipfs://${data.IpfsHash}`;
-    } catch (error) {
-      throw new Error('Failed to upload metadata to IPFS. Check your Pinata credentials or use the server proxy.');
-    }
+  const signature = await signer.signMessage(message);
+
+  const response = await fetch('/api/credential-crypto?action=decrypt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      encryptedPayload,
+      credentialId,
+      tokenId: tokenId !== undefined && tokenId !== null ? String(tokenId) : undefined,
+      studentAddress,
+      account,
+      signature,
+      message,
+      timestamp,
+      nonce,
+      rpcUrl,
+      contractAddress: CONTRACT_ADDRESS,
+    }),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result?.decryptedData) {
+    throw new Error(result?.details || result?.error || 'Decryption authorization failed.');
   }
 
-  const metadataString = JSON.stringify(metadata);
-  const hash = `Qm${btoa(metadataString).substring(0, 44).replace(/[^a-zA-Z0-9]/g, 'x')}`;
-  const ipfsUri = `ipfs://${hash}`;
+  return {
+    decryptedData: result.decryptedData,
+    role: result.role,
+    authorizedSigner: result.authorizedSigner,
+  };
+};
 
-  try {
-    const storageKey = `ipfs_metadata_${hash}`;
-    localStorage.setItem(storageKey, metadataString);
-  } catch {
-    // Keep behavior non-fatal when storage is unavailable.
+/**
+ * Request wallet-authorized batch decryption (single MetaMask signature for StudentDashboard / Issuer History).
+ */
+export const decryptCredentialsBatch = async ({
+  items,
+  account,
+  signer,
+  rpcUrl = PUBLIC_FALLBACK_RPC,
+}) => {
+  if (!signer || !account) {
+    throw new Error('Connect an authorized holder or issuer wallet first.');
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return {};
   }
 
-  return ipfsUri;
+  const timestamp = Date.now();
+  const nonce =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `tokcred-batch-${randomHexToken(8)}-${timestamp}`;
+
+  const message =
+    `TokCred Confidential Portfolio Decryption Request\n` +
+    `Record Count: ${items.length}\n` +
+    `Requester Wallet: ${account}\n` +
+    `Contract: ${CONTRACT_ADDRESS}\n` +
+    `Nonce: ${nonce}\n` +
+    `Timestamp: ${timestamp}`;
+
+  const signature = await signer.signMessage(message);
+
+  const response = await fetch('/api/credential-crypto?action=decrypt-batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items,
+      account,
+      signature,
+      message,
+      timestamp,
+      nonce,
+      rpcUrl,
+      contractAddress: CONTRACT_ADDRESS,
+    }),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result?.details || result?.error || 'Batch decryption failed.');
+  }
+
+  return result.decryptedItems || {};
+};
+
+/**
+ * Upload strictly encrypted metadata envelope to IPFS exclusively via the server-side /api/pinata proxy.
+ * Never exposes Pinata API keys to browser JavaScript.
+ */
+export const uploadToIPFS = async (metadata) => {
+  assertNoPlaintextLeak(metadata);
+
+  const proxyResp = await fetch('/api/pinata', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(metadata),
+  });
+
+  const data = await proxyResp.json().catch(() => ({}));
+  if (!proxyResp.ok || !data?.IpfsHash) {
+    throw new Error(
+      data?.details ||
+      data?.error ||
+      `IPFS upload failed via /api/pinata (HTTP ${proxyResp.status}). Verify server Pinata credentials.`
+    );
+  }
+
+  return `ipfs://${data.IpfsHash}`;
 };
 
 /**
@@ -212,12 +391,21 @@ export const getIssuedTokenIdFromReceipt = (receipt, contract) => {
 };
 
 /**
- * Normalize credential tuple returned by smart contract calls.
+ * Normalize credential tuple returned by smart contract calls alongside Soulbound owner check.
  */
-export const mapCredentialData = (data) => {
+export const mapCredentialData = (data, ownerAddress = null) => {
+  const studentAddr = data.student;
+  const resolvedOwner = ownerAddress || studentAddr;
   return {
     tokenId: data.tokenId,
-    student: data.student,
+    student: studentAddr,
+    holderWallet: resolvedOwner,
+    ownerMatchesStudent: Boolean(
+      resolvedOwner &&
+      studentAddr &&
+      resolvedOwner.toLowerCase() === studentAddr.toLowerCase()
+    ),
+    soulbound: true,
     metadataURI: data.metadataURI,
     issueTimestamp: data.issueTimestamp,
     revoked: data.revoked,
@@ -225,23 +413,29 @@ export const mapCredentialData = (data) => {
 };
 
 /**
- * Issue a credential and return metadata URI, tx, receipt, and token ID.
+ * Issue a credential: encrypts sensitive metadata -> pins encrypted envelope to IPFS -> mints Soulbound NFT on-chain.
  */
 export const issueCredential = async ({
   contract,
   studentAddress,
   formData,
-  pinataKey,
-  pinataSecret,
 }) => {
-  const metadata = buildCredentialMetadata(formData);
-  const metadataURI = await uploadToIPFS(metadata, pinataKey, pinataSecret);
-  const tx = await contract.issueCredential(studentAddress, metadataURI);
+  const { encryptedEnvelope, decryptedMetadata, credentialId } = await encryptCredentialMetadata({
+    formData,
+    studentAddress,
+    credentialId: formData.credentialId,
+  });
+
+  const metadataURI = await uploadToIPFS(encryptedEnvelope);
+  const normalizedStudent = ethers.getAddress(studentAddress);
+  const tx = await contract.issueCredential(normalizedStudent, metadataURI);
   const receipt = await tx.wait();
   const tokenId = getIssuedTokenIdFromReceipt(receipt, contract);
 
   return {
-    metadata,
+    metadata: encryptedEnvelope,
+    decryptedMetadata,
+    credentialId,
     metadataURI,
     tx,
     receipt,
@@ -250,20 +444,24 @@ export const issueCredential = async ({
 };
 
 /**
- * Verify credential by token ID on connected wallet contract instance.
+ * Verify credential by token ID on connected wallet contract instance, including Soulbound ownerOf check.
  */
 export const verifyCredential = async (contract, tokenId) => {
-  const credentialData = await contract.verifyCredential(parseInt(tokenId));
-  let metadata = null;
+  const parsedId = BigInt(tokenId);
+  const [credentialData, ownerAddress] = await Promise.all([
+    contract.verifyCredential(parsedId),
+    contract.ownerOf(parsedId).catch(() => null),
+  ]);
 
+  let metadata = null;
   try {
     metadata = await fetchMetadata(credentialData.metadataURI);
   } catch {
-    metadata = null;
+    metadata = { unavailable: true, description: 'Credential metadata unavailable' };
   }
 
   return {
-    credential: mapCredentialData(credentialData),
+    credential: mapCredentialData(credentialData, ownerAddress),
     metadata,
   };
 };
@@ -281,21 +479,26 @@ export const getPublicContract = (rpcUrl) => {
 };
 
 /**
- * Public verification path using JSON-RPC provider.
+ * Public verification path using JSON-RPC provider (includes on-chain ownerOf verification).
  */
 export const verifyCredentialPublic = async (tokenId, rpcUrl) => {
   const contract = getPublicContract(rpcUrl);
-  const data = await contract.verifyCredential(parseInt(tokenId));
+  const parsedId = BigInt(tokenId);
+
+  const [data, ownerAddress] = await Promise.all([
+    contract.verifyCredential(parsedId),
+    contract.ownerOf(parsedId).catch(() => null),
+  ]);
 
   let metadata = null;
   try {
     metadata = await fetchMetadata(data.metadataURI);
   } catch {
-    metadata = null;
+    metadata = { unavailable: true, description: 'Credential metadata unavailable' };
   }
 
   return {
-    credential: mapCredentialData(data),
+    credential: mapCredentialData(data, ownerAddress),
     metadata,
   };
 };
@@ -309,17 +512,20 @@ export const loadStudentCredentials = async (contract, account) => {
   const credentials = await Promise.all(
     tokenIds.map(async (tokenId) => {
       try {
-        const details = await contract.getCredentialDetails(tokenId);
-        let metadata = null;
+        const [details, ownerAddress] = await Promise.all([
+          contract.getCredentialDetails(tokenId),
+          contract.ownerOf(tokenId).catch(() => account),
+        ]);
 
+        let metadata = null;
         try {
           metadata = await fetchMetadata(details.metadataURI);
         } catch {
-          metadata = null;
+          metadata = { unavailable: true, description: 'Credential metadata unavailable' };
         }
 
         return {
-          ...mapCredentialData(details),
+          ...mapCredentialData(details, ownerAddress),
           metadata,
         };
       } catch {
@@ -346,10 +552,14 @@ export const loadAllCredentials = async (contract) => {
 
   for (let i = 0; i < Number(totalCredentials); i++) {
     try {
-      const details = await contract.getCredentialDetails(i);
-      const tid = (details.tokenId !== undefined && details.tokenId !== null)
-        ? details.tokenId.toString()
-        : String(i);
+      const [details, ownerAddress] = await Promise.all([
+        contract.getCredentialDetails(i),
+        contract.ownerOf(i).catch(() => null),
+      ]);
+      const tid =
+        details.tokenId !== undefined && details.tokenId !== null
+          ? details.tokenId.toString()
+          : String(i);
 
       if (seenIds.has(tid)) {
         continue;
@@ -360,16 +570,16 @@ export const loadAllCredentials = async (contract) => {
       try {
         metadata = await fetchMetadata(details.metadataURI);
       } catch {
-        metadata = null;
+        metadata = { unavailable: true, description: 'Credential metadata unavailable' };
       }
 
       allCreds.push({
-        ...mapCredentialData(details),
+        ...mapCredentialData(details, ownerAddress),
         tokenId: tid,
         metadata,
       });
     } catch {
-      // Continue with next token to preserve existing resilient behavior.
+      // Continue cleanly on missing tokens
     }
   }
 

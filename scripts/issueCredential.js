@@ -1,9 +1,9 @@
 const hre = require("hardhat");
-const { uploadToPinata, createCredentialMetadata } = require("./uploadToIPFS");
+const { uploadToPinata, createCredentialMetadata, generateUniqueCredentialId } = require("./uploadToIPFS");
 require("dotenv").config();
 
 async function main() {
-  console.log("🎓 Issuing Academic Credential\n");
+  console.log("🎓 Issuing Encrypted Soulbound Academic Credential\n");
 
   // Get contract address from deployment
   const fs = require("fs");
@@ -29,32 +29,39 @@ async function main() {
   const AcademicCredential = await hre.ethers.getContractFactory("AcademicCredential");
   const contract = AcademicCredential.attach(contractAddress);
 
-  // Example: Issue credential to a student
-  // Replace this address with the actual student's wallet address
+  // Pass student address, enrollment number, and optional credential ID via CLI args
   const studentAddress = process.argv[2] || issuer.address;
-  
-  console.log("👨‍🎓 Student:", studentAddress);
+  const enrollmentNumber = process.argv[3] || "REG-2026-0001";
+  const credentialId = process.argv[4] || generateUniqueCredentialId();
+
+  console.log("👨‍🎓 Soulbound Holder:", studentAddress);
+  console.log("🪪 Enrollment No.:", enrollmentNumber);
+  console.log("🔐 Credential ID:", credentialId);
   console.log("\n" + "=".repeat(60));
 
-  // Create credential metadata
-  const metadata = createCredentialMetadata({
+  // Create AES-256-GCM encrypted metadata envelope (zero plaintext PII in IPFS payload)
+  const metadata = await createCredentialMetadata({
+    credentialId,
+    studentAddress,
+    enrollmentNumber,
     studentName: "Alice Johnson",
     institution: "Massachusetts Institute of Technology",
-    degree: "Bachelor of Science in Computer Science",
+    degree: "Bachelor of Science",
+    branch: "Computer Science & AI",
     grade: "A (3.9/4.0 GPA)",
     issueDate: new Date().toISOString().split("T")[0],
     description: "Bachelor's degree in Computer Science with honors. Specialization in Artificial Intelligence and Machine Learning.",
   });
 
-  console.log("📋 Credential Metadata:");
+  console.log("🔒 Encrypted Public IPFS Envelope:");
   console.log(JSON.stringify(metadata, null, 2));
   console.log("=".repeat(60) + "\n");
 
-  // Upload to IPFS
-  console.log("📤 Uploading metadata to IPFS...");
+  // Upload encrypted envelope to IPFS
+  console.log("📤 Uploading encrypted envelope to IPFS...");
   const metadataURI = await uploadToPinata(metadata);
 
-  // Issue credential
+  // Issue Soulbound ERC-721 credential directly to student's wallet
   console.log("\n⏳ Issuing credential on blockchain...");
   const tx = await contract.issueCredential(studentAddress, metadataURI);
   console.log("📝 Transaction hash:", tx.hash);
@@ -74,24 +81,28 @@ async function main() {
     }
   );
 
+  let issuedTokenId = 0n;
   if (event) {
     const parsedEvent = contract.interface.parseLog(event);
-    const tokenId = parsedEvent.args.tokenId;
-    console.log("🎫 Token ID:", tokenId.toString());
+    issuedTokenId = parsedEvent.args.tokenId;
+    console.log("🎫 Token ID:", issuedTokenId.toString());
     console.log("\n" + "=".repeat(60));
     console.log("🎉 Credential Successfully Issued!");
     console.log("=".repeat(60));
-    console.log("Token ID:", tokenId.toString());
-    console.log("Student:", studentAddress);
+    console.log("Token ID:", issuedTokenId.toString());
+    console.log("Credential ID:", credentialId);
+    console.log("Soulbound Holder:", studentAddress);
     console.log("Metadata URI:", metadataURI);
     console.log("=".repeat(60) + "\n");
   }
 
-  // Verify the credential
+  // Verify the credential & Soulbound ownerOf binding
   console.log("🔍 Verifying credential...");
-  const credential = await contract.verifyCredential(0);
+  const credential = await contract.verifyCredential(issuedTokenId);
+  const holderOnChain = await contract.ownerOf(issuedTokenId);
   console.log("✅ Credential verified:");
-  console.log("  - Student:", credential.student);
+  console.log("  - Student Record:", credential.student);
+  console.log("  - ERC-721 ownerOf:", holderOnChain);
   console.log("  - Metadata URI:", credential.metadataURI);
   console.log("  - Issue Timestamp:", new Date(Number(credential.issueTimestamp) * 1000).toISOString());
   console.log("  - Revoked:", credential.revoked);

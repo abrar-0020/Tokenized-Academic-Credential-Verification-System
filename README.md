@@ -337,9 +337,10 @@ Edit `.env` file:
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY
 PRIVATE_KEY=your_wallet_private_key_here
 
-# IPFS Configuration (Pinata)
+# Server-Only IPFS (Pinata) & Encryption Secrets (never prefix with VITE_)
 IPFS_API_KEY=your_pinata_api_key
 IPFS_SECRET_KEY=your_pinata_secret_key
+CREDENTIAL_MASTER_KEY=your_long_random_aes256_master_secret
 ```
 
 ### 3. Get Required API Keys
@@ -355,7 +356,7 @@ IPFS_SECRET_KEY=your_pinata_secret_key
 2. Create account
 3. Go to API Keys section
 4. Generate new key with pinning permissions
-5. Copy API Key and Secret
+5. Copy API Key and Secret into root `.env` (and Vercel server env vars) as `IPFS_API_KEY` and `IPFS_SECRET_KEY`
 
 ### 4. Configure Frontend
 
@@ -364,20 +365,16 @@ cd frontend
 cp .env.example .env
 ```
 
-Edit `frontend/.env`:
+Edit `frontend/.env` (public `VITE_*` values only — never place Pinata secrets here):
 
 ```env
 VITE_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 VITE_NETWORK_ID=31337
 VITE_NETWORK_NAME=localhost
 
-# IPFS Configuration
+# Public IPFS Gateway (Pinata read gateway)
 VITE_IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs/
-
-# Optional: Pinata credentials for real IPFS uploads
-# Leave empty for local dev (uses localStorage simulation)
-VITE_PINATA_API_KEY=
-VITE_PINATA_API_SECRET=
+VITE_PUBLIC_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 ```
 
 **Gateway URL Format**: The IPFS gateway URL must follow this structure:

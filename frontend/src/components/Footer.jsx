@@ -87,9 +87,10 @@ const Footer = () => {
   return (
     <footer className="w-full py-8 border-t border-white/40 flex flex-col sm:flex-row items-center justify-between px-8 max-w-[1312px] mx-auto text-[#756F80] text-[12px] gap-4 relative z-10 font-['Inter']">
       <div>© {new Date().getFullYear()} TokCred Protocol. All rights reserved.</div>
-      <div className="flex items-center gap-6">
+      <div className="flex flex-wrap justify-center items-center gap-6">
         <Link to="/" className="hover:text-[#292333] transition-colors">Home</Link>
         <Link to="/features" className="hover:text-[#292333] transition-colors">Features</Link>
+        <Link to="/institutions" className="hover:text-[#292333] transition-colors">For Institutions</Link>
         <Link to="/public-verify" className="hover:text-[#292333] transition-colors">Public Verify</Link>
         <Link to="/privacy" className="hover:text-[#292333] transition-colors">Privacy</Link>
         <Link to="/terms" className="hover:text-[#292333] transition-colors">Terms</Link>
