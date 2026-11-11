@@ -8,6 +8,7 @@ import { copyToClipboard, formatDate } from '../utils/helpers';
 import {
   ipfsToHttp,
   verifyCredential as verifyCredentialAction,
+  parseCredentialLookupInput,
   decryptCredentialPayload
 } from '../logic';
 
@@ -42,14 +43,15 @@ const VerifyCredential = () => {
     
     const rawId = autoTokenId !== null ? autoTokenId : tokenId;
     const trimmed = String(rawId ?? '').trim();
+    const parsed = parseCredentialLookupInput(trimmed);
 
-    if (trimmed === '') {
+    if (parsed.kind === 'empty') {
       setError('Please enter a token ID');
       return;
     }
 
-    if (!/^\d+$/.test(trimmed)) {
-      setError('Please enter a valid numeric token ID');
+    if (parsed.kind === 'invalid') {
+      setError('Please enter a valid numeric token ID or Credential ID (e.g. 6 or TC-2026-...)');
       return;
     }
 
@@ -137,12 +139,12 @@ const VerifyCredential = () => {
 
           <form onSubmit={handleVerify} className="flex flex-col gap-6">
             <div className="group relative">
-              <label className="block text-[10px] uppercase tracking-widest text-[#5e6570] font-bold mb-2 ml-1">Credential Token ID</label>
+              <label className="block text-[10px] uppercase tracking-widest text-[#5e6570] font-bold mb-2 ml-1">Token ID or Credential ID</label>
               <div className="flex items-center bg-[#131313] border-b border-[#484848]/30 focus-within:border-[#8197ff] transition-all duration-500 pb-2 px-1 group">
                 <span className="material-symbols-outlined text-[#767575] mr-3">fingerprint</span>
                 <input
                   className="bg-transparent border-none focus:ring-0 text-2xl font-headline tracking-tight text-[#c6c6c7] w-full py-2 placeholder:text-[#767575]"
-                  placeholder="Ex: 0 or 1"
+                  placeholder="Ex: 6 or TC-2026-00006-..."
                   type="text"
                   value={tokenId}
                   onChange={(e) => {

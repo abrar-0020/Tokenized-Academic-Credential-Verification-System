@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import { ShieldCheck, Lock, Database, ArrowRight, ExternalLink, Mail, Copy, Check, FileText } from 'lucide-react';
 
 const PrivacyPolicy = () => {
@@ -285,20 +286,10 @@ const PrivacyPolicy = () => {
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
             <SettingsDropdown />
-            <button 
-              onClick={account ? disconnectWallet : connectWallet} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[52px] px-[22px] text-[14px] font-[500] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>Connect Wallet</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect Wallet"
+              className="h-[52px] px-[22px] text-[14px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
           </div>
         </div>
       </div>

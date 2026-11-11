@@ -27,12 +27,20 @@ export const Web3Provider = ({ children }) => {
     return !Boolean(ethereum && (ethereum.isMetaMask || ethereum.providers?.some((p) => p.isMetaMask)));
   });
   const [error, setError] = useState(null);
+  const [metaMaskMissing, setMetaMaskMissing] = useState(false);
 
   // Check if MetaMask is installed (with mobile support)
   const isMetaMaskInstalled = () => {
+    if (typeof window === 'undefined') return false;
     const { ethereum } = window;
     return Boolean(ethereum && (ethereum.isMetaMask || ethereum.providers?.some((p) => p.isMetaMask)));
   };
+
+  const hasMetaMask = isMetaMaskInstalled();
+  const clearWalletError = useCallback(() => {
+    setError(null);
+    setMetaMaskMissing(false);
+  }, []);
 
   // Get the correct ethereum provider (mobile fix)
   const getProvider = () => {
@@ -62,12 +70,14 @@ export const Web3Provider = ({ children }) => {
 
   // Connect wallet
   const connectWallet = useCallback(async (skipMobileCheck = false) => {
+    const shouldSkipMobileCheck = skipMobileCheck === true;
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     // On mobile, if provider not available, open MetaMask app
-    if (isMobile && !skipMobileCheck && !isMetaMaskInstalled()) {
+    if (isMobile && !shouldSkipMobileCheck && !isMetaMaskInstalled()) {
       setLoading(true);
       setError(null);
+      setMetaMaskMissing(false);
       
       // Open MetaMask via deep link immediately
       const dappUrl = window.location.href.replace(/https?:\/\//, '');
@@ -80,8 +90,9 @@ export const Web3Provider = ({ children }) => {
       return;
     }
     
-    if (!skipMobileCheck && !isMetaMaskInstalled()) {
-      setError('Please install MetaMask browser extension to use this application');
+    if (!shouldSkipMobileCheck && !isMetaMaskInstalled()) {
+      setMetaMaskMissing(true);
+      setError('MetaMask not found — install MetaMask. Public verification needs no wallet, while issuing requires MetaMask.');
       setInitialized(true);
       return;
     }
@@ -89,10 +100,12 @@ export const Web3Provider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      setMetaMaskMissing(false);
 
       const provider = getProvider();
       if (!provider) {
-        throw new Error('MetaMask provider not found');
+        setMetaMaskMissing(true);
+        throw new Error('MetaMask not found — install MetaMask. Public verification needs no wallet, while issuing requires MetaMask.');
       }
 
       if (CONTRACT_CONFIG_ERROR) {
@@ -241,6 +254,7 @@ export const Web3Provider = ({ children }) => {
     setIsAdmin(false);
     setNetworkId(null);
     setError(null);
+    setMetaMaskMissing(false);
   }, []);
 
   // Check for existing connection on mount (only once)
@@ -358,6 +372,9 @@ export const Web3Provider = ({ children }) => {
     loading,
     initialized,
     error,
+    hasMetaMask,
+    metaMaskMissing,
+    clearWalletError,
     connectWallet,
     switchWallet,
     disconnectWallet,

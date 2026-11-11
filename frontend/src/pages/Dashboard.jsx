@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import { 
   ArrowRight, 
   ArrowUpRight, 
@@ -254,20 +255,10 @@ const Dashboard = () => {
               />
             </div>
 
-            <button 
-              onClick={account ? disconnectWallet : connectWallet} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>Connect</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect"
+              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
 
             {/* Mobile Hamburger Button */}
             <button

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Zap, Lock, Key, CheckCircle2, ChevronRight, ChevronDown, Fingerprint, Database, Sparkles } from 'lucide-react';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '@/components/SettingsDropdown';
+import WalletConnectButton from '@/components/WalletConnectButton';
 
 const SpotlightCard = ({ children, className = "" }) => {
   const divRef = useRef(null);
@@ -113,20 +114,10 @@ export default function Features() {
             />
           </div>
 
-          <button 
-            onClick={account ? disconnectWallet : connectWallet} 
-            title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-            className={`h-[56px] px-[28px] text-[16px] font-[400] rounded-full flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#EAE4FF] text-[#101014] hover:bg-white`}
-          >
-            {account ? (
-              <>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Connected</span>
-              </>
-            ) : (
-              <span>Connect Wallet</span>
-            )}
-          </button>
+          <WalletConnectButton
+            disconnectedLabel="Connect Wallet"
+            className="h-[56px] px-[28px] text-[16px] font-[400] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#EAE4FF] text-[#101014] hover:bg-white"
+          />
 
           </div>
         </div>

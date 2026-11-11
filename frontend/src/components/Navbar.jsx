@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useTheme } from '../context/ThemeContext';
+import WalletConnectButton from './WalletConnectButton';
 
 const Navbar = () => {
   const location = useLocation();
@@ -105,14 +106,11 @@ const Navbar = () => {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={connectWallet}
-                disabled={loading}
-                className="btn-primary text-sm px-4 py-2"
-                style={{ minHeight: '36px' }}
-              >
-                {loading ? 'Connecting...' : 'Connect Wallet'}
-              </button>
+              <WalletConnectButton
+                disconnectedLabel="Connect Wallet"
+                showStatusDot={false}
+                className="btn-primary text-sm px-4 py-2 min-h-[36px]"
+              />
             )}
           </div>
         </div>

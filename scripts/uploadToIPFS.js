@@ -15,10 +15,19 @@ const DISALLOWED_PLAINTEXT_KEYS = [
   "institution",
 ];
 
-function generateUniqueCredentialId() {
+function generateUniqueCredentialId(sequenceNumber = null) {
   const year = new Date().getFullYear();
-  const suffix = crypto.randomBytes(3).toString("hex").toUpperCase();
-  return `TC-CRED-${year}-${suffix}`;
+  if (
+    sequenceNumber !== null &&
+    sequenceNumber !== undefined &&
+    /^\d+$/.test(String(sequenceNumber))
+  ) {
+    const paddedSeq = String(sequenceNumber).padStart(5, "0");
+    const suffix = crypto.randomBytes(6).toString("hex").toUpperCase();
+    return `TC-${year}-${paddedSeq}-${suffix}`;
+  }
+  const suffix = crypto.randomBytes(8).toString("hex").toUpperCase();
+  return `TC-${year}-${suffix}`;
 }
 
 function assertEncryptedEnvelope(metadata) {

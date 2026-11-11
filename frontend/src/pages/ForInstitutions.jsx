@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import { CONTRACT_ADDRESS } from '../config/contract';
 import { formatAddress } from '../utils/helpers';
 import {
@@ -104,21 +105,10 @@ const ForInstitutions = ({ requestedPath = null }) => {
               />
             </div>
 
-            <button
-              onClick={account ? disconnectWallet : () => connectWallet(false)}
-              disabled={web3Loading}
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B] disabled:opacity-70"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>{web3Loading ? 'Connecting...' : 'Connect Wallet'}</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect Wallet"
+              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
 
             {/* Mobile Hamburger Button */}
             <button
@@ -243,24 +233,29 @@ const ForInstitutions = ({ requestedPath = null }) => {
 
             {/* Action Buttons */}
             {!account && (
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <button
-                  onClick={() => connectWallet(false)}
-                  disabled={web3Loading}
-                  className="h-[52px] px-7 rounded-full bg-[#2D264B] hover:bg-[#3C315B] text-white text-[14px] font-medium flex items-center gap-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_12px_28px_rgba(45,38,75,0.2)] disabled:opacity-60"
-                >
-                  <Wallet className="w-4 h-4" />
-                  <span>{web3Loading ? 'Connecting Wallet...' : 'Connect Issuer Wallet'}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+              <div className="space-y-3 pt-1">
+                <div className="flex flex-wrap items-start gap-3">
+                  <WalletConnectButton
+                    disconnectedLabel="Connect Issuer Wallet"
+                    showStatusDot={false}
+                    inlineNotice={true}
+                    popoverAlign="left"
+                    className="h-[52px] px-7 rounded-full bg-[#2D264B] hover:bg-[#3C315B] text-white text-[14px] font-medium shadow-[0_12px_28px_rgba(45,38,75,0.2)] hover:scale-[1.02] active:scale-[0.98]"
+                    missingClassName="inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-full bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-[14px] font-semibold shadow-sm transition-colors"
+                  />
 
-                <button
-                  onClick={() => navigate('/public-verify')}
-                  className="h-[52px] px-6 rounded-full bg-white/55 hover:bg-white/80 border border-white/80 text-[#292333] text-[14px] font-medium flex items-center gap-2 transition-all backdrop-blur-md"
-                >
-                  <Search className="w-4 h-4 text-[#7053AD]" />
-                  <span>Public Verify</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/public-verify')}
+                    className="h-[52px] px-6 rounded-full bg-white/55 hover:bg-white/80 border border-white/80 text-[#292333] text-[14px] font-medium flex items-center gap-2 transition-all backdrop-blur-md"
+                  >
+                    <Search className="w-4 h-4 text-[#7053AD]" />
+                    <span>Public Verify</span>
+                  </button>
+                </div>
+                <p className="text-[13px] text-[#5B5565] font-medium">
+                  Public verification needs no wallet — issuing credentials requires MetaMask.
+                </p>
               </div>
             )}
 
@@ -412,7 +407,7 @@ const ForInstitutions = ({ requestedPath = null }) => {
                           : 'bg-white/40 border border-white/70'
                       }`}
                     >
-                      <div className="w-10 h-10 rounded-xl bg-[#513582]/10 border border-[#513582]/15 flex items-center justify-center shrink-0 text-[#513582]">
+                      <div className="w-10 h-10 rounded-[12px] bg-[#513582]/10 border border-[#513582]/15 flex items-center justify-center shrink-0 text-[#513582]">
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col gap-1 flex-1 min-w-0">

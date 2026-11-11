@@ -58,11 +58,81 @@ const randomHexToken = (byteLength = 4) => {
 };
 
 /**
- * Generate a unique, collision-resistant Credential ID (e.g. TC-2026-A7C91E04)
+ * Generate a collision-resistant Credential ID.
+ * When sequenceNumber is provided, builds a hybrid sequential + 48-bit CSPRNG ID:
+ *   TC-<YYYY>-<5-digit-seq>-<12-hex-random>
+ * Without a sequenceNumber, uses 64-bit CSPRNG:
+ *   TC-<YYYY>-<16-hex-random>
  */
-export const generateUniqueCredentialId = () => {
+export const generateUniqueCredentialId = (sequenceNumber = null) => {
   const year = new Date().getFullYear();
-  return `TC-${year}-${randomHexToken(4)}`;
+  if (
+    sequenceNumber !== null &&
+    sequenceNumber !== undefined &&
+    /^\d+$/.test(String(sequenceNumber))
+  ) {
+    const paddedSeq = String(sequenceNumber).padStart(5, '0');
+    return `TC-${year}-${paddedSeq}-${randomHexToken(6)}`;
+  }
+  return `TC-${year}-${randomHexToken(8)}`;
+};
+
+/**
+ * Derive the next hybrid Credential ID using the on-chain sequential counter + CSPRNG suffix.
+ */
+export const generateNextHybridCredentialId = async (contract) => {
+  if (!contract) {
+    return generateUniqueCredentialId();
+  }
+  try {
+    const total = await contract.getTotalCredentials();
+    return generateUniqueCredentialId(Number(total));
+  } catch {
+    return generateUniqueCredentialId();
+  }
+};
+
+/**
+ * Parse a verification search query supporting either numeric Token IDs (e.g. "6")
+ * or Credential IDs (e.g. "TC-2026-00006-A9C4E12B8F01", "TC-2026-A7C91E04", "TC-TOKEN-2").
+ */
+export const parseCredentialLookupInput = (rawInput) => {
+  const trimmed = String(rawInput ?? '').trim();
+  if (trimmed === '') {
+    return { kind: 'empty' };
+  }
+  if (/^\d+$/.test(trimmed)) {
+    return { kind: 'tokenId', tokenId: trimmed };
+  }
+
+  const upper = trimmed.toUpperCase();
+  const hybridMatch = upper.match(/^TC-(?:CRED-)?\d{4}-(\d{1,10})-[A-F0-9]{6,32}$/);
+  if (hybridMatch) {
+    return {
+      kind: 'credentialId',
+      credentialId: upper,
+      tokenHint: String(Number(hybridMatch[1])),
+    };
+  }
+
+  const legacyTokenCodeMatch = upper.match(/^TC-TOKEN-(\d+)$/);
+  if (legacyTokenCodeMatch) {
+    return {
+      kind: 'credentialId',
+      credentialId: upper,
+      tokenHint: String(Number(legacyTokenCodeMatch[1])),
+    };
+  }
+
+  if (/^TC-[A-Z0-9-]{6,64}$/.test(upper)) {
+    return {
+      kind: 'credentialId',
+      credentialId: upper,
+      tokenHint: null,
+    };
+  }
+
+  return { kind: 'invalid' };
 };
 
 /**
@@ -420,10 +490,13 @@ export const issueCredential = async ({
   studentAddress,
   formData,
 }) => {
+  const cleanCredentialId = String(formData.credentialId || (await generateNextHybridCredentialId(contract))).trim();
+  await assertUniqueCredentialIdOnChain(contract, cleanCredentialId);
+
   const { encryptedEnvelope, decryptedMetadata, credentialId } = await encryptCredentialMetadata({
-    formData,
+    formData: { ...formData, credentialId: cleanCredentialId },
     studentAddress,
-    credentialId: formData.credentialId,
+    credentialId: cleanCredentialId,
   });
 
   const metadataURI = await uploadToIPFS(encryptedEnvelope);
@@ -443,11 +516,12 @@ export const issueCredential = async ({
   };
 };
 
-/**
- * Verify credential by token ID on connected wallet contract instance, including Soulbound ownerOf check.
- */
-export const verifyCredential = async (contract, tokenId) => {
-  const parsedId = BigInt(tokenId);
+const extractResolvedCredentialId = (metadata, tokenId) => {
+  const fallback = tokenId !== undefined && tokenId !== null ? `TC-TOKEN-${String(tokenId)}` : '';
+  return String(metadata?.credentialId || metadata?.id || fallback).trim();
+};
+
+const fetchTokenWithMetadata = async (contract, parsedId) => {
   const [credentialData, ownerAddress] = await Promise.all([
     contract.verifyCredential(parsedId),
     contract.ownerOf(parsedId).catch(() => null),
@@ -467,6 +541,136 @@ export const verifyCredential = async (contract, tokenId) => {
 };
 
 /**
+ * Verify that a Credential ID is not already used on-chain before minting.
+ */
+export const assertUniqueCredentialIdOnChain = async (contract, credentialId) => {
+  const target = String(credentialId || '').trim().toLowerCase();
+  if (!contract || !target) return;
+
+  let total = 0;
+  try {
+    total = Number(await contract.getTotalCredentials());
+  } catch {
+    return;
+  }
+  if (!Number.isFinite(total) || total <= 0) return;
+
+  const parsed = parseCredentialLookupInput(credentialId);
+  if (parsed.kind === 'credentialId' && parsed.tokenHint !== null) {
+    const hintIdx = Number(parsed.tokenHint);
+    if (hintIdx >= 0 && hintIdx < total) {
+      try {
+        const res = await fetchTokenWithMetadata(contract, BigInt(hintIdx));
+        const existingId = extractResolvedCredentialId(res.metadata, hintIdx).toLowerCase();
+        if (existingId && existingId === target) {
+          throw new Error(
+            `Credential ID "${credentialId}" already exists on-chain as Token #${hintIdx}. Click Regenerate for a fresh ID.`
+          );
+        }
+      } catch (err) {
+        if (err?.message?.includes('already exists on-chain')) throw err;
+      }
+    }
+  }
+
+  const batchSize = 10;
+  for (let end = total - 1; end >= 0; end -= batchSize) {
+    const start = Math.max(0, end - batchSize + 1);
+    const indices = [];
+    for (let idx = end; idx >= start; idx--) indices.push(idx);
+
+    const results = await Promise.all(
+      indices.map(async (idx) => {
+        try {
+          const res = await fetchTokenWithMetadata(contract, BigInt(idx));
+          return { idx, res };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    for (const item of results) {
+      if (!item) continue;
+      const existingId = extractResolvedCredentialId(item.res.metadata, item.idx).toLowerCase();
+      if (existingId && existingId === target) {
+        throw new Error(
+          `Credential ID "${credentialId}" already exists on-chain as Token #${item.idx}. Click Regenerate for a fresh ID.`
+        );
+      }
+    }
+  }
+};
+
+/**
+ * Resolve a credential by numeric Token ID or unique Credential ID (TC-...).
+ */
+export const resolveCredentialByInput = async (contract, rawInput) => {
+  const parsed = parseCredentialLookupInput(rawInput);
+
+  if (parsed.kind === 'empty') {
+    throw new Error('Please enter a token ID');
+  }
+  if (parsed.kind === 'invalid') {
+    throw new Error('Please enter a valid numeric token ID or Credential ID (e.g. 6 or TC-2026-...)');
+  }
+
+  if (parsed.kind === 'tokenId') {
+    return fetchTokenWithMetadata(contract, BigInt(parsed.tokenId));
+  }
+
+  const targetLower = parsed.credentialId.toLowerCase();
+
+  // Fast O(1) path: check sequence hint embedded in hybrid TC-YYYY-<seq>-<hex> ID first
+  if (parsed.tokenHint !== null) {
+    try {
+      const candidate = await fetchTokenWithMetadata(contract, BigInt(parsed.tokenHint));
+      const candidateId = extractResolvedCredentialId(candidate.metadata, candidate.credential.tokenId).toLowerCase();
+      if (candidateId === targetLower) {
+        return candidate;
+      }
+    } catch {
+      // Fallback to bounded reverse scan if tokenHint differed from mined tokenId under concurrency
+    }
+  }
+
+  const total = Number(await contract.getTotalCredentials());
+  const batchSize = 10;
+  for (let end = total - 1; end >= 0; end -= batchSize) {
+    const start = Math.max(0, end - batchSize + 1);
+    const indices = [];
+    for (let idx = end; idx >= start; idx--) indices.push(idx);
+
+    const batch = await Promise.all(
+      indices.map(async (idx) => {
+        try {
+          return await fetchTokenWithMetadata(contract, BigInt(idx));
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    for (const item of batch) {
+      if (!item) continue;
+      const cid = extractResolvedCredentialId(item.metadata, item.credential.tokenId).toLowerCase();
+      if (cid === targetLower) {
+        return item;
+      }
+    }
+  }
+
+  throw new Error('Credential does not exist');
+};
+
+/**
+ * Verify credential by Token ID or Credential ID on connected wallet contract instance.
+ */
+export const verifyCredential = async (contract, lookupInput) => {
+  return resolveCredentialByInput(contract, lookupInput);
+};
+
+/**
  * Build a read-only public contract instance for verification without wallet.
  */
 export const getPublicContract = (rpcUrl) => {
@@ -479,28 +683,11 @@ export const getPublicContract = (rpcUrl) => {
 };
 
 /**
- * Public verification path using JSON-RPC provider (includes on-chain ownerOf verification).
+ * Public verification path using JSON-RPC provider (supports numeric Token ID or TC-... Credential ID).
  */
-export const verifyCredentialPublic = async (tokenId, rpcUrl) => {
+export const verifyCredentialPublic = async (lookupInput, rpcUrl) => {
   const contract = getPublicContract(rpcUrl);
-  const parsedId = BigInt(tokenId);
-
-  const [data, ownerAddress] = await Promise.all([
-    contract.verifyCredential(parsedId),
-    contract.ownerOf(parsedId).catch(() => null),
-  ]);
-
-  let metadata = null;
-  try {
-    metadata = await fetchMetadata(data.metadataURI);
-  } catch {
-    metadata = { unavailable: true, description: 'Credential metadata unavailable' };
-  }
-
-  return {
-    credential: mapCredentialData(data, ownerAddress),
-    metadata,
-  };
+  return resolveCredentialByInput(contract, lookupInput);
 };
 
 /**

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '@/components/SettingsDropdown';
+import WalletConnectButton from '@/components/WalletConnectButton';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, useMotionTemplate } from 'framer-motion';
 import { Search, ShieldCheck, Download, BookOpen, ChevronDown, Lock, ArrowRight, Globe, Zap, Users, Smartphone, Menu, X } from 'lucide-react';
 import { useRef, useCallback, useState, useEffect } from 'react';
@@ -248,20 +249,11 @@ const Home = () => {
               />
             </div>
 
-            <button 
-              onClick={account ? disconnectWallet : connectWallet} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className={`h-[44px] px-[16px] sm:h-[56px] sm:px-[28px] text-[13px] sm:text-[16px] font-[400] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] ${isNavDark ? 'bg-[#EAE4FF] text-[#101014] hover:bg-white' : 'bg-[#2D264B] text-white hover:bg-[#3C315B]'}`}
-            >
-              {account ? (
-                <>
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>Connect</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect"
+              showStatusDot={true}
+              className={`h-[44px] px-[16px] sm:h-[56px] sm:px-[28px] text-[13px] sm:text-[16px] font-[400] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] ${isNavDark ? 'bg-[#EAE4FF] text-[#101014] hover:bg-white' : 'bg-[#2D264B] text-white hover:bg-[#3C315B]'}`}
+            />
 
             {/* Mobile Hamburger Button */}
             <button

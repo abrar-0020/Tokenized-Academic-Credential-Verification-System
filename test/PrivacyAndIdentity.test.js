@@ -531,4 +531,23 @@ describe("Privacy, Encrypted Metadata, Unique Identity & Soulbound Binding", fun
       expect(auth.reason).to.include("On-chain Soulbound owner");
     });
   });
+
+  describe("Hybrid Sequential + High-Entropy Credential ID Generation", function () {
+    it("generates hybrid sequential + 48-bit CSPRNG IDs when sequence is given and 64-bit IDs otherwise", function () {
+      const { generateUniqueCredentialId } = require("../scripts/uploadToIPFS");
+      const year = new Date().getFullYear();
+
+      const hybrid = generateUniqueCredentialId(6);
+      expect(hybrid).to.match(new RegExp(`^TC-${year}-00006-[A-F0-9]{12}$`));
+
+      const offline = generateUniqueCredentialId();
+      expect(offline).to.match(new RegExp(`^TC-${year}-[A-F0-9]{16}$`));
+
+      const generated = new Set();
+      for (let i = 0; i < 200; i++) {
+        generated.add(generateUniqueCredentialId(6));
+      }
+      expect(generated.size).to.equal(200);
+    });
+  });
 });

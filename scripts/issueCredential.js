@@ -32,7 +32,8 @@ async function main() {
   // Pass student address, enrollment number, and optional credential ID via CLI args
   const studentAddress = process.argv[2] || issuer.address;
   const enrollmentNumber = process.argv[3] || "REG-2026-0001";
-  const credentialId = process.argv[4] || generateUniqueCredentialId();
+  const nextSeq = Number(await contract.getTotalCredentials());
+  const credentialId = process.argv[4] || generateUniqueCredentialId(nextSeq);
 
   console.log("👨‍🎓 Soulbound Holder:", studentAddress);
   console.log("🪪 Enrollment No.:", enrollmentNumber);

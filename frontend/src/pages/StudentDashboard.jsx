@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import { 
   GraduationCap, 
   Award, 
@@ -221,20 +222,10 @@ const StudentDashboard = () => {
               />
             </div>
 
-            <button 
-              onClick={account ? disconnectWallet : connectWallet} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>Connect</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect"
+              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
 
             {/* Mobile Hamburger Button */}
             <button
@@ -401,7 +392,7 @@ const StudentDashboard = () => {
                     type="button"
                     onClick={handleUnlockAll}
                     disabled={decrypting || !signer}
-                    className="w-full h-[42px] px-4 rounded-xl bg-[#513582] hover:bg-[#41276b] disabled:opacity-50 text-white text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+                    className="w-full h-[42px] px-4 rounded-[12px] bg-[#513582] hover:bg-[#41276b] disabled:opacity-50 text-white text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
                   >
                     <Unlock className="w-3.5 h-3.5" />
                     <span>
@@ -416,7 +407,7 @@ const StudentDashboard = () => {
 
             {/* Selected Credential Identity Binding Strip */}
             {activeCred && (
-              <div className="w-full rounded-2xl px-4 py-3 bg-white/40 border border-white/75 backdrop-blur-md flex flex-col gap-1.5 text-[11px]">
+              <div className="w-full rounded-[14px] px-4 py-3 bg-white/40 border border-white/75 backdrop-blur-md flex flex-col gap-1.5 text-[11px]">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-['Inter'] text-[#756F80]">Credential ID</span>
                   <span className="font-['IBM_Plex_Mono'] font-semibold text-[#513582]">{displayCredentialId}</span>
@@ -445,7 +436,7 @@ const StudentDashboard = () => {
               <button
                 type="button"
                 onClick={() => navigate('/public-verify')}
-                className="flex-1 min-w-[130px] h-[46px] px-3.5 rounded-xl bg-white/40 hover:bg-white/60 border border-white/70 backdrop-blur-md text-[12px] font-['Inter'] font-medium text-[#292333] flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[130px] h-[46px] px-3.5 rounded-[12px] bg-white/40 hover:bg-white/60 border border-white/70 backdrop-blur-md text-[12px] font-['Inter'] font-medium text-[#292333] flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
               >
                 <Search className="w-3.5 h-3.5 text-[#7053AD]" />
                 <span>Verify</span>
@@ -456,7 +447,7 @@ const StudentDashboard = () => {
                   <button
                     type="button"
                     onClick={() => navigate(`/public-verify?tokenId=${activeCred.tokenId}`)}
-                    className="flex-1 min-w-[130px] h-[46px] px-3.5 rounded-xl bg-[#513582] hover:bg-[#41276b] text-white text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                    className="flex-1 min-w-[130px] h-[46px] px-3.5 rounded-[12px] bg-[#513582] hover:bg-[#41276b] text-white text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                   >
                     <span>Public Proof</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -466,7 +457,7 @@ const StudentDashboard = () => {
                     onClick={handleDownloadPdf}
                     disabled={activeCred.revoked || activeIsLocked || activeIsUnavailable || downloadingPdf}
                     title={activeIsLocked ? 'Unlock encrypted credential first to export PDF' : 'Download A4 PDF Certificate'}
-                    className="h-[46px] px-3.5 rounded-xl bg-white/55 hover:bg-white/80 disabled:opacity-45 disabled:cursor-not-allowed border border-white/80 text-[#292333] text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                    className="h-[46px] px-3.5 rounded-[12px] bg-white/55 hover:bg-white/80 disabled:opacity-45 disabled:cursor-not-allowed border border-white/80 text-[#292333] text-[12px] font-['Inter'] font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5 text-[#513582]" />
                     <span>{downloadingPdf ? 'PDF...' : 'PDF'}</span>

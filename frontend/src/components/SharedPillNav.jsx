@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from './SettingsDropdown';
+import WalletConnectButton from './WalletConnectButton';
 
 const SharedPillNav = ({ variant = 'dark' }) => {
   const navigate = useNavigate();
@@ -63,24 +64,14 @@ const SharedPillNav = ({ variant = 'dark' }) => {
             iconSize={20}
           />
 
-          <button 
-            onClick={account ? disconnectWallet : connectWallet} 
-            title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-            className={`h-[48px] px-[20px] text-[14px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
-              isLight 
-                ? (account ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-md' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md')
-                : (account ? 'bg-white text-[#0A0A0A] hover:bg-white/90 shadow-md' : 'bg-white text-[#0A0A0A] hover:bg-white/90')
+          <WalletConnectButton
+            disconnectedLabel="Connect Wallet"
+            className={`h-[48px] px-[20px] text-[14px] font-[500] rounded-full hover:scale-105 active:scale-95 ${
+              isLight
+                ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-md'
+                : 'bg-white text-[#0A0A0A] hover:bg-white/90 shadow-md'
             }`}
-          >
-            {account ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Connected</span>
-              </>
-            ) : (
-              <span>Connect Wallet</span>
-            )}
-          </button>
+          />
         </div>
       </div>
     </div>

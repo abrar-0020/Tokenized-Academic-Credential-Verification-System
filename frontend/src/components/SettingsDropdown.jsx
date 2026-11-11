@@ -1,8 +1,31 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings, LogOut, Copy, Check, Shield, Globe, Wallet } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Settings, LogOut, Copy, Check, Shield, Globe, Wallet, ExternalLink } from 'lucide-react';
 import { formatAddress } from '../utils/helpers';
+import { useWeb3 } from '../context/Web3Context';
 
-const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet, disconnectWallet, loading, error, buttonClassName, iconSize }) => {
+const SettingsDropdown = ({
+  account: accountProp,
+  isAdmin: isAdminProp,
+  isIssuer: isIssuerProp,
+  networkId: networkIdProp,
+  connectWallet: connectWalletProp,
+  disconnectWallet: disconnectWalletProp,
+  loading: loadingProp,
+  error: errorProp,
+  buttonClassName,
+  iconSize,
+}) => {
+  const web3 = useWeb3();
+  const account = accountProp !== undefined ? accountProp : web3.account;
+  const isAdmin = isAdminProp !== undefined ? isAdminProp : web3.isAdmin;
+  const isIssuer = isIssuerProp !== undefined ? isIssuerProp : web3.isIssuer;
+  const networkId = networkIdProp !== undefined ? networkIdProp : web3.networkId;
+  const connectWallet = connectWalletProp || web3.connectWallet;
+  const disconnectWallet = disconnectWalletProp || web3.disconnectWallet;
+  const loading = loadingProp !== undefined ? loadingProp : web3.loading;
+  const error = errorProp !== undefined ? errorProp : web3.error;
+  const { metaMaskMissing, hasMetaMask } = web3;
   const [showSettings, setShowSettings] = useState(false);
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
@@ -206,16 +229,43 @@ const SettingsDropdown = ({ account, isAdmin, isIssuer, networkId, connectWallet
               
               {/* Connect Button - only show if not connected */}
               {!account && (
-                <button
-                  onClick={() => {
-                    connectWallet();
-                    setShowSettings(false);
-                  }}
-                  disabled={loading}
-                  className="w-full bg-[#2D264B] hover:bg-[#3C315B] text-white py-2.5 px-3 rounded-[14px] font-semibold text-xs transition-all duration-200 disabled:opacity-50 shadow-sm cursor-pointer"
-                >
-                  {loading ? 'Connecting...' : 'Connect Wallet'}
-                </button>
+                <div className="space-y-2">
+                  {metaMaskMissing ? (
+                    <a
+                      href="https://metamask.io/download/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-1.5 bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] py-2.5 px-3 rounded-[14px] font-semibold text-[12px] transition-all duration-200 shadow-sm text-center"
+                    >
+                      <span>MetaMask not found — install MetaMask</span>
+                      <ExternalLink className="w-3.5 h-3.5 flex-none" />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        connectWallet(false);
+                        if (hasMetaMask) {
+                          setShowSettings(false);
+                        }
+                      }}
+                      disabled={loading}
+                      className="w-full bg-[#2D264B] hover:bg-[#3C315B] text-white py-2.5 px-3 rounded-[14px] font-semibold text-[13px] transition-all duration-200 disabled:opacity-50 shadow-sm cursor-pointer"
+                    >
+                      {loading ? 'Connecting...' : 'Connect Wallet'}
+                    </button>
+                  )}
+                  <p className="text-[11.5px] leading-[1.45] text-[#5B5374] px-1">
+                    Public verification needs no wallet — issuing credentials requires MetaMask.{' '}
+                    <Link
+                      to="/public-verify"
+                      onClick={() => setShowSettings(false)}
+                      className="font-semibold text-[#5B21B6] hover:underline"
+                    >
+                      Verify publicly →
+                    </Link>
+                  </p>
+                </div>
               )}
             </div>
           </div>

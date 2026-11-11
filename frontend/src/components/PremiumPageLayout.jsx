@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from './SettingsDropdown';
-import { ChevronDown, ArrowRight } from 'lucide-react';
+import WalletConnectButton from './WalletConnectButton';
 import Footer from './Footer';
 
 const PremiumPageLayout = ({ title, subtitle, badge, children }) => {
@@ -71,9 +71,11 @@ const PremiumPageLayout = ({ title, subtitle, badge, children }) => {
             />
 
             {!account && (
-              <button onClick={connectWallet} className="h-[48px] px-[24px] text-[14px] font-[500] rounded-full flex items-center transition-all duration-300 hover:scale-105 active:scale-95 bg-white text-[#0A0A0A] hover:bg-white/90">
-                Connect Wallet
-              </button>
+              <WalletConnectButton
+                disconnectedLabel="Connect Wallet"
+                showStatusDot={false}
+                className="h-[48px] px-[24px] text-[14px] font-[500] rounded-full hover:scale-105 active:scale-95 bg-white text-[#0A0A0A] hover:bg-white/90"
+              />
             )}
           </div>
         </div>

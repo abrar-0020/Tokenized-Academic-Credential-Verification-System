@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import { 
   ArrowRight, 
   ScanLine, 
@@ -14,13 +15,18 @@ import {
   X
 } from 'lucide-react';
 import { isValidAddress } from '../utils/helpers';
-import { issueCredential as issueCredentialAction, generateUniqueCredentialId } from '../logic';
+import {
+  issueCredential as issueCredentialAction,
+  generateUniqueCredentialId,
+  generateNextHybridCredentialId
+} from '../logic';
 
 const IssueCredential = () => {
   const navigate = useNavigate();
   const { account, contract, isIssuer, isAdmin, networkId, connectWallet, disconnectWallet, loading: web3Loading, error: web3Error } = useWeb3();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const credentialIdManuallyEdited = useRef(false);
   const [formData, setFormData] = useState(() => ({
     studentName: '',
     enrollmentNumber: '',
@@ -43,17 +49,36 @@ const IssueCredential = () => {
   const [payloadDigest, setPayloadDigest] = useState(null);
   const [consentAccepted, setConsentAccepted] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    if (contract && !credentialIdManuallyEdited.current && !issuedTokenId) {
+      void generateNextHybridCredentialId(contract).then((nextId) => {
+        if (active && !credentialIdManuallyEdited.current) {
+          setFormData((prev) => ({ ...prev, credentialId: nextId }));
+        }
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [contract, issuedTokenId]);
+
   const handleChange = (e) => {
+    if (e.target.name === 'credentialId') {
+      credentialIdManuallyEdited.current = true;
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleRegenerateId = () => {
+  const handleRegenerateId = async () => {
+    credentialIdManuallyEdited.current = false;
+    const nextId = await generateNextHybridCredentialId(contract);
     setFormData((prev) => ({
       ...prev,
-      credentialId: generateUniqueCredentialId(),
+      credentialId: nextId,
     }));
   };
 
@@ -220,20 +245,10 @@ const IssueCredential = () => {
               />
             </div>
 
-            <button 
-              onClick={account ? disconnectWallet : () => connectWallet(false)} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <span>Connect</span>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect"
+              className="h-[44px] px-[16px] sm:h-[56px] sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
 
             {/* Mobile Hamburger Button */}
             <button
@@ -585,20 +600,20 @@ const IssueCredential = () => {
               <div className="w-full h-[1px] bg-[rgba(125,101,154,0.14)]" />
 
               {/* Privacy & Consent Notice */}
-              <div className="p-4 rounded-xl bg-purple-950/5 border border-[#7053AD]/25 flex flex-col gap-3 text-[12px] text-[#513582]">
+              <div className="p-4 sm:p-5 rounded-[14px] bg-white/45 border border-[#7053AD]/25 flex flex-col gap-3.5 text-[12px] text-[#513582] shadow-xs">
                 <div className="flex items-start gap-2.5">
-                  <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Privacy &amp; Encryption Policy:</strong> Student name, enrollment number, degree, grade, field of study, and institution are encrypted via <strong>AES-256-GCM</strong> server-side before pinning to IPFS through <code>/api/pinata</code>. Plaintext PII is never written to IPFS or bundled in browser code.
+                  <Lock className="w-4 h-4 shrink-0 mt-0.5 text-[#513582]" />
+                  <span className="leading-relaxed">
+                    <strong>Privacy &amp; Encryption Policy:</strong> Student name, enrollment number, degree, grade, field of study, and institution are encrypted via <strong>AES-256-GCM</strong> server-side before pinning to IPFS through <code className="font-['IBM_Plex_Mono'] text-[11px] bg-[#513582]/10 px-1.5 py-0.5 rounded-[4px]">/api/pinata</code>. Plaintext PII is never written to IPFS or bundled in browser code.
                   </span>
                 </div>
 
-                <label className="flex items-start gap-2.5 cursor-pointer select-none pt-1 border-t border-[#7053AD]/15 text-[#292333]">
+                <label className="flex items-start gap-2.5 cursor-pointer select-none pt-3 border-t border-[#7053AD]/15 text-[#292333]">
                   <input
                     type="checkbox"
                     checked={consentAccepted}
                     onChange={(e) => setConsentAccepted(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 accent-[#513582] rounded cursor-pointer shrink-0"
+                    className="mt-0.5 w-4 h-4 accent-[#513582] rounded-[4px] cursor-pointer shrink-0"
                   />
                   <span className="leading-relaxed">
                     I confirm institutional authorization and student consent to mint this non-transferable Soulbound credential to the holder&apos;s wallet. I understand the on-chain token record and encrypted IPFS pointer are permanent and cannot be deleted later.
@@ -616,7 +631,7 @@ const IssueCredential = () => {
                   <button
                     type="button"
                     onClick={handleSaveDraft}
-                    className="h-[50px] bg-white/30 hover:bg-white/50 border border-white/70 rounded-[10px] font-['Inter'] font-semibold text-[14px] text-[#292333] transition-all"
+                    className="h-[52px] bg-white/40 hover:bg-white/60 border border-white/75 rounded-[12px] font-['Inter'] font-semibold text-[14px] text-[#292333] transition-all cursor-pointer"
                   >
                     Save Draft
                   </button>
@@ -625,7 +640,7 @@ const IssueCredential = () => {
                     type="button"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="h-[50px] bg-[#513582] hover:bg-[#432a6e] text-white rounded-[10px] font-['Inter'] font-semibold text-[14px] flex items-center justify-center gap-2.5 shadow-[0px_16px_28px_rgba(68,50,84,0.13)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="h-[52px] bg-gradient-to-r from-[#513582] to-[#110B1C] border border-[#1A1A1A] text-white rounded-[12px] font-['Inter'] font-semibold text-[15px] flex items-center justify-center gap-2.5 shadow-[0px_12px_24px_rgba(68,50,84,0.18)] hover:shadow-[0px_16px_32px_rgba(68,50,84,0.25)] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <span>{loading ? 'Encrypting & Signing...' : 'Sign & Issue Credential'}</span>
                     <ArrowRight className="w-4 h-4" />

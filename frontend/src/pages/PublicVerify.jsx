@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import SettingsDropdown from '../components/SettingsDropdown';
+import WalletConnectButton from '../components/WalletConnectButton';
 import {
   Link2,
   ExternalLink,
@@ -19,6 +20,7 @@ import {
 import { formatDate } from '../utils/helpers';
 import {
   verifyCredentialPublic,
+  parseCredentialLookupInput,
   ipfsToHttp,
   decryptCredentialPayload
 } from '../logic';
@@ -39,6 +41,7 @@ const PublicVerify = () => {
     isAdmin,
     isIssuer,
     networkId,
+    metaMaskMissing,
     loading: web3Loading,
     error: web3Error
   } = useWeb3();
@@ -100,14 +103,15 @@ const PublicVerify = () => {
 
   const verifyTokenId = async (id) => {
     const trimmed = String(id ?? '').trim();
+    const parsed = parseCredentialLookupInput(trimmed);
 
-    if (trimmed === '') {
+    if (parsed.kind === 'empty') {
       setValidationError('Please enter a token ID');
       return;
     }
 
-    if (!/^\d+$/.test(trimmed)) {
-      setValidationError('Please enter a valid non-negative numeric token ID');
+    if (parsed.kind === 'invalid') {
+      setValidationError('Please enter a valid numeric token ID or Credential ID (e.g. 6 or TC-2026-...)');
       return;
     }
 
@@ -123,12 +127,15 @@ const PublicVerify = () => {
       const result = await verifyCredentialPublic(trimmed, PUBLIC_RPC);
       setCredential(result.credential);
       setMetadata(result.metadata);
-      setShareUrl(`${window.location.origin}/public-verify?tokenId=${trimmed}`);
+      const resolvedTid = result?.credential?.tokenId !== undefined
+        ? result.credential.tokenId.toString()
+        : trimmed;
+      setShareUrl(`${window.location.origin}/public-verify?tokenId=${encodeURIComponent(resolvedTid)}`);
     } catch (err) {
       const msg = err?.reason || err?.message || 'Failed to verify credential';
       if (msg.includes('Credential does not exist') || msg.includes('ERC721NonexistentToken')) {
         setErrorTitle('Credential not found');
-        setLookupError('No credential matching that token ID exists in the on-chain registry.');
+        setLookupError('No credential matching that Token ID or Credential ID exists in the on-chain registry.');
       } else {
         setErrorTitle('Verification lookup failed');
         setLookupError(msg);
@@ -363,9 +370,18 @@ const PublicVerify = () => {
                     <h1 className="font-['Cormorant_Garamond'] font-medium text-[30px] sm:text-[33px] leading-[1.1] text-[#292333] mb-0.5 text-center max-w-[520px] mx-auto text-balance">
                       {effectiveMeta?.degree || 'Degree Program'}
                     </h1>
-                    <p className="font-['Cormorant_Garamond'] font-normal text-[18px] sm:text-[20px] text-[#5B5565] mb-1 text-center max-w-[500px] mx-auto text-balance">
-                      in {effectiveMeta?.branch || effectiveMeta?.fieldOfStudy || 'Specialization / Branch'}
-                    </p>
+                    {(() => {
+                      const rawDeg = String(effectiveMeta?.degree || '').trim();
+                      const rawProg = String(effectiveMeta?.branch || effectiveMeta?.fieldOfStudy || '').trim();
+                      const showProg = rawProg
+                        ? rawProg.toLowerCase() !== rawDeg.toLowerCase() && !rawDeg.toLowerCase().includes(rawProg.toLowerCase())
+                        : !isResult;
+                      return showProg ? (
+                        <p className="font-['Cormorant_Garamond'] font-normal text-[18px] sm:text-[20px] text-[#5B5565] mb-1 text-center max-w-[500px] mx-auto text-balance">
+                          in {rawProg || 'Specialization / Branch'}
+                        </p>
+                      ) : null;
+                    })()}
                     <p className="font-['Cormorant_Garamond'] text-[13px] text-[#756F80] mb-0.5 text-center">
                       is hereby conferred upon
                     </p>
@@ -543,23 +559,10 @@ const PublicVerify = () => {
               />
             </div>
 
-            <button 
-              onClick={account ? disconnectWallet : () => connectWallet(false)} 
-              title={account ? `Connected: ${account} (Click to disconnect)` : 'Connect Wallet'}
-              className="h-[44px] sm:h-[56px] px-3 sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full flex items-center gap-2 sm:gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
-            >
-              {account ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Connected</span>
-                </>
-              ) : (
-                <>
-                  <span className="hidden sm:inline">Connect Wallet</span>
-                  <span className="sm:hidden">Connect</span>
-                </>
-              )}
-            </button>
+            <WalletConnectButton
+              disconnectedLabel="Connect Wallet"
+              className="h-[44px] sm:h-[56px] px-3 sm:px-[24px] text-[13px] sm:text-[15px] font-[500] rounded-full hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(176,150,250,0.2)] bg-[#2D264B] text-white hover:bg-[#3C315B]"
+            />
 
             <button
               type="button"
@@ -649,14 +652,14 @@ const PublicVerify = () => {
                 {/* Verification form */}
                 <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-[438px] gap-3 mt-2 sm:mt-4">
                   <div className="flex flex-col gap-2 w-full">
-                    <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Token ID</label>
+                    <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Token ID or Credential ID</label>
                     <div className={`flex items-center gap-3 px-4 sm:px-5 py-[2px] h-[52px] sm:h-[56px] bg-white rounded-[12px] transition-all shadow-sm group ${validationError ? 'border-2 border-[#D92D20] ring-4 ring-[#D92D20]/10' : 'border border-[#E4DFE9] focus-within:border-[#7053AD] focus-within:ring-4 focus-within:ring-[#7053AD]/10'}`}>
                       <div className={validationError ? 'text-[#D92D20]' : 'text-[#9C95A5] group-focus-within:text-[#7053AD] transition-colors'}>
                         <Icons.Fingerprint />
                       </div>
                       <input
                         className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[14px] sm:text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
-                        placeholder="e.g. 0 or 1 (Token ID)"
+                        placeholder="e.g. 6 or TC-2026-00006-..."
                         type="text"
                         value={tokenId}
                         onChange={(e) => {
@@ -672,7 +675,7 @@ const PublicVerify = () => {
                         <span>{validationError}</span>
                       </p>
                     ) : (
-                      <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#756F80]">Find this token ID on your certificate or QR verification link.</p>
+                      <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#756F80]">Enter a Token ID (0, 6…) or Unique Credential ID (TC-…) from the certificate or QR link.</p>
                     )}
                   </div>
 
@@ -689,7 +692,7 @@ const PublicVerify = () => {
                 </form>
 
                 <p className="font-['Inter'] text-[12px] sm:text-[13px] text-[#756F80] mt-2 sm:mt-4 pt-3 sm:pt-4 border-t border-[#E4DFE9]/50 w-full max-w-[438px]">
-                  Free to verify · Soulbound wallet binding checked on-chain
+                  No wallet needed for public verification · Issuing credentials &amp; unlocking encrypted records require MetaMask
                 </p>
               </div>
 
@@ -765,13 +768,13 @@ const PublicVerify = () => {
                 </p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full mt-2 max-w-[438px]">
-                  <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Token ID</label>
+                  <label className="font-['Inter'] font-semibold text-[14px] sm:text-[15px] text-[#292333]">Token ID or Credential ID</label>
                   <div className="flex items-center gap-3 px-4 sm:px-5 py-[2px] h-[52px] sm:h-[56px] bg-white border border-[#D92D20] rounded-[12px] focus-within:ring-4 focus-within:ring-[#D92D20]/10 transition-all shadow-sm group">
                     <div className="text-[#D92D20]"><Icons.Fingerprint /></div>
                     <input
                       className="flex-1 bg-transparent border-none outline-none font-['IBM_Plex_Mono'] text-[14px] sm:text-[15px] text-[#292333] placeholder:text-[#9C95A5] h-full w-full"
                       type="text"
-                      placeholder="e.g. 0 or 1"
+                      placeholder="e.g. 6 or TC-2026-00006-..."
                       value={tokenId}
                       onChange={(e) => {
                         setTokenId(e.target.value);
@@ -801,7 +804,7 @@ const PublicVerify = () => {
                 <div className="flex flex-col items-start p-5 sm:p-[24px] gap-[16px] w-full max-w-[438px] bg-[rgba(255,255,255,0.3)] border border-[#E4DFE9] rounded-[16px] mt-2 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
                   <h3 className="font-['Inter'] font-semibold text-[15px] sm:text-[16px] text-[#292333]">Troubleshooting tips</h3>
                   <ul className="list-disc pl-5 font-['Inter'] text-[13px] sm:text-[14px] leading-[160%] text-[#756F80] flex flex-col gap-2">
-                    <li>Ensure you entered a numeric token ID (starting from 0).</li>
+                    <li>Ensure you entered a numeric Token ID (starting from 0) or a valid `TC-...` Credential ID.</li>
                     <li>Confirm you are checking against Ethereum Sepolia testnet.</li>
                     <li>Contact the issuing institution if the record was issued recently.</li>
                   </ul>
@@ -906,7 +909,7 @@ const PublicVerify = () => {
                   </div>
 
                   {/* Holder Wallet Binding Row */}
-                  <div className="w-full p-3 rounded-xl bg-white/50 border border-white/80 flex flex-col gap-1">
+                  <div className="w-full p-3 rounded-[12px] bg-white/50 border border-white/80 flex flex-col gap-1">
                     <div className="flex items-center justify-between text-[11px] text-[#756F80]">
                       <span className="font-medium flex items-center gap-1.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
@@ -951,7 +954,7 @@ const PublicVerify = () => {
 
                   {/* Encrypted vs Unlocked Academic Fields */}
                   {isLockedEncrypted ? (
-                    <div className="w-full p-4 rounded-xl bg-[#513582]/8 border border-[#513582]/20 flex flex-col gap-3">
+                    <div className="w-full p-4 rounded-[12px] bg-[#513582]/8 border border-[#513582]/20 flex flex-col gap-3">
                       <div className="flex items-start gap-2.5 text-[12px] text-[#292333]">
                         <Lock className="w-4 h-4 text-[#513582] shrink-0 mt-0.5" />
                         <div className="flex flex-col gap-1">
@@ -968,24 +971,41 @@ const PublicVerify = () => {
                         </div>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={handleUnlockEncrypted}
-                        disabled={decrypting || web3Loading}
-                        className="w-full h-[44px] rounded-xl bg-[#2D264B] hover:bg-[#3C315B] text-white text-[13px] font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-                      >
-                        {account ? <Unlock className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
-                        <span>
-                          {decrypting
-                            ? 'Verifying Wallet Signature...'
-                            : account
-                              ? 'Unlock Encrypted Details'
-                              : 'Connect Holder Wallet to Unlock'}
-                        </span>
-                      </button>
+                      {!account && metaMaskMissing ? (
+                        <div className="space-y-2">
+                          <a
+                            href="https://metamask.io/download/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full min-h-[44px] px-4 py-2 rounded-[12px] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-[13px] font-semibold flex items-center justify-center gap-2 transition-all text-center"
+                          >
+                            <span>MetaMask not found — install MetaMask</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                          </a>
+                          <p className="font-['Inter'] text-[11.5px] text-[#5B5565] leading-[1.45]">
+                            Public verification above works without a wallet. MetaMask is required to sign &amp; unlock encrypted records or issue credentials.
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleUnlockEncrypted}
+                          disabled={decrypting || web3Loading}
+                          className="w-full h-[44px] rounded-[12px] bg-[#2D264B] hover:bg-[#3C315B] text-white text-[13px] font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+                        >
+                          {account ? <Unlock className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
+                          <span>
+                            {decrypting
+                              ? 'Verifying Wallet Signature...'
+                              : account
+                                ? 'Unlock Encrypted Details'
+                                : 'Connect Holder Wallet to Unlock'}
+                          </span>
+                        </button>
+                      )}
                     </div>
                   ) : isMetadataUnavailable ? (
-                    <div className="w-full p-3.5 rounded-xl bg-amber-500/10 border border-amber-600/25 text-[12px] text-amber-900">
+                    <div className="w-full p-3.5 rounded-[12px] bg-amber-500/10 border border-amber-600/25 text-[12px] text-amber-900">
                       IPFS metadata is temporarily unreachable from public gateways. On-chain token validity and Soulbound owner wallet remain verified above.
                     </div>
                   ) : (
@@ -1058,7 +1078,7 @@ const PublicVerify = () => {
                   className="w-full max-w-[438px] flex items-center justify-between p-[14px_18px] sm:p-[18px_24px] bg-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.38)] border border-white/75 rounded-[16px] backdrop-blur-md shadow-sm transition-all group cursor-pointer text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/60 border border-[#E4DFE9] flex items-center justify-center text-[#513582] group-hover:scale-105 transition-transform shrink-0 shadow-sm">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-white/60 border border-[#E4DFE9] flex items-center justify-center text-[#513582] group-hover:scale-105 transition-transform shrink-0 shadow-sm">
                       <Link2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <span className="font-['Inter'] font-semibold text-[15px] sm:text-[16px] text-[#292333] group-hover:text-[#513582] transition-colors">
@@ -1119,18 +1139,31 @@ const PublicVerify = () => {
                         <Lock className="w-4 h-4 text-[#8C827A]" />
                       </button>
                     ) : isLockedEncrypted || isMetadataUnavailable ? (
-                      <button
-                        id="download-certificate-button"
-                        type="button"
-                        onClick={isLockedEncrypted ? handleUnlockEncrypted : undefined}
-                        disabled={!isLockedEncrypted || decrypting}
-                        className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-[#2D264B] hover:bg-[#3C315B] text-white rounded-[10px] transition-all cursor-pointer disabled:opacity-60"
-                      >
-                        <Lock className="w-4 h-4" />
-                        <span className="font-['Inter'] font-semibold text-[14px]">
-                          {isMetadataUnavailable ? 'PDF Unavailable (Metadata Offline)' : 'Unlock with Wallet to Download PDF'}
-                        </span>
-                      </button>
+                      !account && isLockedEncrypted && metaMaskMissing ? (
+                        <a
+                          id="download-certificate-button"
+                          href="https://metamask.io/download/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-row justify-center items-center px-[20px] gap-[8px] flex-1 h-[50px] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] rounded-[10px] transition-all text-[13px] font-semibold"
+                        >
+                          <span>MetaMask not found — install MetaMask</span>
+                          <ExternalLink className="w-4 h-4 shrink-0" />
+                        </a>
+                      ) : (
+                        <button
+                          id="download-certificate-button"
+                          type="button"
+                          onClick={isLockedEncrypted ? handleUnlockEncrypted : undefined}
+                          disabled={!isLockedEncrypted || decrypting}
+                          className="flex flex-row justify-center items-center px-[20px] gap-[10px] flex-1 h-[50px] bg-[#2D264B] hover:bg-[#3C315B] text-white rounded-[10px] transition-all cursor-pointer disabled:opacity-60"
+                        >
+                          <Lock className="w-4 h-4" />
+                          <span className="font-['Inter'] font-semibold text-[14px]">
+                            {isMetadataUnavailable ? 'PDF Unavailable (Metadata Offline)' : 'Unlock with Wallet to Download PDF'}
+                          </span>
+                        </button>
+                      )
                     ) : (
                       <button 
                         id="download-certificate-button"
@@ -1179,7 +1212,7 @@ const PublicVerify = () => {
           >
             <div className="flex items-center justify-between border-b border-[#E4DFE9]/80 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/70 border border-[#E4DFE9] flex items-center justify-center text-[#513582] shadow-sm">
+                <div className="w-10 h-10 rounded-[12px] bg-white/70 border border-[#E4DFE9] flex items-center justify-center text-[#513582] shadow-sm">
                   <Link2 className="w-5 h-5" />
                 </div>
                 <div>
