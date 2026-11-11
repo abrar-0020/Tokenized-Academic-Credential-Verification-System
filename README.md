@@ -1,37 +1,28 @@
-#  Tokenized Academic Credential Verification System
+# TokCred — Tokenized Academic Credential Verification System
 
-A production-ready, secure, and decentralized blockchain-based system for issuing, managing, and verifying academic credentials using Soulbound NFTs (non-transferable tokens).
+A production-ready, privacy-preserving, decentralized system for issuing, managing, and verifying academic credentials as non-transferable **Soulbound ERC-721 NFTs** on Ethereum Sepolia.
 
 ![Solidity](https://img.shields.io/badge/Solidity-0.8.20-blue)
 ![Hardhat](https://img.shields.io/badge/Hardhat-2.19.5-yellow)
 ![React](https://img.shields.io/badge/React-18.2.0-cyan)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-##  Live Deployment
+## Live Deployment
 
- Production Site: [https://www.deoxys.in/](https://www.deoxys.in/) 
- 
- Smart Contract: [0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1](https://sepolia.etherscan.io/address/0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1) 
- 
- Network:Sepolia Testnet (Chain ID: 11155111)
- 
- Status:  Live and Production-Ready
+- **Production Site:** [https://www.deoxys.in/](https://www.deoxys.in/)
+- **Smart Contract (`AcademicCredential`):** [0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1](https://sepolia.etherscan.io/address/0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1)
+- **Network:** Ethereum Sepolia Testnet (Chain ID: `11155111`)
+- **Repository:** [abrar-0020/Tokenized-Academic-Credential-Verification-System](https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System)
 
+### Accessing the Application
+- **Public Verification (`/public-verify`):** **No wallet required.** Anyone (employers, HR systems, registrars) can verify credentials immediately by numeric **Token ID**, **Unique Credential ID (`TC-...`)**, or QR code link.
+- **Issuing & Decrypting (`/institutions`, `/issue`, `/dashboard`, `/student-dashboard`):** Requires **MetaMask** connected to **Sepolia Testnet** (`ISSUER_ROLE` / `DEFAULT_ADMIN_ROLE` for issuing/revoking, or the Soulbound holder wallet to unlock encrypted v2 records). If MetaMask is missing, Connect buttons surface a direct **MetaMask not found — install MetaMask** action linking to `https://metamask.io/download/`.
 
-### Access the Live Application:
-1. Visit https://www.deoxys.in/
-2. Install MetaMask browser extension
-3. Switch to Sepolia test network
-4. Connect your wallet and start using the platform!
-
-**For Students:** Get your academic credentials verified on the blockchain  
-**For Institutions:** Issue tamper-proof, verifiable credentials to students
-
-##  Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Architecture](#architecture)
+- [Privacy & Identity Architecture](#privacy--identity-architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
@@ -49,636 +40,314 @@ A production-ready, secure, and decentralized blockchain-based system for issuin
 
 ---
 
-##  Quick Start
+## Documentation Guides
 
-** New to this project? Start here:**
-
-1. **Installation:** See **[INSTALL.md](INSTALL.md)** for one-command installation (like `pip install -r requirements.txt`)
-2. **Setup Checklist:** See **[SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)** for step-by-step setup tracking
-3. **Dependencies:** See **[requirements.txt](requirements.txt)** for complete list of all dependencies
-4. **Sepolia Deployment:** See **[SEPOLIA_DEPLOYMENT.md](SEPOLIA_DEPLOYMENT.md)** for complete deployment guide to testnet
-5. **Production Deployment:** See **[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)** for deploying to production with custom domain
+1. **Installation:** See [`INSTALL.md`](INSTALL.md)
+2. **Dependencies Reference:** See [`requirements.txt`](requirements.txt)
+3. **Sepolia Deployment:** See [`SEPOLIA_DEPLOYMENT.md`](SEPOLIA_DEPLOYMENT.md)
+4. **Production & Vercel Deployment:** See [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md)
 
 ---
 
-##  How to Download All Dependencies at Once
+## Overview
 
-Users can install **all dependencies** (backend + frontend) with a single command, just like `pip install -r requirements.txt` in Python projects.
+TokCred enables accredited educational institutions to mint tamper-proof, verifiable academic degrees and certificates on Ethereum Sepolia while keeping student PII off plaintext public IPFS. Each minted NFT is **Soulbound** (`_update` blocks transfers between wallets), permanently binding the credential to the recipient graduate's wallet (`ownerOf(tokenId)`).
 
-### Method 1: Installation Scripts (Easiest) 
+### Key Capabilities
 
-**Windows (PowerShell):**
-```powershell
-# Clone repository
-git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
-cd Tokenized-Academic-Credential-Verification-System
+- **Zero-Plaintext Encrypted IPFS Envelopes (v2):** Sensitive student and academic attributes (`studentName`, `enrollmentNumber`, `degree`, `grade`, `fieldOfStudy`, `institution`) are encrypted server-side with **AES-256-GCM** via [`api/credential-crypto.js`](api/credential-crypto.js) before pinning through [`api/pinata.js`](api/pinata.js).
+- **Hybrid Sequential + High-Entropy Credential ID:** Generates collision-resistant IDs (`TC-<YEAR>-<6-digit-seq>-<12-hex-CSPRNG>`, with pre-mint duplicate checks against existing issued credentials) alongside legacy `TC-TOKEN-<id>` identifiers.
+- **Dual Public Lookup (`/public-verify`):** Verify credentials seamlessly using either the numeric **Token ID** (e.g., `4`) or the **Unique Credential ID** (e.g., `TC-TOKEN-2`, `TC-2026-...`), or scan a PDF certificate QR code.
+- **Professional Landscape Certificate PDFs:** Generates verifiable A4 landscape degree certificates ([`frontend/src/services/certificateGenerator.js`](frontend/src/services/certificateGenerator.js)) displaying institution name, recipient, enrollment/registration number, unique Credential ID, Soulbound holder wallet, verification QR code, and registrar/VC signatures.
+- **Wallet-Optional Verification:** Public verifiers and HR portals need zero wallet extensions and zero gas; issuing and decrypting encrypted v2 records authenticate via EIP-191 wallet signatures verified on-chain.
 
-# Run installation script
-.\install.ps1
-```
+---
 
-**Linux/Mac (Terminal):**
-```bash
-# Clone repository
-git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
-cd Tokenized-Academic-Credential-Verification-System
+## Features
 
-# Make script executable and run
-chmod +x install.sh
-./install.sh
-```
-
-This automatically installs both backend and frontend dependencies and verifies the installation!
-
-### Method 2: Using npm Command
-
-```bash
-# Clone repository
-git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
-cd Tokenized-Academic-Credential-Verification-System
-
-# Install all dependencies (one command)
-npm run install-all
-```
-
-### Method 3: Manual Installation
-
-```bash
-# Clone repository
-git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
-cd Tokenized-Academic-Credential-Verification-System
-
-# Install backend dependencies
-npm install
-
-# Install frontend dependencies
-cd frontend
-npm install
-cd ..
-```
-
-##  Overview
-
-This system enables educational institutions to issue tamper-proof, verifiable academic credentials as NFTs on the Ethereum blockchain. These credentials are **Soulbound** (non-transferable), ensuring they remain permanently tied to the recipient's wallet address.
-
-### Key Benefits
-
-- ✅ **Immutable & Tamper-Proof**: Once issued, credentials cannot be altered or forged
-- ✅ **Instant Verification**: Anyone can verify credentials in seconds without intermediaries
-- ✅ **Non-Transferable**: Soulbound tokens prevent credential trading or selling
-- ✅ **Global Accessibility**: Credentials accessible from anywhere in the world
-- ✅ **Cost-Effective**: Eliminates paperwork and manual verification processes
-- ✅ **Privacy-Preserving**: Students control who can view their credentials
-
-##  Features
-
-### For Institutions (Issuers)
-- Issue digital credentials as ERC-721 NFTs
-- Revoke credentials when necessary
-- Role-based access control
-- Batch processing support
-- IPFS metadata storage
+### For Institutions (`ISSUER_ROLE` / `DEFAULT_ADMIN_ROLE`)
+- Gated institutional routes (`/dashboard`, `/issue`, `/history`) protected by pure on-chain `ISSUER_ROLE` / `DEFAULT_ADMIN_ROLE` checks ([`IssuerRouteGuard.jsx`](frontend/src/components/IssuerRouteGuard.jsx))
+- Issue encrypted Soulbound credentials with live certificate preview before minting
+- Pre-mint duplicate check and automatic AES-256-GCM envelope creation via `/api/credential-crypto` + `/api/pinata`
+- Revoke compromised or erroneous credentials permanently on-chain
+- Download certificates and batch-decrypt records in institutional history
 
 ### For Students
-- Receive and own credentials permanently
-- View all credentials in a dashboard
-- Share verification links
-- Non-transferable ownership
+- Permanent non-transferable ownership bound to the graduate's Soulbound wallet
+- Student Dashboard (`/student-dashboard`) to inspect owned credentials and unlock encrypted details
+- Share verification URLs (`/public-verify?tokenId=<id>`) and verification QR codes
+- Export formatted A4 landscape PDF certificates
 
-### For Employers/Verifiers
-- Instant credential verification by Token ID
-- View complete credential details
-- Check revocation status
-- Access public verification portal
+### For Employers, HR Systems & Public Verifiers
+- **No wallet required** on `/public-verify` and `/verify`
+- Look up by **Token ID** or **Unique Credential ID (`TC-...`)**
+- Instant on-chain validation of token existence, issuer authorization, revocation status (`isRevoked`), and Soulbound ownership (`ownerOf`)
+- Direct read-only smart contract queries supported via any Sepolia RPC (`verifyCredential`, `isCredentialValid`, `ownerOf`) — see `/developers` and `/support`
 
-##  Architecture
+---
 
-```
-┌─────────────────┐      ┌──────────────────┐
-│   Institution   │──────│  Smart Contract  │
-│   (Issuer)      │      │   (Blockchain)   │
-└─────────────────┘      └──────────────────┘
-                              │
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-  ┌──────────┐          ┌──────────┐         ┌──────────┐
-  │ Student  │          │   IPFS   │         │ Employer │
-  │ Wallet   │          │ Metadata │         │ Verifier │
-  └──────────┘          └──────────┘         └──────────┘
-```
-
-### Data Flow
-
-1. **Issuance**: Institution uploads metadata to IPFS → Calls `issueCredential()` → NFT minted to student
-2. **Verification**: Verifier enters Token ID → Contract returns credential data → Metadata fetched from IPFS
-3. **Revocation**: Institution calls `revokeCredential()` → Status updated on-chain
-
-##  Tech Stack
-
-### Blockchain & Smart Contracts
-- **Solidity**: ^0.8.20
-- **Hardhat**: ^2.19.5
-- **OpenZeppelin**: ^5.0.1 (ERC721, AccessControl)
-- **Token Standard**: ERC-721 (Soulbound/Non-transferable)
-
-### Frontend
-- **Framework**: React 18.2 + Vite
-- **Web3 Library**: ethers.js v6
-- **Routing**: React Router DOM
-- **Styling**: Tailwind CSS
-- **Wallet**: MetaMask integration
-
-### Storage & Infrastructure
-- **Metadata Storage**: IPFS (Pinata)
-- **Networks**: Localhost (Hardhat) + Sepolia Testnet
-
-##  Project Structure
+## Privacy & Identity Architecture
 
 ```
-tokenized-academic-credentials/
+┌──────────────────┐   1. Encrypt PII (AES-256-GCM)    ┌───────────────────────────┐
+│   Institution    │ ────────────────────────────────▶ │  /api/credential-crypto   │
+│  (ISSUER_ROLE)   │                                   └─────────────┬─────────────┘
+└────────┬─────────┘                                                 │
+         │ 3. issueCredential(studentWallet, ipfs://...)             ▼ 2. Reject plaintext & pin v2 envelope
+         ▼                                             ┌───────────────────────────┐
+┌──────────────────┐                                   │  /api/pinata -> IPFS      │
+│ AcademicCredential│                                   └─────────────┬─────────────┘
+│  (Sepolia SBT)   │                                                 │
+└────────┬─────────┘                                                 ▼
+         │ 4a. Public verify (no wallet): status + non-PII    ┌──────────────────┐
+         └──────────────────────────────────────────────────▶ │  /public-verify  │
+           4b. Unlock v2 PII: wallet signature verified on    │  /student-       │
+               ownerOf / ISSUER_ROLE via /api/credential-crypto│  dashboard       │
+                                                              └──────────────────┘
+```
+
+1. **Issuance:** UI / CLI script computes a hybrid `credentialId`, checks duplicates, encrypts sensitive fields server-side (`AES-256-GCM` bound to `credentialId` + `studentAddress` + `enrollmentNumber`), pins only the encrypted v2 JSON envelope via `/api/pinata`, and mints the Soulbound ERC-721 token on Sepolia.
+2. **Public Verification (No Wallet Needed):** Anyone enters a Token ID or `TC-...` Credential ID on `/public-verify`. The app reads Sepolia on-chain state (`verifyCredential`, `isCredentialValid`, `ownerOf`) and fetches IPFS metadata. Legacy v1 records render full details directly; v2 encrypted records prove validity immediately without exposing student PII until unlocked.
+3. **Authorized Decryption:** The Soulbound holder (`ownerOf(tokenId)`) or an on-chain `ISSUER_ROLE`/`DEFAULT_ADMIN_ROLE` wallet signs a timestamped challenge (`nonce` + deadline replay protection) verified by `/api/credential-crypto` before decrypting.
+
+---
+
+## Tech Stack
+
+- **Smart Contracts:** Solidity `^0.8.20`, Hardhat `^2.19.5`, OpenZeppelin Contracts `^5.0.1` (`ERC721`, `ERC721URIStorage`, `AccessControl`)
+- **Frontend:** React `18.2`, Vite, Tailwind CSS, `ethers` v6, `jspdf`, `qrcode.react`
+- **Serverless API (`api/`):** Node.js Vercel Serverless Functions (`api/credential-crypto.js`, `api/pinata.js`) using AES-256-GCM (`node:crypto`) + Pinata JWT/Key proxy
+- **Storage & Networks:** IPFS (Pinata), Hardhat Localhost (`31337`), Ethereum Sepolia (`11155111`)
+
+---
+
+## Project Structure
+
+```
+DecntralizedAcademic-Credential-Verification-System/
+├── api/
+│   ├── credential-crypto.js          # AES-256-GCM encryption + EIP-191 wallet authorization
+│   └── pinata.js                     # Server-side Pinata proxy (rejects plaintext PII)
 ├── contracts/
-│   └── AcademicCredential.sol      # Main smart contract
+│   └── AcademicCredential.sol        # Soulbound ERC-721 + AccessControl smart contract
 ├── scripts/
-│   ├── deploy.js                   # Deployment script
-│   ├── uploadToIPFS.js             # IPFS upload helper
-│   └── issueCredential.js          # Example credential issuance
+│   ├── deploy.js                     # Hardhat deployment script
+│   ├── uploadToIPFS.js               # Encrypted v2 & IPFS pinning helper
+│   ├── issueCredential.js            # CLI credential issuance helper
+│   └── interact.js                   # Contract interaction script
+├── test/
+│   ├── AcademicCredential.test.js    # 18 smart contract unit tests
+│   └── PrivacyAndIdentity.test.js    # 13 encryption, Pinata, binding & hybrid ID tests
 ├── frontend/
 │   ├── src/
-│   │   ├── components/             # Reusable UI components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Loading.jsx
-│   │   │   ├── Alert.jsx
-│   │   │   └── CredentialCard.jsx
-│   │   ├── pages/                  # Application pages
-│   │   │   ├── Home.jsx
-│   │   │   ├── IssueCredential.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   └── VerifyCredential.jsx
-│   │   ├── context/                # React context
-│   │   │   └── Web3Context.jsx
-│   │   ├── config/                 # Configuration
-│   │   │   └── contract.js
-│   │   ├── utils/                  # Helper functions
-│   │   │   └── helpers.js
+│   │   ├── components/               # Navbar, Footer, SharedPillNav, WalletConnectButton, SettingsDropdown, IssuerRouteGuard, ...
+│   │   ├── config/                   # Contract ABI, addresses, Sepolia RPC config
+│   │   ├── context/                  # Web3Context & ThemeContext
+│   │   ├── pages/                    # Home, PublicVerify, VerifyCredential, IssueCredential, Dashboard, History,
+│   │   │                             # StudentDashboard, ForInstitutions, Features, Developers, Support, PrivacyPolicy, TermsOfService
+│   │   ├── services/                 # certificateGenerator.js (A4 landscape PDF + QR)
+│   │   ├── logic.js                  # Hybrid Credential IDs, dual lookup, encryption & Pinata clients
 │   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── package.json
-│   └── vite.config.js
+│   │   └── main.jsx
+│   ├── .env.example
+│   ├── .env.production.example
+│   └── package.json
 ├── hardhat.config.js
 ├── package.json
+├── vercel.json
 ├── .env.example
 ├── .gitignore
-├── metadata-example.json
 └── README.md
 ```
 
-##  Prerequisites
+---
 
->  **For detailed setup instructions, see [INSTALL.md](INSTALL.md)**
+## Prerequisites
 
-Before you begin, ensure you have the following installed:
+- **Node.js:** `v18.0.0` or higher (`npm` `>= 9.0.0`)
+- **MetaMask:** Required only for issuing/revoking or decrypting encrypted records (not required for public verification)
+- **Git**
+- **Alchemy / Sepolia RPC** & **Pinata account** (for Sepolia deployment and IPFS pinning)
 
-- **Node.js**: v18.0.0 or higher
-- **npm** or **yarn**: Latest version
-- **MetaMask**: Browser extension
-- **Git**: Latest version
+---
 
-### Additional Requirements
-- **Alchemy Account**: For Sepolia testnet deployment
-- **Pinata Account**: For IPFS metadata storage
-- **Sepolia Test ETH**: From faucet for testnet transactions
+## Installation
 
-### Check Prerequisites
-
-```bash
-node --version    # Should be >= 18.0.0
-npm --version     # Should be >= 9.0.0
-git --version
-```
-
-##  Installation
-
-### Quick Installation (One Command)
-
-#### Option 1: Using Installation Script (Recommended)
-
-**Windows (PowerShell):**
+### Windows (PowerShell)
 ```powershell
-# Clone repository
-git clone https://github.com/yourusername/tokenized-academic-credentials.git
-cd tokenized-academic-credentials
-
-# Run installation script
+git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
+cd Tokenized-Academic-Credential-Verification-System
 .\install.ps1
 ```
 
-**Linux/Mac:**
+### Linux / macOS
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/tokenized-academic-credentials.git
-cd tokenized-academic-credentials
-
-# Make script executable and run
+git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
+cd Tokenized-Academic-Credential-Verification-System
 chmod +x install.sh
 ./install.sh
 ```
 
-#### Option 2: Using npm Command
-
+### Using npm
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/tokenized-academic-credentials.git
-cd tokenized-academic-credentials
-
-# Install all dependencies (backend + frontend)
+git clone https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System.git
+cd Tokenized-Academic-Credential-Verification-System
 npm run install-all
 ```
 
-### Manual Installation (Step by Step)
+---
 
-### 1. Clone the Repository
+## Configuration
 
-```bash
-git clone https://github.com/yourusername/tokenized-academic-credentials.git
-cd tokenized-academic-credentials
-```
+> Never commit `.env`, `.env.local`, or `.env.production` files. `.gitignore` ignores all real `.env*` files while allowing only `*.example` templates. Server secrets (`PRIVATE_KEY`, `IPFS_API_KEY`, `IPFS_SECRET_KEY`, `PINATA_JWT`, `CREDENTIAL_MASTER_KEY`) must **never** be prefixed with `VITE_`.
 
-### 2. Install Backend Dependencies
-
-```bash
-npm install
-```
-
-### 3. Install Frontend Dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-##  Configuration
-
-### 1. Create Environment File
-
+### 1. Root Server / Hardhat `.env`
 ```bash
 cp .env.example .env
 ```
 
-### 2. Configure Environment Variables
-
-Edit `.env` file:
-
 ```env
-# Network Configuration
+# Network & Deployer
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY
 PRIVATE_KEY=your_wallet_private_key_here
 
-# Server-Only IPFS (Pinata) & Encryption Secrets (never prefix with VITE_)
+# Server-Only IPFS (Pinata) & Encryption Secrets
 IPFS_API_KEY=your_pinata_api_key
 IPFS_SECRET_KEY=your_pinata_secret_key
 CREDENTIAL_MASTER_KEY=your_long_random_aes256_master_secret
 ```
 
-### 3. Get Required API Keys
-
-#### Alchemy API Key (for Sepolia)
-1. Visit [https://www.alchemy.com/](https://www.alchemy.com/)
-2. Create account and new app
-3. Select "Ethereum" → "Sepolia"
-4. Copy API key
-
-#### Pinata API Keys (for IPFS)
-1. Visit [https://www.pinata.cloud/](https://www.pinata.cloud/)
-2. Create account
-3. Go to API Keys section
-4. Generate new key with pinning permissions
-5. Copy API Key and Secret into root `.env` (and Vercel server env vars) as `IPFS_API_KEY` and `IPFS_SECRET_KEY`
-
-### 4. Configure Frontend
-
+### 2. Frontend Public Configuration (`frontend/.env.local`)
 ```bash
 cd frontend
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Edit `frontend/.env` (public `VITE_*` values only — never place Pinata secrets here):
-
 ```env
-VITE_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
-VITE_NETWORK_ID=31337
-VITE_NETWORK_NAME=localhost
-
-# Public IPFS Gateway (Pinata read gateway)
+VITE_CONTRACT_ADDRESS=0xE8cb94E530Ee82c0EEbDB2FB092Bd32eDDD1dab1
+VITE_NETWORK_ID=11155111
+VITE_NETWORK_NAME=sepolia
 VITE_IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs/
 VITE_PUBLIC_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 ```
 
-**Gateway URL Format**: The IPFS gateway URL must follow this structure:
-```
-https://gateway.pinata.cloud/ipfs/QmHash...
-       ↑         ↑         ↑     ↑
-   Subdomain  Domain    Path   Hash
-```
+---
 
-The `.env` contains the base URL (`https://gateway.pinata.cloud/ipfs/`) - the hash is automatically appended by the application when accessing files.
+## Deployment
 
-##  Deployment
-
-### Deploy to Local Network (Hardhat)
-
-#### 1. Start Local Hardhat Node
-
+### Local Hardhat Network
 ```bash
+# Terminal 1
 npm run node
-```
 
-Keep this terminal running. In a new terminal:
-
-#### 2. Deploy Contract
-
-```bash
+# Terminal 2
 npm run deploy:local
 ```
 
-#### 3. Copy Contract Address
-
-The deployment will output the contract address. Copy it to `frontend/.env`:
-
-```env
-VITE_CONTRACT_ADDRESS=<deployed_contract_address>
-```
-
-### Deploy to Sepolia Testnet
-
->  **For complete step-by-step deployment guide, see [SEPOLIA_DEPLOYMENT.md](SEPOLIA_DEPLOYMENT.md)**
-> 
-> The guide includes:
-> - Detailed setup for Alchemy & Pinata accounts
-> - Environment configuration
-> - Contract deployment & verification
-> - Frontend configuration
-> - Testing procedures
-> - Troubleshooting tips
-
-#### Quick Deployment Steps:
-
-#### 1. Get Sepolia ETH
-
-- Visit [Sepolia Faucet](https://sepoliafaucet.com/) or [Alchemy Faucet](https://www.alchemy.com/faucets/ethereum-sepolia)
-- Enter your wallet address
-- Request test ETH (~0.1 ETH needed)
-
-#### 2. Configure Environment
-
-```bash
-# Copy and edit .env with your Alchemy RPC URL and private key
-cp .env.example .env
-```
-
-#### 3. Deploy to Sepolia
-
+### Sepolia Testnet
+See [`SEPOLIA_DEPLOYMENT.md`](SEPOLIA_DEPLOYMENT.md) and [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md) for Vercel/serverless environment variable setup (`/api/credential-crypto` and `/api/pinata`), or deploy directly:
 ```bash
 npm run deploy:sepolia
 ```
 
-#### 4. Verify Contract (Optional)
+---
 
-```bash
-npx hardhat verify --network sepolia <CONTRACT_ADDRESS> <ADMIN_ADDRESS>
-```
-
-#### 5. Update Frontend Config
-
-Update `frontend/.env`:
-
-```env
-VITE_CONTRACT_ADDRESS=<sepolia_contract_address>
-VITE_NETWORK_ID=11155111
-VITE_NETWORK_NAME=sepolia
-```
-
-##  Frontend Setup
-
-### 1. Start Development Server
+## Frontend Setup
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-The application will open at `http://localhost:3000`
-
-### 2. Connect MetaMask
-
-1. Click "Connect Wallet"
-2. Approve connection in MetaMask
-3. Select correct network (localhost or Sepolia)
-
-### 3. Switch Network in MetaMask
-
-**For Localhost:**
-- Network Name: Localhost 8545
-- RPC URL: http://127.0.0.1:8545
-- Chain ID: 31337
-- Currency: ETH
-
-**For Sepolia:**
-- Network Name: Sepolia
-- Chain ID: 11155111
-
-## 📖 Usage Guide
-
-### For Institutions (Issuers)
-
-#### 1. Grant Issuer Role
-
-Deploy account has admin and issuer roles by default. To grant issuer role to another address:
-
-```javascript
-const contract = await ethers.getContractAt("AcademicCredential", CONTRACT_ADDRESS);
-const ISSUER_ROLE = await contract.ISSUER_ROLE();
-await contract.grantRole(ISSUER_ROLE, "0x...address");
-```
-
-#### 2. Issue Credential
-
-**Via Frontend:**
-1. Navigate to "Issue Credential" page
-2. Fill in student details
-3. Enter student's wallet address
-4. Click "Issue Credential"
-5. Confirm transaction in MetaMask
-
-**Via Script:**
-
+For a production build preview:
 ```bash
-node scripts/issueCredential.js <student_address>
+cd frontend
+npm run build
+npx vite preview --port 4173
 ```
 
-### For Students
-
-#### View Credentials
-
-1. Navigate to "Dashboard"
-2. Connect wallet
-3. View all owned credentials
-4. Share verification links
-
-### For Employers/Verifiers
-
-#### Verify Credential
-
-1. Navigate to "Verify" page
-2. Enter Token ID
-3. Connect wallet (view-only, no transaction needed)
-4. View credential details and status
-
-##  Smart Contract Details
-
-### Main Functions
-
-#### `issueCredential(address student, string memory metadataURI)`
-- **Access**: ISSUER_ROLE only
-- **Description**: Issues new credential NFT to student
-- **Parameters**:
-  - `student`: Recipient's wallet address
-  - `metadataURI`: IPFS URI containing metadata
-- **Returns**: Token ID
-- **Events**: Emits `CredentialIssued`
-
-#### `revokeCredential(uint256 tokenId)`
-- **Access**: ISSUER_ROLE only
-- **Description**: Marks credential as revoked
-- **Parameters**: `tokenId` - ID of credential to revoke
-- **Events**: Emits `CredentialRevoked`
-
-#### `verifyCredential(uint256 tokenId)`
-- **Access**: Public view
-- **Description**: Returns complete credential details
-- **Returns**: Credential struct
-
-#### `getStudentCredentials(address student)`
-- **Access**: Public view
-- **Description**: Returns all token IDs owned by student
-- **Returns**: Array of token IDs
-
-### Security Features
-
-✅ **Non-Transferable**: Overrides `_update()` to prevent transfers
-✅ **Role-Based Access**: Only issuers can mint and revoke
-✅ **Input Validation**: Validates all inputs (no zero addresses, empty strings)
-✅ **Duplicate Prevention**: Uses metadata hash to prevent duplicate issuance
-✅ **Gas Optimized**: Efficient mappings and state variables
-✅ **Event Logging**: All actions emit events for transparency
-
-### Metadata Structure
-
-```json
-{
-  "name": "Bachelor of Science in Computer Science - John Doe",
-  "description": "Academic credential issued by MIT",
-  "institution": "Massachusetts Institute of Technology",
-  "studentName": "John Doe",
-  "degree": "Bachelor of Science in Computer Science",
-  "grade": "A (3.9/4.0 GPA)",
-  "issueDate": "2024-05-15",
-  "image": "ipfs://Qm.../certificate.png",
-  "attributes": [
-    {
-      "trait_type": "Institution",
-      "value": "MIT"
-    },
-    {
-      "trait_type": "Degree",
-      "value": "BS Computer Science"
-    }
-  ]
-}
-```
-
-##  Testing
-
-### Compile Contracts
-
-```bash
-npx hardhat compile
-```
-
-### Run Tests
-
-```bash
-npx hardhat test
-```
-
-### Check Contract Size
-
-```bash
-npx hardhat size-contracts
-```
-
-##  Troubleshooting
-
-### Common Issues
-
-#### MetaMask Connection Failed
-- **Solution**: Ensure MetaMask is installed and unlocked
-- Check correct network is selected
-- Try refreshing the page
-
-#### Transaction Failed
-- **Solution**: Ensure you have enough gas
-- Check if you have required role (for issuer functions)
-- Verify contract address is correct
-
-#### Metadata Not Loading
-- **Solution**: Check IPFS gateway is accessible
-- Verify metadata URI format is correct
-- Try alternative IPFS gateway
-
-#### Wrong Network
-- **Solution**: Switch MetaMask to correct network
-- Update `VITE_NETWORK_ID` in frontend `.env`
-
-### Get Help
-
-If you encounter issues:
-1. Check console logs (F12 in browser)
-2. Review transaction on block explorer
-3. Verify contract deployment
-4. Check environment variables
-
-##  Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
-##  License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-##  Acknowledgments
-
-- OpenZeppelin for secure smart contract libraries
-- Hardhat for development framework
-- React and Vite for frontend framework
-- Tailwind CSS for styling
-- IPFS/Pinata for decentralized storage
-
-##  Contact
-
-For questions or support:
-- Create an issue on GitHub
-- Email: founder@deoxys.in
+> **Note:** Local `vite dev` / `vite preview` serves static assets only unless run through Vercel CLI (`vercel dev`) to execute `/api/credential-crypto` and `/api/pinata` serverless endpoints.
 
 ---
 
-**Built with using Solidity, React, and Web3**
+## Usage Guide
+
+### 1. Onboard an Issuing Institution (`ISSUER_ROLE`)
+The deployer wallet holds `DEFAULT_ADMIN_ROLE` and `ISSUER_ROLE` by default. Grant `ISSUER_ROLE` to another university wallet:
+```javascript
+const contract = await ethers.getContractAt("AcademicCredential", CONTRACT_ADDRESS);
+const ISSUER_ROLE = await contract.ISSUER_ROLE();
+await contract.grantRole(ISSUER_ROLE, "0x...institutionWallet");
+```
+
+### 2. Issue a Credential
+- Connect an authorized `ISSUER_ROLE` wallet in MetaMask and visit `/issue`, or use the Hardhat CLI script (`npm run issue`).
+- Fill in student details, registration/enrollment number, graduate wallet address, degree, field, and grade.
+- Review the live certificate preview, confirm authorization, and sign in MetaMask to encrypt + pin to IPFS + mint on Sepolia.
+
+### 3. Public & HR Verification (No Wallet Required)
+- Open `/public-verify` (or scan the QR code on the PDF certificate).
+- Enter either a **Token ID** (e.g. `4`) or a **Unique Credential ID** (e.g. `TC-TOKEN-2`).
+- Verification reads Sepolia state directly with no wallet or gas required.
+- Authorized credential holders or issuers can click **Connect Holder Wallet to Unlock** to verify ownership signature and decrypt v2 student records or export a full certificate PDF.
+
+---
+
+## Smart Contract Details
+
+[`contracts/AcademicCredential.sol`](contracts/AcademicCredential.sol) exposes:
+- `issueCredential(address student, string memory metadataURI)` (`ISSUER_ROLE`) — Mints a non-transferable Soulbound ERC-721 and emits `CredentialIssued`.
+- `revokeCredential(uint256 tokenId)` (`ISSUER_ROLE`) — Permanently marks a credential revoked and emits `CredentialRevoked`.
+- `verifyCredential(uint256 tokenId)` (`view`) — Returns `(student, issuer, issuedAt, isRevoked, metadataURI)`.
+- `isCredentialValid(uint256 tokenId)` (`view`) — Returns `true` when existing and not revoked.
+- `getStudentCredentials(address student)` (`view`) — Returns all Token IDs held by `student`.
+
+### Security Guarantees
+- **Soulbound Enforcement:** Overrides `_update()` to block secondary transfers between wallets (`mint` and `burn` semantics only).
+- **Role-Based Access Control:** OpenZeppelin `AccessControl` restricts minting and revocation to `ISSUER_ROLE`.
+- **Zero-Plaintext IPFS Metadata (v2):** `/api/pinata` rejects payloads containing plaintext PII (`studentName`, `enrollmentNumber`, `grade`, `degree`) and stores only encrypted envelopes (`AES-256-GCM`) plus public status/badge metadata.
+- **Signature Replay Protection & Identity Binding:** Decryption challenges include a single-use nonce + timestamp window and validate on-chain `ownerOf(tokenId)` / `ISSUER_ROLE` before returning decrypted records.
+
+---
+
+## Testing
+
+```bash
+# Compile Solidity contracts
+npx hardhat compile
+
+# Run full test suite (31 tests: smart contracts + privacy/encryption/binding/hybrid ID)
+npm test
+
+# Build production frontend bundle
+cd frontend && npm run build
+```
+
+---
+
+## Troubleshooting
+
+- **"MetaMask not found — install MetaMask"**: Public credential verification on `/public-verify` does not need MetaMask. To issue credentials or unlock encrypted v2 records, install the MetaMask extension from [metamask.io/download](https://metamask.io/download/) and switch to Sepolia (`11155111`).
+- **Wrong Network**: Switch MetaMask to **Sepolia Testnet** (Chain ID `11155111`) or verify `VITE_NETWORK_ID` in `frontend/.env.local`.
+- **Metadata Offline**: IPFS gateways can occasionally rate-limit reads; TokCred automatically falls back across multiple public IPFS gateways when reading metadata.
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes
+4. Open a Pull Request
+
+---
+
+## License
+
+Licensed under the MIT License — see [`LICENSE`](LICENSE) for details.
+
+## Contact & Support
+
+- **In-App Help Center & Docs:** `/support` and `/developers`
+- **GitHub Issues:** [Open an issue](https://github.com/abrar-0020/Tokenized-Academic-Credential-Verification-System/issues)
+- **Email:** founder@deoxys.in
