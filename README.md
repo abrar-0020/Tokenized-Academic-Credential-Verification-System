@@ -1,4 +1,4 @@
-# TokCred — Tokenized Academic Credential Verification System
+# TokCred — Decentralized Academic Credential System for University
 
 A production-ready, privacy-preserving, decentralized system for issuing, managing, and verifying academic credentials as non-transferable **Soulbound ERC-721 NFTs** on Ethereum Sepolia.
 
